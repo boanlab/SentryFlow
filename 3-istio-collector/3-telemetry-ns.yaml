@@ -1,0 +1,10 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: bookinfo-logging
+  namespace: bookinfo
+spec:
+  accessLogging:
+    - providers:
+      - name: boanlab-collector-1
+
