@@ -1,0 +1,61 @@
+# Setup deployment for otel-collector with the config that we just setup
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: collector-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+      - name: otel-collector
+        image: otel/opentelemetry-collector:0.91.0
+        command:
+          - "/otelcol"
+          - "--config=/conf/config.yaml"
+        ports:
+          - containerPort: 4317
+            protocol: TCP
+            name: grpc-otlp
+        volumeMounts:
+          - name: otel-config-vol
+            mountPath: /conf
+      volumes:
+        - configMap:
+            defaultMode: 420
+            items:
+              - key: config.yaml
+                path: config.yaml
+            name: otel-config
+          name: otel-config-vol
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+
+---
+# Setup service for otel-collector, we need to make a service for
+# letting Istio know that there actually is a service named otel-collector to export the
+# OTEL logs from envoy to here.
+# Istio currently supports exporting OTEL logs to only services registered in Istio,
+# Other workaround will be using a ServiceEntry, but this is out of scope since we are just going to
+# use services inside the Kubernetes cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: collector-1
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - protocol: TCP
+      port: 4317
+      targetPort: 4317
+      name: grpc-otlp

@@ -1,0 +1,18 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    extensionProviders:
+    - name: boanlab-collector-1
+      envoyOtelAls:
+        service: otel-collector.collector-1.svc.cluster.local
+        port: 4317
+    - name: boanlab-collector-2
+      envoyOtelAls:
+        service: custom-collector.collector-2.svc.cluster.local
+        port: 4317
+    defaultProviders:
+      accessLogging:
+        #- envoy
+      - boanlab-collector-1
+      - boanlab-collector-2
