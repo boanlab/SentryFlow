@@ -13,27 +13,28 @@ type Config struct {
 	ListenPort int
 }
 
-var cfg Config
+// Cfg is for global reference
+var Cfg Config
 
 // LoadEnvVars loads environment variables and stores them as global variable
 func LoadEnvVars() (Config, error) {
 	var err error
 
 	// load listen address and check if valid
-	cfg.ListenAddr = os.Getenv("LISTEN_ADDR")
-	ip := net.ParseIP(cfg.ListenAddr)
+	Cfg.ListenAddr = os.Getenv("LISTEN_ADDR")
+	ip := net.ParseIP(Cfg.ListenAddr)
 	if ip == nil {
-		msg := fmt.Sprintf("invalid listen address %s", cfg.ListenAddr)
-		return cfg, errors.New(msg)
+		msg := fmt.Sprintf("invalid listen address %s", Cfg.ListenAddr)
+		return Cfg, errors.New(msg)
 	}
-	cfg.ListenAddr = ip.String()
+	Cfg.ListenAddr = ip.String()
 
 	// load listen port and check if valid
-	cfg.ListenPort, err = strconv.Atoi(os.Getenv("LISTEN_PORT"))
+	Cfg.ListenPort, err = strconv.Atoi(os.Getenv("LISTEN_PORT"))
 	if err != nil {
 		msg := fmt.Sprintf("invalid listen port %s: %v", os.Getenv("LISTEN_PORT"), err)
-		return cfg, errors.New(msg)
+		return Cfg, errors.New(msg)
 	}
 
-	return cfg, nil
+	return Cfg, nil
 }

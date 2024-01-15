@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package common;
+
+option go_package = "./";
+
+message AccessLog {
+  string timeStamp = 1;
+  uint64 id = 2;
+  string srcNamespaceName = 3;
+  string srcPodName = 4;
+  map<string, string> srcLabel = 5;
+  string srcIP = 6;
+  string srcPort = 7;
+  string srcType = 8;
+  string dstNamespaceName = 9;
+  string dstPodName = 10;
+  map<string, string> dstLabel = 11;
+  string dstIP = 12;
+  string dstPort = 13;
+  string dstType = 14;
+  string protocol = 15;
+  string method = 16;
+  string path = 17;
+  int64  responseCode = 18;
+}
+
+service Logs {
+  rpc Send(AccessLog) returns (LogResponse);
+}
+
+message LogResponse {
+  string message = 1;
+}

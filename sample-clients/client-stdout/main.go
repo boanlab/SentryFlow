@@ -19,7 +19,7 @@ type AccessLogServer struct {
 // Send implements Send service for AccessLogServer
 func (a AccessLogServer) Send(_ context.Context, accessLog *protobuf.AccessLog) (*protobuf.LogResponse, error) {
 	log.Println(accessLog)
-	return nil, nil
+	return &protobuf.LogResponse{}, nil
 }
 
 // main is the entrypoint of this program

@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	"mongo-client/common"
+	protobuf "mongo-client/protobuf"
 	"os"
 	"time"
 )
@@ -69,10 +68,7 @@ func (h *Handler) Disconnect() {
 	return
 }
 
-func (h *Handler) InsertData(data common.MyLog) error {
-	data.TimeStamp = time.Now()
-	data.UUID = uuid.New()
-
+func (h *Handler) InsertData(data *protobuf.AccessLog) error {
 	_, err := h.collection.InsertOne(h.context, data)
 	if err != nil {
 		return err

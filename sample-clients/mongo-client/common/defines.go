@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type MyLog struct {
+type Log struct {
 	TimeStamp time.Time `bson:"timeStamp"`
 	UUID      uuid.UUID `bson:"uuid"`
 	Method    string    `bson:"method"`
