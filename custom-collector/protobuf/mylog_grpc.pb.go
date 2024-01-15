@@ -4,7 +4,7 @@
 // - protoc             v3.12.4
 // source: mylog.proto
 
-package common
+package protobuf
 
 import (
 	context "context"
