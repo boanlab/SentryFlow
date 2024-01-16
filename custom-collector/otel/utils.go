@@ -4,7 +4,6 @@ import (
 	"custom-collector/k8s"
 	protobuf "custom-collector/protobuf"
 	corev1 "k8s.io/api/core/v1"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -28,7 +27,6 @@ func parseAccessLog(logText string) []*protobuf.AccessLog {
 
 	// Ignore the first entry, this was the metadata "resource_logs:{resource:{ scope_logs:{" part.
 	for _, al := range parts[0:] {
-		log.Println(al)
 		if len(al) == 0 {
 			continue
 		}
