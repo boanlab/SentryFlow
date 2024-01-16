@@ -18,7 +18,7 @@ spec:
         - name: regcred
       containers:
       - name: example-exporter-stdout
-        image: boanlab.com/client-stdout:v2
+        image: boanlab.com/client-stdout:v3
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -138,7 +138,7 @@ spec:
         - name: regcred
       containers:
       - name: example-exporter-mongo
-        image: boanlab.com/mongo-client:v1
+        image: boanlab.com/mongo-client:v3
         ports:
         - containerPort: 8080
           protocol: TCP

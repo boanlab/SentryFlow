@@ -75,24 +75,24 @@ func parseAccessLog(logText string) []*protobuf.AccessLog {
 
 		// Create AccessLog in our gRPC format
 		cur := protobuf.AccessLog{
-			TimeStamp:        timeStamp,
-			Id:               0, //  do 0 for now, we are going to write it later
-			SrcNamespaceName: srcNamespace,
-			SrcPodName:       srcName,
-			SrcLabel:         srcLabel,
-			SrcIP:            srcIP,
-			SrcPort:          srcPort,
-			SrcType:          srcResourceType,
-			DstNamespaceName: dstNamespace,
-			DstPodName:       dstName,
-			DstLabel:         dstLabel,
-			DstIP:            dstIP,
-			DstPort:          dstPort,
-			DstType:          dstResourceType,
-			Protocol:         protocolName,
-			Method:           method,
-			Path:             path,
-			ResponseCode:     resCode,
+			TimeStamp:    timeStamp,
+			Id:           0, //  do 0 for now, we are going to write it later
+			SrcNamespace: srcNamespace,
+			SrcName:      srcName,
+			SrcLabel:     srcLabel,
+			SrcIP:        srcIP,
+			SrcPort:      srcPort,
+			SrcType:      srcResourceType,
+			DstNamespace: dstNamespace,
+			DstName:      dstName,
+			DstLabel:     dstLabel,
+			DstIP:        dstIP,
+			DstPort:      dstPort,
+			DstType:      dstResourceType,
+			Protocol:     protocolName,
+			Method:       method,
+			Path:         path,
+			ResponseCode: resCode,
 		}
 
 		ret = append(ret, &cur)
