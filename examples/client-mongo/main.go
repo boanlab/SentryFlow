@@ -1,13 +1,13 @@
 package main
 
 import (
+	"client-mongo/common"
+	"client-mongo/db"
+	protobuf "client-mongo/protobuf"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
-	"mongo-client/common"
-	"mongo-client/db"
-	protobuf "mongo-client/protobuf"
 	"net"
 )
 

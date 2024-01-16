@@ -38,6 +38,12 @@ func main() {
 	}
 	kh.RunInformers(signalCh)
 
+	// Patch IstioConfig first
+	err = kh.PatchIstioConfigMap()
+	if err != nil {
+		log.Fatalf("Could not patch istio-system/istio configmap for exporting")
+	}
+
 	// Initialize OTEL gRPC server
 	addr := fmt.Sprintf("%s:%d", cfg.ListenAddr, cfg.ListenPort)
 	oh := otel.NewHandler(addr)

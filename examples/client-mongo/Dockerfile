@@ -12,7 +12,7 @@ COPY . .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-RUN go build -o mongo-client
+RUN go build -o client-mongo
 
 ### Make executable image
 
@@ -23,6 +23,6 @@ RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee 
 RUN apk --no-cache update
 RUN apk add apparmor@community apparmor-utils@community bash
 
-COPY --from=builder /app/mongo-client .
+COPY --from=builder /app/client-mongo .
 
-CMD ["./mongo-client"]
+CMD ["./client-mongo"]

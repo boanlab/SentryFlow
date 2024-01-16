@@ -1,4 +1,4 @@
-module mongo-client
+module client-mongo
 
 go 1.19
 
