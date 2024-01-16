@@ -60,10 +60,13 @@ func (h *Handler) exportRoutine(stopCh chan os.Signal) {
 
 			// If not, iterate and export all to exporters
 			for name, exporter := range h.exporters {
+				accessLog.Id = uint64(h.executionID) + uint64(h.curIndex)
 				_, err := exporter.Send(context.Background(), accessLog)
 				if err != nil {
 					log.Printf("[EXPORTER] Failed exporting log to exporter %s: %v", name, err)
 				}
+
+				h.curIndex = h.curIndex + 1
 			}
 
 		// This was from stopCh which kills the program

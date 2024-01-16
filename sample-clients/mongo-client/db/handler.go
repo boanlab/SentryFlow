@@ -16,7 +16,6 @@ type Handler struct {
 	client     *mongo.Client
 	database   *mongo.Database
 	collection *mongo.Collection
-	context    context.Context
 	cancel     context.CancelFunc
 	dbURL      string
 }
@@ -42,10 +41,11 @@ func New() (*Handler, error) {
 	}
 
 	// Set timeout as 10 sec
-	h.context, h.cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	var ctx context.Context
+	ctx, h.cancel = context.WithTimeout(context.Background(), 10*time.Second)
 
 	// Try connecting server
-	err = h.client.Connect(h.context)
+	err = h.client.Connect(ctx)
 	if err != nil {
 		msg := fmt.Sprintf("unable to connect mongoDB server %s: %v", dbHost, err)
 		return nil, errors.New(msg)
@@ -60,7 +60,7 @@ func New() (*Handler, error) {
 }
 
 func (h *Handler) Disconnect() {
-	err := h.client.Disconnect(h.context)
+	err := h.client.Disconnect(context.Background())
 	if err != nil {
 		log.Printf("unable to properly disconnect: %v", err)
 	}
@@ -69,7 +69,7 @@ func (h *Handler) Disconnect() {
 }
 
 func (h *Handler) InsertData(data *protobuf.AccessLog) error {
-	_, err := h.collection.InsertOne(h.context, data)
+	_, err := h.collection.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"custom-collector/k8s"
 	protobuf "custom-collector/protobuf"
 	corev1 "k8s.io/api/core/v1"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -11,24 +12,33 @@ import (
 // parseAccessLog parses the string access log coming from OTEL
 // @todo this needs more optimization, this code is kind of messy
 func parseAccessLog(logText string) []*protobuf.AccessLog {
+	// Create a array of AccessLogs for returning gRPC comm
 	var index int
 	ret := make([]*protobuf.AccessLog, 0)
 
+	// Preprocess redundant chars
 	logText = strings.ReplaceAll(logText, `\"`, "")
 	logText = strings.ReplaceAll(logText, `}`, "")
-	parts := strings.Split(logText, "\\n\"")
 
-	for _, part := range parts[0:] {
-		if len(part) <= 0 {
+	// Split logs by log_records, this is single access log instance
+	parts := strings.Split(logText, "log_records")
+	if len(parts) == 0 {
+		return nil
+	}
+
+	// Ignore the first entry, this was the metadata "resource_logs:{resource:{ scope_logs:{" part.
+	for _, al := range parts[0:] {
+		log.Println(al)
+		if len(al) == 0 {
 			continue
 		}
 
-		index = strings.Index(part, "string_value:\"")
+		index = strings.Index(al, "string_value:\"")
 		if index == -1 {
 			continue
 		}
 
-		result := part[index+len("string_value:\""):]
+		result := al[index+len("string_value:\""):]
 		words := strings.Fields(result)
 
 		method := words[1]
@@ -52,6 +62,7 @@ func parseAccessLog(logText string) []*protobuf.AccessLog {
 			srcIP = strings.TrimSpace(srcInform[:colonIndex])
 			srcPort = strings.TrimSpace(srcInform[colonIndex+1:])
 		}
+
 		colonIndex = strings.LastIndex(dstInform, ":")
 		if colonIndex > 0 && colonIndex < len(dstInform)-1 {
 			dstIP = strings.TrimSpace(dstInform[:colonIndex])
