@@ -44,6 +44,18 @@ func main() {
 		log.Fatalf("Could not patch istio-system/istio configmap for exporting")
 	}
 
+	// Then add labels to namespaces for injecting Envoy
+	err = kh.PatchNamespaces()
+	if err != nil {
+		log.Fatalf("Could not add label to namespace for istio injection %v:", err)
+	}
+
+	// Then restart deployments in the injected namespaces
+	err = kh.PatchRestartDeployments()
+	if err != nil {
+		log.Fatalf("Could not restart deployment: %v", err)
+	}
+
 	// Initialize OTEL gRPC server
 	addr := fmt.Sprintf("%s:%d", cfg.ListenAddr, cfg.ListenPort)
 	oh := otel.NewHandler(addr)

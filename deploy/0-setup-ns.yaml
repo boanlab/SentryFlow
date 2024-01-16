@@ -1,0 +1,5 @@
+# Setup namespace for collector-1
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: collector-1

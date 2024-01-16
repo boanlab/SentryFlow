@@ -1,0 +1,78 @@
+# Setup namespace for collector-1
+# This is when using native collector
+# : otel/opentelemetry-collector-contrib + our custom exporter!
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sa-boan
+  namespace: collector-1
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cr-boan
+rules:
+- apiGroups: ["*"]
+  verbs: ["*"]
+  resources: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rb-boan
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cr-boan
+subjects:
+- kind: ServiceAccount
+  name: sa-boan
+  namespace: collector-1
+---
+# Setup deployment for our custom-exporter
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-collector
+  namespace: collector-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-collector
+  template:
+    metadata:
+      labels:
+        app: custom-collector
+    spec:
+      serviceAccountName: sa-boan
+      containers:
+      - name: custom-collector
+        image: boanlab.com/custom-collector:v11
+        ports:
+        - containerPort: 4317
+          protocol: TCP
+          name: grpc-otlp
+        env:
+        - name: LISTEN_ADDR
+          value: "0.0.0.0"
+        - name: LISTEN_PORT
+          value: "4317"
+        - name: TO_EXPORT
+          value: "example-exporter-stdout:8080,example-exporter-mongo:8080"
+---
+# Setup service for custom-exporter
+apiVersion: v1
+kind: Service
+metadata:
+  name: custom-collector
+  namespace: collector-1
+spec:
+  selector:
+    app: custom-collector
+  ports:
+    - protocol: TCP
+      port: 4317
+      targetPort: 4317
+      name: grpc-otlp
