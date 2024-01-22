@@ -2,7 +2,7 @@ package otel
 
 import (
 	"custom-collector/k8s"
-	protobuf "custom-collector/protobuf"
+	protobuf "otel-custom-collector/protobuf"
 	corev1 "k8s.io/api/core/v1"
 	"strconv"
 	"strings"

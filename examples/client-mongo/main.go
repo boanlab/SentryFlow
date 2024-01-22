@@ -3,7 +3,7 @@ package main
 import (
 	"client-mongo/common"
 	"client-mongo/db"
-	protobuf "client-mongo/protobuf"
+	protobuf "otel-custom-collector/protobuf"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"

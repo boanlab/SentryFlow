@@ -3,7 +3,7 @@ package exporter
 import (
 	"context"
 	"custom-collector/common"
-	protobuf "custom-collector/protobuf"
+	protobuf "otel-custom-collector/protobuf"
 	"google.golang.org/grpc"
 	"log"
 	"os"
