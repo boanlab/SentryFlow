@@ -7,7 +7,7 @@ import (
 	"log"
 	"mongo-client/common"
 	"mongo-client/db"
-	protobuf "mongo-client/protobuf"
+	protobuf "otel-custom-collector/protobuf"
 	"net"
 )
 
