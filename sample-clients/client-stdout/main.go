@@ -2,7 +2,7 @@ package main
 
 import (
 	"client-stdout/common"
-	protobuf "client-stdout/protobuf"
+	protobuf "otel-custom-collector/protobuf"
 	context "context"
 	"fmt"
 	"google.golang.org/grpc"
