@@ -1,9 +1,0 @@
-apiVersion: telemetry.istio.io/v1alpha1
-kind: Telemetry
-metadata:
-  name: robot-shop-logging
-  namespace: robot-shop
-spec:
-  accessLogging:
-    - providers:
-      - name: boanlab-collector-1
