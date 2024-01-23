@@ -116,7 +116,7 @@ edit_configmap(raw)
 
 print("Injecting sidecars...")
 try:
-    command = f"bash deploy/inject-sidecars.sh"
+    command = f"bash k8s/inject-sidecars.sh"
     subprocess.run(command, shell=True, check=True)
 except Exception as e:
     print(f"An error occurred while injecting side cars: {e}")
