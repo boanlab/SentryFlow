@@ -6,15 +6,12 @@ RUN apk --no-cache update
 RUN apk add --no-cache git clang llvm make gcc protobuf
 
 RUN mkdir /app
-RUN mkdir /protobuf
-
-WORKDIR /protobuf
-
-COPY /protobuf .
 
 WORKDIR /app
 
-COPY /src .
+COPY . .
+
+WORKDIR /app/src
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -29,6 +26,6 @@ RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee 
 RUN apk --no-cache update
 RUN apk add apparmor@community apparmor-utils@community bash
 
-COPY --from=builder /app/custom-collector .
+COPY --from=builder /app/src/custom-collector .
 
 CMD ["./custom-collector"]

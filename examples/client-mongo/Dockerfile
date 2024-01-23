@@ -6,15 +6,9 @@ RUN apk --no-cache update
 RUN apk add --no-cache git clang llvm make gcc protobuf
 
 RUN mkdir /app
-RUN mkdir /protobuf
-
-WORKDIR /protobuf
-
-COPY /protobuf .
-
 WORKDIR /app
 
-COPY /examples/client-mongo .
+COPY . .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest

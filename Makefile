@@ -4,7 +4,7 @@ TAG = v1
 .PHONY: build
 
 build:
-	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../
+	docker build -t $(IMAGE_NAME):$(TAG) .
 
 .PHONY: clean
 
