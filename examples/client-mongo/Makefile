@@ -1,4 +1,4 @@
-IMAGE_NAME = boanlab.com/mongo-client
+IMAGE_NAME = boanlab.com/client-mongo
 TAG = v1
 
 .PHONY: build

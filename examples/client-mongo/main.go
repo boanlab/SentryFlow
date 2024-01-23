@@ -1,13 +1,13 @@
 package main
 
 import (
+	"client-mongo/common"
+	"client-mongo/db"
+	protobuf "otel-custom-collector/protobuf"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
-	"mongo-client/common"
-	"mongo-client/db"
-	protobuf "otel-custom-collector/protobuf"
 	"net"
 )
 

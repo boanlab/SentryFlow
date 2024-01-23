@@ -10,9 +10,10 @@ import (
 )
 
 type Config struct {
-	ListenAddr string
-	ListenPort int
-	ToExport   []string
+	ListenAddr       string
+	ListenPort       int
+	ToExport         []string
+	IgnoreNamespaces []string
 }
 
 // Cfg is for global reference
@@ -70,6 +71,31 @@ func parseToExport() ([]string, error) {
 		} else {
 			msg := fmt.Sprintf("invalid export server format %s", server)
 			return ret, errors.New(msg)
+		}
+	}
+
+	return ret, nil
+}
+
+// parseToIgnoreNamespaces parses the environment variable IGNORE_NAMESPACES for ignoring
+// namespace which does not require injecting sidecar and restarting
+func parseToIgnoreNamespaces() ([]string, error) {
+	ret := make([]string, 0)
+	raw := os.Getenv("IGNORE_NAMESPACES")
+
+	// Meant that there was no such namespace to ignore
+	if raw == "" {
+		return ret, nil
+	}
+
+	// Preprocess, split by comma
+	raw = strings.ReplaceAll(raw, " ", "")
+	split := strings.Split(raw, ",")
+	for _, namespace := range split {
+		if len(namespace) == 0 {
+			continue
+		} else {
+			ret = append(ret, namespace)
 		}
 	}
 

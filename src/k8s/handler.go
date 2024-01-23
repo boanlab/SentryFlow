@@ -1,7 +1,9 @@
 package k8s
 
 import (
+	"context"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -49,6 +51,9 @@ func NewHandler() (*Handler, error) {
 
 	watchTargets := []string{"pods", "services"}
 
+	// Look for existing resources in the cluster, create map
+	h.initExistingResources()
+
 	// Initialize watchers and informers for services and pods
 	// This will not run the informers yet
 	h.initWatchers(watchTargets)
@@ -71,6 +76,51 @@ func (h *Handler) initWatchers(watchTargets []string) {
 		)
 		h.listWatchers[target] = watcher
 	}
+}
+
+// initExistingResources will create a mapping table for existing services and pods into IPs
+// This is required since informers are NOT going to see existing resources until they are updated, created or deleted
+func (h *Handler) initExistingResources() {
+	// List existing Pods
+	podList, err := h.clientSet.CoreV1().Pods(corev1.NamespaceAll).List(context.TODO(), v1.ListOptions{})
+	if err != nil {
+		log.Fatal("Error listing Pods:", err.Error())
+	}
+
+	// Add existing Pods to the podMap
+	for _, pod := range podList.Items {
+		h.podMap[pod.Status.PodIP] = &pod
+		log.Printf("[K8s] Add existing pod %s: %s/%s", pod.Status.PodIP, pod.Namespace, pod.Name)
+	}
+
+	// List existing Services
+	serviceList, err := h.clientSet.CoreV1().Services(corev1.NamespaceAll).List(context.TODO(), v1.ListOptions{})
+	if err != nil {
+		log.Fatal("Error listing Services:", err.Error())
+	}
+
+	// Add existing Services to the svcMap
+	for _, service := range serviceList.Items {
+		// Check if the service has a LoadBalancer type
+		if service.Spec.Type == "LoadBalancer" {
+			for _, lbIngress := range service.Status.LoadBalancer.Ingress {
+				lbIP := lbIngress.IP
+				if lbIP != "" {
+					h.svcMap[lbIP] = &service
+					log.Printf("[K8s] Add existing service (LoadBalancer) %s: %s/%s", lbIP, service.Namespace, service.Name)
+				}
+			}
+		} else {
+			h.svcMap[service.Spec.ClusterIP] = &service
+			if len(service.Spec.ExternalIPs) != 0 {
+				for _, eIP := range service.Spec.ExternalIPs {
+					h.svcMap[eIP] = &service
+					log.Printf("[K8s] Add existing service %s: %s/%s", eIP, service.Namespace, service.Name)
+				}
+			}
+		}
+	}
+
 }
 
 // initInformers initializes informers for services in
@@ -106,15 +156,58 @@ func (h *Handler) initInformers() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) { // Add service information
 				service := obj.(*corev1.Service)
-				h.svcMap[service.Spec.ClusterIP] = service
+
+				if service.Spec.Type == "LoadBalancer" {
+					for _, lbIngress := range service.Status.LoadBalancer.Ingress {
+						lbIP := lbIngress.IP
+						if lbIP != "" {
+							h.svcMap[lbIP] = service
+						}
+					}
+				} else {
+					h.svcMap[service.Spec.ClusterIP] = service
+					if len(service.Spec.ExternalIPs) != 0 {
+						for _, eIP := range service.Spec.ExternalIPs {
+							h.svcMap[eIP] = service
+						}
+					}
+				}
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) { // Update service information
 				newService := newObj.(*corev1.Service)
-				h.svcMap[newService.Spec.ClusterIP] = newService
+				if newService.Spec.Type == "LoadBalancer" {
+					for _, lbIngress := range newService.Status.LoadBalancer.Ingress {
+						lbIP := lbIngress.IP
+						if lbIP != "" {
+							h.svcMap[lbIP] = newService
+						}
+					}
+				} else {
+					h.svcMap[newService.Spec.ClusterIP] = newService
+					if len(newService.Spec.ExternalIPs) != 0 {
+						for _, eIP := range newService.Spec.ExternalIPs {
+							h.svcMap[eIP] = newService
+						}
+					}
+				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				service := obj.(*corev1.Service)
-				delete(h.svcMap, service.Spec.ClusterIP) // Remove deleted service information
+				if service.Spec.Type == "LoadBalancer" {
+					for _, lbIngress := range service.Status.LoadBalancer.Ingress {
+						lbIP := lbIngress.IP
+						if lbIP != "" {
+							delete(h.svcMap, lbIP)
+						}
+					}
+				} else {
+					delete(h.svcMap, service.Spec.ClusterIP) // Remove deleted service information
+					if len(service.Spec.ExternalIPs) != 0 {
+						for _, eIP := range service.Spec.ExternalIPs {
+							delete(h.svcMap, eIP)
+						}
+					}
+				}
 			},
 		},
 	)
