@@ -2,7 +2,7 @@ module client-stdout
 
 go 1.19
 
-replace otel-custom-collector/protobuf => ../protobuf
+replace otel-custom-collector/protobuf => ../../protobuf
 
 require (
 	google.golang.org/grpc v1.60.1
