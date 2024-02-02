@@ -33,9 +33,12 @@ kubectl apply -f /deployments/1-setup-our-exporters.yaml
 kubectl apply -f /deployments/2-setup-collector.yaml
 ```
 
-> 1.Modify istio-system/istio ConfigMap  Include our collector
+> 1.Modify istio-system/istio ConfigMap include our collector
+>
 > 2.Add labels to namespaces for Istio injection
+>
 > 3.Restart all deployments in those namespaces
+>
 > This patching adds automatically
 
 
