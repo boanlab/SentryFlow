@@ -2,7 +2,7 @@
 
 Numbat efficiently preprocesses log data , produces API-related metrics, and performs additional exporting. Here's an overview:
 
-![Numbat_Overview](https://github.com/csb0710/otel-custom-collector/assets/56204009/11352e52-1c3d-4e96-aafb-c9b2bb137164)
+![Numbat_Overview](docs/Numbat_Overview.png)
 
 ## Log Preprocessing:
 Numbat preprocesses log data with the following goals:
