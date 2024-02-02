@@ -30,4 +30,4 @@ Numbat performs the following tasks to share or store generated log and metric d
 - Data Transmission: Transmits log and metric data to the configured exporting backend for storage or integration with other systems.
 
 ## Documentation
-- [Getting Started](/docs/Getting_Stared.md)
+- [Getting Started](docs/Getting_Stared.md)
