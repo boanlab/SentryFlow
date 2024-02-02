@@ -1,9 +1,23 @@
 # Install Numbat
 
+## Build Images
+- Build Numbat(Collector) image
+```
+cd numbat
+make
+```
 
+- Build Exporter images
+```
+cd exporters/client-mongo
+make
+```
+```
+cd exporters/client-stdout
+make
+```
 
 - Create a namespace where Numbat will be created
-
 ```
 kubectl apply -f /deployments/0-setup-ns.yaml
 ```
@@ -17,4 +31,3 @@ kubectl apply -f /deployments/1-setup-our-exporters.yaml
 ```
 kubectl apply -f /deployments/2-setup-collector.yaml
 ```
-
