@@ -31,4 +31,3 @@ Numbat performs the following tasks to share or store generated log and metric d
 
 ## Documentation
 - [Getting Started]()
-- [Exporter Tests]()
