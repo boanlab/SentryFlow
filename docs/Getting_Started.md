@@ -1,4 +1,4 @@
-#Getting Started
+# Getting Started
 
 ## Build Images
 - Build Numbat(Collector) image
