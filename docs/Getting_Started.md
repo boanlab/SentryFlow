@@ -40,8 +40,3 @@ kubectl apply -f /deployments/2-setup-collector.yaml
 > 3.Restart all deployments in those namespaces
 >
 > These patchings are added automatically
-
-
-## Make Numbat Pod
-```
-```
