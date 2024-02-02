@@ -29,6 +29,6 @@ Numbat performs the following tasks to share or store generated log and metric d
 - Exporter Configuration: Configures settings based on the backend where log and metric data will be stored.
 - Data Transmission: Transmits log and metric data to the configured exporting backend for storage or integration with other systems.
 
-## Installation
+## Documentation
 - [Getting Started]()
 - [Exporter Tests]()
