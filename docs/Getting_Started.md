@@ -1,7 +1,20 @@
 # Install Numbat
 
+
+
 - Create a namespace where Numbat will be created
 
 ```
 kubectl apply -f /deployments/0-setup-ns.yaml
 ```
+
+- Set up exporter examples
+```
+kubectl apply -f /deployments/1-setup-our-exporters.yaml
+```
+
+- Set up Numbat(Collector)
+```
+kubectl apply -f /deployments/2-setup-collector.yaml
+```
+
