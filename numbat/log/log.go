@@ -1,16 +1,16 @@
-package otel
+package log
 
 import (
 	"custom-collector/k8s"
-	protobuf "otel-custom-collector/protobuf"
 	corev1 "k8s.io/api/core/v1"
+	protobuf "otel-custom-collector/protobuf"
 	"strconv"
 	"strings"
 )
 
 // parseAccessLog parses the string access log coming from OTEL
 // @todo this needs more optimization, this code is kind of messy
-func parseAccessLog(logText string) []*protobuf.AccessLog {
+func GenerateLog(logText string) []*protobuf.AccessLog {
 	// Create a array of AccessLogs for returning gRPC comm
 	var index int
 	ret := make([]*protobuf.AccessLog, 0)

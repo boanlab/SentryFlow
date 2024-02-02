@@ -2,7 +2,7 @@ module client-mongo
 
 go 1.19
 
-replace otel-custom-collector/protobuf => ../../protobuf
+replace otel-custom-collector/protobuf => ../protobuf
 
 require (
 	github.com/google/uuid v1.3.1

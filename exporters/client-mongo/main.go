@@ -3,15 +3,15 @@ package main
 import (
 	"client-mongo/common"
 	"client-mongo/db"
-	protobuf "otel-custom-collector/protobuf"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	protobuf "otel-custom-collector/protobuf"
 )
 
-// AccessLogServer implements our gRPC server for stdout
+// AccessLogServer implements our gRPC server for mongoDB
 type AccessLogServer struct {
 	protobuf.UnimplementedLogsServer
 }

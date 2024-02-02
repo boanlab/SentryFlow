@@ -3,6 +3,7 @@ package otel
 import (
 	"context"
 	"custom-collector/exporter"
+	"custom-collector/log"
 	logs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 )
 
@@ -14,7 +15,7 @@ type LogServer struct {
 // Export interface function for LogServiceServer
 func (ls LogServer) Export(c context.Context, request *logs.ExportLogsServiceRequest) (*logs.ExportLogsServiceResponse, error) {
 	// Convert logText into AccessLogs
-	accessLogs := parseAccessLog(request.String())
+	accessLogs := log.GenerateLog(request.String())
 
 	// Export the parsed access logs to exporter
 	for _, al := range accessLogs {
