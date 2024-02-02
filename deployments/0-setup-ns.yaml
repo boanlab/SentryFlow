@@ -1,5 +1,5 @@
-# Setup namespace for collector-1
+# Setup namespace for numbat
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: collector-1
+  name: numbat

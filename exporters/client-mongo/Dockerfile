@@ -14,7 +14,7 @@ COPY /protobuf .
 
 WORKDIR /app
 
-COPY /examples/client-mongo .
+COPY /exporters/client-mongo .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
