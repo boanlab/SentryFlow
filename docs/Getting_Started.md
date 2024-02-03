@@ -1,6 +1,6 @@
 # Getting Started
 
-# Prerequisites
+## Prerequisites
 - istio version : 1.20.2 (latest)
 - golang version : 1.19.1 or later
 
