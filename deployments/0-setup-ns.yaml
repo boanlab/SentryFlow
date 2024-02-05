@@ -1,5 +1,0 @@
-# Setup namespace for numbat
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: numbat

@@ -2,6 +2,11 @@
 # This is when using native collector
 # : otel/opentelemetry-collector-contrib + our custom exporter!
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: numbat
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: sa-boan

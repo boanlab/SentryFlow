@@ -4,7 +4,7 @@ package common;
 
 option go_package = "./";
 
-message AccessLog {
+message Log {
   string timeStamp = 1;
   uint64 id = 2;
   string srcNamespace = 3;
@@ -26,7 +26,7 @@ message AccessLog {
 }
 
 service Logs {
-  rpc Send(AccessLog) returns (LogResponse);
+  rpc Send(Log) returns (LogResponse);
 }
 
 message LogResponse {
