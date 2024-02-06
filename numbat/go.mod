@@ -1,4 +1,4 @@
-module custom-collector
+module numbat
 
 go 1.19
 

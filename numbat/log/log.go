@@ -1,8 +1,8 @@
 package log
 
 import (
-	"custom-collector/k8s"
 	corev1 "k8s.io/api/core/v1"
+	"numbat/k8s"
 	protobuf "otel-custom-collector/protobuf"
 	"strconv"
 	"strings"

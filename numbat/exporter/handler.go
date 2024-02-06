@@ -2,11 +2,11 @@ package exporter
 
 import (
 	"context"
-	"custom-collector/common"
-	protobuf "otel-custom-collector/protobuf"
 	"google.golang.org/grpc"
 	"log"
+	"numbat/common"
 	"os"
+	protobuf "otel-custom-collector/protobuf"
 	"time"
 )
 
