@@ -1,6 +1,6 @@
 module github.com/numbat/protobuf
 
-go 1.19.1
+go 1.19
 
 require (
 	google.golang.org/grpc v1.61.0
