@@ -9,26 +9,24 @@ RUN mkdir /app
 RUN mkdir /protobuf
 
 WORKDIR /protobuf
-
 COPY /protobuf .
 
 WORKDIR /app
-
-COPY /src .
+COPY /numbat .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-RUN go build -o custom-collector
+RUN go build -o numbat
 
 ### Make executable image
 
-FROM alpine:3.18 as custom-collector
+FROM alpine:3.18 as numbat
 
 RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee -a /etc/apk/repositories
 
 RUN apk --no-cache update
 RUN apk add bash
 
-COPY --from=builder /app/custom-collector .
+COPY --from=builder /app/numbat .
 
-CMD ["./custom-collector"]
+CMD ["./numbat"]

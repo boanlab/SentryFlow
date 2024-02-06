@@ -1,5 +1,5 @@
-IMAGE_NAME = boanlab.com/custom-collector
-TAG = v1
+IMAGE_NAME = boanlab/numbat
+TAG = v0.0.1
 
 .PHONY: build
 
