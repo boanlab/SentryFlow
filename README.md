@@ -1,5 +1,5 @@
 # Numbat : OpenTelemetry Custom Collector
-[![Numbat Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml) [![Numbat Code Style Check](https://github.com/boanlab/numbat/actions/workflows/numbat-go-lint.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-go-lint.yml)
+[![Numbat Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml)
 
 Numbat efficiently preprocesses log data , produces API-related metrics, and performs additional exporting. Here's an overview:
 
