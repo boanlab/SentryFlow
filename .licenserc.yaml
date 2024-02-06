@@ -1,0 +1,20 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Numbat
+    content: |
+      SPDX-License-Identifier: Apache-2.0
+
+  paths:
+    - "**/*.go"
+    - "**/Dockerfile"
+    - "**/Makefile"
+
+  paths-ignore:
+    - "protobuf/*"
+
+  comment: on-failure
+
+dependency:
+  files:
+    - go.mod
