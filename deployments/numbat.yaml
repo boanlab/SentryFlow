@@ -1,10 +1,16 @@
 # Setup namespace for numbat
-# This is when using native collector
-# : otel/opentelemetry-collector-contrib + our custom exporter!
+# Nephio will create clusters using kind (regional or edge) with high podSecurityStandards
+# so for our system to be deployed properly, we need to override the policies of audit, enforce, warn
+# as priviliged to have no security policy conflicts
 apiVersion: v1
 kind: Namespace
 metadata:
   name: numbat
+  labels:
+    istio-injection: disabled # avoid Istio sidecar injection
+    pod-security.kubernetes.io/audit: privileged 
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/warn: privileged
 ---
 apiVersion: v1
 kind: ServiceAccount
