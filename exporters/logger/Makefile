@@ -10,3 +10,8 @@ build:
 
 clean:
 	docker rmi $(IMAGE_NAME):$(TAG)
+
+.PHONY: run
+
+run:
+	docker run -it --rm $(IMAGE_NAME):$(TAG)
