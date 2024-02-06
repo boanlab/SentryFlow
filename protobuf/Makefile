@@ -1,10 +1,11 @@
 PROTO:=numbat.proto
-PBGO:=$(PROTOS:.proto=.pb.go)
+PBGO:=$(PROTO:.proto=.pb.go)
 
 .PHONY: build
 build: $(PBGO) go.sum
 
 go.sum: go.mod
+	go get .
 
 %.pb.go: %.proto
 	go mod tidy
