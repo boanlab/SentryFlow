@@ -1,13 +1,13 @@
 package main
 
 import (
-	"custom-collector/common"
-	"custom-collector/exporter"
-	"custom-collector/k8s"
-	"custom-collector/otel"
 	"fmt"
 	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 	"log"
+	"numbat/common"
+	"numbat/exporter"
+	"numbat/k8s"
+	"numbat/otel"
 	"os"
 	"os/signal"
 	"syscall"

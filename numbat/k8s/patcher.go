@@ -2,10 +2,10 @@ package k8s
 
 import (
 	"context"
-	"custom-collector/common"
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"log"
+	"numbat/common"
 )
 
 // PatchIstioConfigMap patches the Istio's configmap for meshConfig

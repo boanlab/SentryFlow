@@ -2,9 +2,9 @@ package otel
 
 import (
 	"context"
-	"custom-collector/exporter"
-	"custom-collector/log"
 	logs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
+	"numbat/exporter"
+	"numbat/log"
 )
 
 // LogServer is for exporting log handler

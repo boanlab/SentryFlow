@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	protobuf "otel-custom-collector/protobuf"
+	protobuf "numbat/protobuf"
 )
 
 // AccessLogServer implements our gRPC server for mongoDB
