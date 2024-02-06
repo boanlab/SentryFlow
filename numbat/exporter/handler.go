@@ -15,7 +15,7 @@ type Handler struct {
 	executionID int64 // For unique timestamp for current execution
 	curIndex    int   // The index of current entry from the beginning
 	exporters   map[string]protobuf.LogsClient
-	channel     chan *protobuf.AccessLog
+	channel     chan *protobuf.Log
 }
 
 // Manager is for global reference
@@ -27,7 +27,7 @@ func NewHandler() *Handler {
 		executionID: time.Now().UnixMicro(), // We do not need nano precision, just micro is okay for this
 		curIndex:    0,
 		exporters:   make(map[string]protobuf.LogsClient),
-		channel:     make(chan *protobuf.AccessLog),
+		channel:     make(chan *protobuf.Log),
 	}
 
 	// Try connecting exporters
@@ -78,7 +78,7 @@ func (h *Handler) exportRoutine(stopCh chan os.Signal) {
 
 // InsertAccessLog inserts a new AccessLog message into the exporter channel
 // This will act as a buffer to stop race conditions
-func (h *Handler) InsertAccessLog(al *protobuf.AccessLog) {
+func (h *Handler) InsertAccessLog(al *protobuf.Log) {
 	h.channel <- al
 }
 

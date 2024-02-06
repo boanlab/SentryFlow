@@ -14,7 +14,7 @@ type classifiedAPI struct {
 	URIRoot     *APINode
 }
 
-func classifyAPI(accessLogs []protobuf.AccessLog) { // return classifiedAPI
+func classifyAPI(accessLogs []protobuf.Log) { // return classifiedAPI
 }
 
 func generateMetric(cal classifiedAPI) {
