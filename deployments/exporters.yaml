@@ -18,7 +18,7 @@ spec:
         - name: regcred
       containers:
       - name: example-exporter-stdout
-        image: boanlab.com/client-stdout:v3
+        image: boanlab/numbat-logger:v0.0.1
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -138,7 +138,7 @@ spec:
         - name: regcred
       containers:
       - name: example-exporter-mongo
-        image: boanlab.com/mongo-client:v3
+        image: boanlab/numbat-mongodb:v0.0.1
         ports:
         - containerPort: 8080
           protocol: TCP
