@@ -2,11 +2,11 @@ module client-stdout
 
 go 1.19
 
-replace otel-custom-collector/protobuf => ../protobuf
+replace numbat/protobuf => ../protobuf
 
 require (
 	google.golang.org/grpc v1.60.1
-	otel-custom-collector/protobuf v0.0.0-00010101000000-000000000000
+	numbat/protobuf v0.0.0-00010101000000-000000000000
 )
 
 require (

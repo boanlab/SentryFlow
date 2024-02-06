@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	protobuf "otel-custom-collector/protobuf"
+	protobuf "numbat/protobuf"
 	"os"
 	"time"
 )

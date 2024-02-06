@@ -2,13 +2,13 @@ package main
 
 import (
 	"client-stdout/common"
-	protobuf "otel-custom-collector/protobuf"
 	context "context"
 	"fmt"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 	"log"
 	"net"
+	protobuf "numbat/protobuf"
 )
 
 // AccessLogServer implements our gRPC server for stdout
