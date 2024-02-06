@@ -3,7 +3,7 @@ package log
 import (
 	corev1 "k8s.io/api/core/v1"
 	"numbat/k8s"
-	protobuf "otel-custom-collector/protobuf"
+	protobuf "numbat/protobuf"
 	"strconv"
 	"strings"
 )

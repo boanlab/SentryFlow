@@ -1,6 +1,6 @@
-package main
+package log
 
-import protobuf "otel-custom-collector/protobuf"
+import protobuf "numbat/protobuf"
 
 type APINode struct {
 	path  string

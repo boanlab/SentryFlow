@@ -5,8 +5,8 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"numbat/common"
+	protobuf "numbat/protobuf"
 	"os"
-	protobuf "otel-custom-collector/protobuf"
 	"time"
 )
 
