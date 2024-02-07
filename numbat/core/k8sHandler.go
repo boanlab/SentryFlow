@@ -11,7 +11,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"log"
 	"numbat/config"
-	"os"
 	"time"
 )
 
@@ -43,18 +42,23 @@ func NewK8sHandler() *K8sHandler {
 		informers:    make(map[string]cache.Controller),
 	}
 
+	return kh
+}
+
+// InitK8sClient Function
+func (kh *K8sHandler) InitK8sClient() bool {
 	var err error
 
 	// Initialize in cluster config
 	kh.config, err = rest.InClusterConfig()
 	if err != nil {
-		return nil
+		return false
 	}
 
 	// Initialize Kubernetes clientSet
 	kh.clientSet, err = kubernetes.NewForConfig(kh.config)
 	if err != nil {
-		return nil
+		return false
 	}
 
 	watchTargets := []string{"pods", "services"}
@@ -67,7 +71,7 @@ func NewK8sHandler() *K8sHandler {
 	kh.initWatchers(watchTargets)
 	kh.initInformers()
 
-	return kh
+	return true
 }
 
 // initWatchers initializes watchers for pods and services in cluster
@@ -91,7 +95,7 @@ func (kh *K8sHandler) initExistingResources() {
 	// List existing Pods
 	podList, err := kh.clientSet.CoreV1().Pods(corev1.NamespaceAll).List(context.TODO(), v1.ListOptions{})
 	if err != nil {
-		log.Fatal("Error listing Pods:", err.Error())
+		log.Print("Error listing Pods:", err.Error())
 	}
 
 	// Add existing Pods to the podMap
@@ -103,7 +107,7 @@ func (kh *K8sHandler) initExistingResources() {
 	// List existing Services
 	serviceList, err := kh.clientSet.CoreV1().Services(corev1.NamespaceAll).List(context.TODO(), v1.ListOptions{})
 	if err != nil {
-		log.Fatal("Error listing Services:", err.Error())
+		log.Print("Error listing Services:", err.Error())
 	}
 
 	// Add existing Services to the svcMap
@@ -222,18 +226,13 @@ func (kh *K8sHandler) initInformers() {
 }
 
 // RunInformers starts running informers
-func (kh *K8sHandler) RunInformers(stopCh chan os.Signal) {
+func (kh *K8sHandler) RunInformers(stopCh chan struct{}) {
 	for name, informer := range kh.informers {
 		name := name
 		informer := informer
 		go func() {
 			log.Printf("[K8s] Started informers for %s", name)
-			tmpCh := make(chan struct{}) // Need to convert chan os.Signal into chan struct{}
-			go func() {
-				<-stopCh
-				close(tmpCh)
-			}()
-			informer.Run(tmpCh)
+			informer.Run(stopCh)
 		}()
 	}
 
