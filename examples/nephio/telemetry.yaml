@@ -1,0 +1,9 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: nephio-logging
+  namespace: istio-system
+spec:
+  accessLogging:
+    - providers:
+      - name: boanlab-collector-1
