@@ -362,13 +362,22 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 		meshConfig["extensionProviders"] = []map[interface{}]interface{}{eps}
 	} else {
 		// Check if eps already exists in extensionProviders
+		epSlice, ok := ep.([]interface{})
+		if !ok {
+			// handle the case where ep is not []interface{}
+			log.Printf("[Patcher] istio-system/istio ConfigMap extensionProviders has unexpected type")
+		}
+
 		duplicate := false
-		epSlice := ep.([]map[string]interface{})
 		for _, entry := range epSlice {
-			if entry["name"] == eps["name"] {
+			entryMap, ok := entry.(map[interface{}]interface{})
+			if !ok {
+				// handle the case where an entry is not map[interface{}]interface{}
+				log.Printf("[Patcher] istio-system/istio ConfigMap extensionProviders entry has unexpected type")
+			}
+			if entryMap["name"] == eps["name"] {
 				// If "numbat-collector" already exists, do nothing
-				log.Printf("[Patcher] istio-system/istio ConfigMap has " +
-					"numbat-collector under extensionProviders, ignoring... ")
+				log.Printf("[Patcher] istio-system/istio ConfigMap has numbat-collector under extensionProviders, ignoring... ")
 				duplicate = true
 				break
 			}
