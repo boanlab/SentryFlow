@@ -1,17 +1,17 @@
 package log
 
 import (
-	corev1 "k8s.io/api/core/v1"
-	"numbat/k8s"
+	"numbat/common"
+	"numbat/core"
 	protobuf "numbat/protobuf"
 	"strconv"
 	"strings"
 )
 
-// parseAccessLog parses the string access log coming from OTEL
-// @todo this needs more optimization, this code is kind of messy
-func GenerateLog(logText string) []*protobuf.Log {
-	// Create a array of AccessLogs for returning gRPC comm
+// GenerateLogs Function
+func GenerateLogs(logText string) []*protobuf.Log {
+	// @todo this needs more optimization, this code is kind of messy
+	// Create an array of AccessLogs for returning gRPC comm
 	var index int
 	ret := make([]*protobuf.Log, 0)
 
@@ -67,26 +67,26 @@ func GenerateLog(logText string) []*protobuf.Log {
 			dstPort = strings.TrimSpace(dstInform[colonIndex+1:])
 		}
 
-		// Find Kubernetes resource details from src and dst IP (service or a pod)
-		srcName, srcNamespace, srcLabel, srcResourceType := findResourceDetails(srcIP)
-		dstName, dstNamespace, dstLabel, dstResourceType := findResourceDetails(dstIP)
+		// Lookup using K8s API
+		src := core.LookupNetworkedResource(srcIP)
+		dst := core.LookupNetworkedResource(dstIP)
 
 		// Create AccessLog in our gRPC format
 		cur := protobuf.Log{
 			TimeStamp:    timeStamp,
 			Id:           0, //  do 0 for now, we are going to write it later
-			SrcNamespace: srcNamespace,
-			SrcName:      srcName,
-			SrcLabel:     srcLabel,
+			SrcNamespace: src.Namespace,
+			SrcName:      src.Name,
+			SrcLabel:     src.Labels,
 			SrcIP:        srcIP,
 			SrcPort:      srcPort,
-			SrcType:      srcResourceType,
-			DstNamespace: dstNamespace,
-			DstName:      dstName,
-			DstLabel:     dstLabel,
+			SrcType:      common.K8sResourceTypeToString(src.Type),
+			DstNamespace: dst.Namespace,
+			DstName:      dst.Name,
+			DstLabel:     dst.Labels,
 			DstIP:        dstIP,
 			DstPort:      dstPort,
-			DstType:      dstResourceType,
+			DstType:      common.K8sResourceTypeToString(dst.Type),
 			Protocol:     protocolName,
 			Method:       method,
 			Path:         path,
@@ -97,29 +97,4 @@ func GenerateLog(logText string) []*protobuf.Log {
 	}
 
 	return ret
-}
-
-// findResourceDetails returns name, namespace and the labels attached for this Kubernetes resource and its type
-func findResourceDetails(srcIP string) (string, string, map[string]string, string) {
-	name := "Not found"
-	namespace := "Not found"
-	labels := make(map[string]string)
-
-	// Find Kubernetes resource from source IP (service or a pod)
-	raw := k8s.Manager.IPtoResource(srcIP)
-
-	// Try parsing Pod
-	pod, isPod := raw.(*corev1.Pod)
-	if isPod {
-		return pod.Name, pod.Namespace, pod.Labels, "pod"
-	}
-
-	// Try parsing Service
-	service, isService := raw.(*corev1.Service)
-	if isService {
-		return service.Name, service.Namespace, service.Labels, "service"
-	}
-
-	// We were not able to find the Kubernetes resource with given IP
-	return name, namespace, labels, "Unknown"
 }

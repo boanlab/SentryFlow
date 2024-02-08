@@ -30,6 +30,12 @@ message ClientInfo {
   string ipAddress = 2;
 }
 
+message APIMetric {
+  map<string, uint64> perAPICounts = 1;
+  // @todo: add some more metrics here
+}
+
 service Numbat {
-  rpc GetData(ClientInfo) returns (stream Log);
+  rpc GetLog(ClientInfo) returns (stream Log);
+  rpc GetAPIMetrics(ClientInfo) returns (APIMetric);
 }

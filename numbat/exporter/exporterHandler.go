@@ -38,6 +38,7 @@ func NewExporterHandler() *ExporterHandler {
 		baseExecutionID: uint64(time.Now().UnixMicro()),
 		currentLogCount: 0,
 		logChannel:      make(chan *protobuf.Log),
+		stopChan:        make(chan struct{}),
 		lock:            sync.Mutex{},
 	}
 

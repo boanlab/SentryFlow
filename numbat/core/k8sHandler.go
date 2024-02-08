@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"log"
+	"numbat/common"
 	"numbat/config"
 	"time"
 )
@@ -239,11 +240,8 @@ func (kh *K8sHandler) RunInformers(stopCh chan struct{}) {
 	log.Printf("[K8s] Started all informers")
 }
 
-// IPtoResource returns the pointer address of the Kubernetes resource with the given IP
-// This will look for the pod first and then the services, will return nil if no such IP found
-// Since this is not thread safe, perform retries for this function since there might be informers
-// updating the map for service and pods as well
-func (kh *K8sHandler) IPtoResource(ipAddr string) interface{} {
+// lookupIPAddress Function
+func (kh *K8sHandler) lookupIPAddress(ipAddr string) interface{} {
 	// Look for pod map first
 	pod, ok := kh.podMap[ipAddr]
 	if ok {
@@ -257,6 +255,46 @@ func (kh *K8sHandler) IPtoResource(ipAddr string) interface{} {
 	}
 
 	return nil
+}
+
+// LookupNetworkedResource Function
+func LookupNetworkedResource(srcIP string) common.K8sNetworkedResource {
+	ret := common.K8sNetworkedResource{
+		Name:      "Unknown",
+		Namespace: "Unknown",
+		Labels:    make(map[string]string),
+		Type:      common.K8sResourceTypeUnknown,
+	}
+
+	// Find Kubernetes resource from source IP (service or a pod)
+	raw := K8s.lookupIPAddress(srcIP)
+
+	// Currently supports Service or Pod
+	switch raw.(type) {
+	case corev1.Pod:
+		pod, ok := raw.(*corev1.Pod)
+		if ok {
+			ret.Name = pod.Name
+			ret.Namespace = pod.Namespace
+			ret.Labels = pod.Labels
+			ret.Type = common.K8sResourceTypePod
+		}
+		break
+	case corev1.Service:
+		svc, ok := raw.(*corev1.Service)
+		if ok {
+			ret.Name = svc.Name
+			ret.Namespace = svc.Namespace
+			ret.Labels = svc.Labels
+			ret.Type = common.K8sResourceTypeService
+		}
+		break
+	default:
+		ret.Type = common.K8sResourceTypeUnknown
+		break
+	}
+
+	return ret
 }
 
 // PatchIstioConfigMap patches the Istio's configmap for meshConfig

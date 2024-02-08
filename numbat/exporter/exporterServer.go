@@ -1,7 +1,9 @@
 package exporter
 
 import (
+	"context"
 	"log"
+	"numbat/core"
 	"numbat/protobuf"
 )
 
@@ -14,7 +16,7 @@ func init() {
 
 // ExporterServer Structure
 type ExporterServer struct {
-	protobuf.UnimplementedNumbatServer // @todo fix this
+	protobuf.UnimplementedNumbatServer
 }
 
 // NewExporterServer Function
@@ -22,8 +24,8 @@ func NewExporterServer() *ExporterServer {
 	return new(ExporterServer)
 }
 
-// GetData Function
-func (exs *ExporterServer) GetData(client *protobuf.ClientInfo, stream protobuf.Numbat_GetDataServer) error {
+// GetLog Function
+func (exs *ExporterServer) GetLog(client *protobuf.ClientInfo, stream protobuf.Numbat_GetLogServer) error {
 	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
 
 outerLoop:
@@ -52,4 +54,16 @@ outerLoop:
 			return nil
 		}
 	}
+}
+
+// GetAPIMetrics Function
+func (exs *ExporterServer) GetAPIMetrics(_ context.Context, client *protobuf.ClientInfo) (*protobuf.APIMetric, error) {
+	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
+
+	// Construct protobuf return value
+	ret := protobuf.APIMetric{
+		PerAPICounts: core.Mh.GetPerAPICount(),
+	}
+
+	return &ret, nil
 }
