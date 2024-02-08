@@ -3,14 +3,13 @@ package common
 import (
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"strconv"
 )
 
 type Config struct {
-	ListenAddr string
-	ListenPort int
+	ServerAddr string
+	ServerPort int
 }
 
 // Cfg is for global reference
@@ -21,18 +20,12 @@ func LoadEnvVars() (Config, error) {
 	var err error
 
 	// load listen address and check if valid
-	Cfg.ListenAddr = os.Getenv("LISTEN_ADDR")
-	ip := net.ParseIP(Cfg.ListenAddr)
-	if ip == nil {
-		msg := fmt.Sprintf("invalid listen address %s", Cfg.ListenAddr)
-		return Cfg, errors.New(msg)
-	}
-	Cfg.ListenAddr = ip.String()
+	Cfg.ServerAddr = os.Getenv("SERVER_ADDR")
 
 	// load listen port and check if valid
-	Cfg.ListenPort, err = strconv.Atoi(os.Getenv("LISTEN_PORT"))
+	Cfg.ServerPort, err = strconv.Atoi(os.Getenv("SERVER_PORT"))
 	if err != nil {
-		msg := fmt.Sprintf("invalid listen port %s: %v", os.Getenv("LISTEN_PORT"), err)
+		msg := fmt.Sprintf("invalid server port %s: %v", os.Getenv("SERVER_PORT"), err)
 		return Cfg, errors.New(msg)
 	}
 

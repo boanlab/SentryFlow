@@ -68,7 +68,7 @@ func (h *Handler) Disconnect() {
 	return
 }
 
-func (h *Handler) InsertData(data *protobuf.AccessLog) error {
+func (h *Handler) InsertData(data *protobuf.Log) error {
 	_, err := h.collection.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
