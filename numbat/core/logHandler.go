@@ -63,7 +63,7 @@ func (lh *LogHandler) logProcessingRoutine(wg *sync.WaitGroup) {
 			// Check new log's type
 			switch l.(type) {
 			case *protobuf.Log:
-				processAccessLog(l.(*protobuf.Log))
+				go processAccessLog(l.(*protobuf.Log))
 			}
 
 		case <-lh.stopChan:

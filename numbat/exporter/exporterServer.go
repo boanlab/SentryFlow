@@ -28,7 +28,6 @@ func NewExporterServer() *ExporterServer {
 func (exs *ExporterServer) GetLog(client *protobuf.ClientInfo, stream protobuf.Numbat_GetLogServer) error {
 	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
 
-outerLoop:
 	for {
 		select {
 		case accessLog, ok := <-Exp.logChannel:
@@ -46,7 +45,7 @@ outerLoop:
 						client.Hostname, client.IpAddress, curRetry, 3, err)
 					curRetry++
 				} else {
-					continue outerLoop
+					break
 				}
 			}
 

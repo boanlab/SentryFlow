@@ -275,7 +275,7 @@ func LookupNetworkedResource(srcIP string) common.K8sNetworkedResource {
 
 	// Currently supports Service or Pod
 	switch raw.(type) {
-	case corev1.Pod:
+	case *corev1.Pod:
 		pod, ok := raw.(*corev1.Pod)
 		if ok {
 			ret.Name = pod.Name
@@ -283,8 +283,7 @@ func LookupNetworkedResource(srcIP string) common.K8sNetworkedResource {
 			ret.Labels = pod.Labels
 			ret.Type = common.K8sResourceTypePod
 		}
-		break
-	case corev1.Service:
+	case *corev1.Service:
 		svc, ok := raw.(*corev1.Service)
 		if ok {
 			ret.Name = svc.Name
@@ -292,10 +291,8 @@ func LookupNetworkedResource(srcIP string) common.K8sNetworkedResource {
 			ret.Labels = svc.Labels
 			ret.Type = common.K8sResourceTypeService
 		}
-		break
 	default:
 		ret.Type = common.K8sResourceTypeUnknown
-		break
 	}
 
 	return ret
