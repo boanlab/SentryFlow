@@ -144,6 +144,6 @@ func Numbat() {
 	// Start exporter server
 	dm.exporterServer()
 
-	dm.WgDaemon.Wait()
 	log.Printf("[Numbat] Successfully started Numbat")
+	dm.WgDaemon.Wait()
 }
