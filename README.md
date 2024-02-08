@@ -1,11 +1,11 @@
-# Numbat : OpenTelemetry Custom Collector
+# Numbat : API Observability for 5G
 [![Numbat Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml)
 
 Numbat efficiently preprocesses log data , produces API-related metrics, and performs additional exporting. Here's an overview:
 
 ![Numbat_Overview](docs/Numbat_Overview.png)
 
-## Log Preprocessing:
+## Log Generation:
 Numbat preprocesses log data with the following goals:
 
 - Parsing and Extraction: Extracts crucial information from log data and parses it into a structured format.
@@ -22,5 +22,5 @@ Numbat performs the following tasks to share or store generated log and metric d
 - Exporter Configuration: Configures settings based on the backend where log and metric data will be stored.
 - Data Transmission: Transmits log and metric data to the configured exporting backend for storage or integration with other systems.
 
-## Documentation
+## Document:
 - [Getting Started](docs/Getting_Started.md)
