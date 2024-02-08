@@ -53,7 +53,7 @@ func (dm *NumbatDaemon) watchK8s() {
 	go func() {
 		K8s.RunInformers(StopChan)
 	}()
-	dm.WgDaemon.Done()
+	defer dm.WgDaemon.Done()
 }
 
 // logProcessor Function
@@ -65,7 +65,7 @@ func (dm *NumbatDaemon) logProcessor() {
 	dm.LogProcessorEnabled = true
 	log.Printf("[Numbat] Initialized log processor")
 
-	dm.WgDaemon.Done()
+	defer dm.WgDaemon.Done()
 }
 
 // metricAnalyzer Function
@@ -77,7 +77,7 @@ func (dm *NumbatDaemon) metricAnalyzer() {
 	dm.MetricAnalyzerEnabled = true
 	log.Printf("[Numbat] Initialized metric analyzer")
 
-	dm.WgDaemon.Done()
+	defer dm.WgDaemon.Done()
 }
 
 // otelServer Function
@@ -99,7 +99,7 @@ func (dm *NumbatDaemon) otelServer() {
 	dm.OtelServerEnabled = true
 	log.Printf("[Numbat] Initialized OpenTelemetry collector")
 
-	dm.WgDaemon.Done()
+	defer dm.WgDaemon.Done()
 }
 
 // exporterServer Function
@@ -120,7 +120,7 @@ func (dm *NumbatDaemon) exporterServer() {
 	dm.ExporterEnabled = true
 	log.Printf("[Numbat] Initialized exporter")
 
-	dm.WgDaemon.Done()
+	defer dm.WgDaemon.Done()
 }
 
 // patchK8s Function
