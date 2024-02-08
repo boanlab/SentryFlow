@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: logger
-        image: boanlab/numbat-logger:v0.0.2
+        image: boanlab/numbat-logger:v0.0.1
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -127,3 +127,5 @@ spec:
           value: "numbat-collector.numbat.svc.cluster.local"
         - name: SERVER_PORT
           value: "8080"
+        - name: MONGODB_HOST
+          value: "mongodb://mongo:27017"
