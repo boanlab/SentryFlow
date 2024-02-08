@@ -79,17 +79,21 @@ func (exp *ExporterHandler) InitExporterServer() error {
 }
 
 // StartExporterServer Function
-func (exp *ExporterHandler) StartExporterServer() error {
+func (exp *ExporterHandler) StartExporterServer(wg *sync.WaitGroup) error {
 	log.Printf("[Exporter] Starting exporter server")
 	var err error
 	err = nil
 
 	go func() {
+		wg.Add(1)
 		// Serve is blocking function
 		err = exp.gRPCServer.Serve(exp.listener)
 		if err != nil {
+			wg.Done()
 			return
 		}
+
+		wg.Done()
 	}()
 
 	return err

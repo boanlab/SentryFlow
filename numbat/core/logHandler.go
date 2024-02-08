@@ -8,6 +8,7 @@ import (
 	"numbat/protobuf"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // Lh global reference for LogHandler
@@ -35,8 +36,8 @@ func NewLogHandler() *LogHandler {
 }
 
 // StartLogProcessor Function
-func StartLogProcessor() {
-	go Lh.logProcessingRoutine()
+func StartLogProcessor(wg *sync.WaitGroup) {
+	go Lh.logProcessingRoutine(wg)
 }
 
 // StopLogProcessor Function
@@ -50,7 +51,8 @@ func (lh *LogHandler) InsertLog(data interface{}) {
 }
 
 // logProcessingRoutine Function
-func (lh *LogHandler) logProcessingRoutine() {
+func (lh *LogHandler) logProcessingRoutine(wg *sync.WaitGroup) {
+	wg.Add(1)
 	for {
 		select {
 		case l, ok := <-lh.logChan:
@@ -65,6 +67,7 @@ func (lh *LogHandler) logProcessingRoutine() {
 			}
 
 		case <-lh.stopChan:
+			wg.Done()
 			return
 		}
 	}

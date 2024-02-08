@@ -18,14 +18,14 @@ func init() {
 
 // NumbatDaemon Structure
 type NumbatDaemon struct {
-	WgDaemon sync.WaitGroup
+	WgDaemon *sync.WaitGroup
 }
 
 // NewNumbatDaemon Function
 func NewNumbatDaemon() *NumbatDaemon {
 	dm := new(NumbatDaemon)
 
-	dm.WgDaemon = sync.WaitGroup{}
+	dm.WgDaemon = new(sync.WaitGroup)
 
 	return dm
 }
@@ -37,45 +37,23 @@ func (dm *NumbatDaemon) DestroyNumbatDaemon() {
 
 // watchK8s Function
 func (dm *NumbatDaemon) watchK8s() {
-	dm.WgDaemon.Add(1)
-
-	go func() {
-		defer dm.WgDaemon.Done()
-		K8s.RunInformers(StopChan)
-	}()
+	K8s.RunInformers(StopChan, dm.WgDaemon)
 }
 
 // logProcessor Function
 func (dm *NumbatDaemon) logProcessor() {
-	dm.WgDaemon.Add(1)
-	defer dm.WgDaemon.Done()
-
-	// Start log processor
-	go func() {
-		defer dm.WgDaemon.Done()
-		StartLogProcessor()
-	}()
-
-	log.Printf("[Numbat] Initialized log processor")
+	StartLogProcessor(dm.WgDaemon)
+	log.Printf("[Numbat] Started log processor")
 }
 
 // metricAnalyzer Function
 func (dm *NumbatDaemon) metricAnalyzer() {
-	dm.WgDaemon.Add(1)
-
-	// Initialize metrics analyzer
-	go func() {
-		defer dm.WgDaemon.Done()
-		metrics.StartMetricsAnalyzer()
-	}()
-
-	log.Printf("[Numbat] Initialized metric analyzer")
+	metrics.StartMetricsAnalyzer(dm.WgDaemon)
+	log.Printf("[Numbat] Started metric analyzer")
 }
 
 // otelServer Function
 func (dm *NumbatDaemon) otelServer() {
-	dm.WgDaemon.Add(1)
-
 	// Initialize and start OpenTelemetry Server
 	err := Oh.InitOtelServer()
 	if err != nil {
@@ -83,21 +61,17 @@ func (dm *NumbatDaemon) otelServer() {
 		return
 	}
 
-	go func() {
-		defer dm.WgDaemon.Done()
-		err = Oh.StartOtelServer()
-		if err != nil {
-			log.Fatalf("[Numbat] Unable to start OpenTelemetry Server: %v", err)
-			return
-		}
-		log.Printf("[Numbat] Initialized OpenTelemetry collector")
-	}()
+	err = Oh.StartOtelServer(dm.WgDaemon)
+	if err != nil {
+		log.Fatalf("[Numbat] Unable to start OpenTelemetry Server: %v", err)
+		return
+	}
+
+	log.Printf("[Numbat] Started OpenTelemetry collector")
 }
 
 // exporterServer Function
 func (dm *NumbatDaemon) exporterServer() {
-	dm.WgDaemon.Add(1)
-
 	// Initialize and start exporter server
 	err := exporter.Exp.InitExporterServer()
 	if err != nil {
@@ -105,14 +79,11 @@ func (dm *NumbatDaemon) exporterServer() {
 		return
 	}
 
-	go func() {
-		defer dm.WgDaemon.Done()
-		err = exporter.Exp.StartExporterServer()
-		if err != nil {
-			log.Fatalf("[Numbat] Unable to start Exporter Server: %v", err)
-		}
-		log.Printf("[Numbat] Initialized exporter")
-	}()
+	err = exporter.Exp.StartExporterServer(dm.WgDaemon)
+	if err != nil {
+		log.Fatalf("[Numbat] Unable to start Exporter Server: %v", err)
+	}
+	log.Printf("[Numbat] Initialized exporter")
 }
 
 // patchK8s Function
@@ -173,6 +144,6 @@ func Numbat() {
 	// Start exporter server
 	dm.exporterServer()
 
-	log.Printf("[Numbat] Successfully started Numbat")
 	dm.WgDaemon.Wait()
+	log.Printf("[Numbat] Successfully started Numbat")
 }

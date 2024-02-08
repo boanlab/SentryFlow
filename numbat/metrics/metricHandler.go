@@ -3,6 +3,7 @@ package metrics
 import (
 	"numbat/metrics/api"
 	"numbat/protobuf"
+	"sync"
 )
 
 // Mh Global reference for metric handler
@@ -25,8 +26,8 @@ func NewMetricHandler() *MetricHandler {
 }
 
 // StartMetricsAnalyzer Function
-func StartMetricsAnalyzer() {
-	api.StartAPIAnalyzer()
+func StartMetricsAnalyzer(wg *sync.WaitGroup) {
+	api.StartAPIAnalyzer(wg)
 }
 
 // StopMetricsAnalyzer Function

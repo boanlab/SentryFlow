@@ -12,6 +12,7 @@ import (
 	"log"
 	"numbat/common"
 	"numbat/config"
+	"sync"
 	"time"
 )
 
@@ -227,13 +228,16 @@ func (kh *K8sHandler) initInformers() {
 }
 
 // RunInformers starts running informers
-func (kh *K8sHandler) RunInformers(stopCh chan struct{}) {
+func (kh *K8sHandler) RunInformers(stopCh chan struct{}, wg *sync.WaitGroup) {
+	wg.Add(1)
 	for name, informer := range kh.informers {
 		name := name
 		informer := informer
 		go func() {
 			log.Printf("[K8s] Started informers for %s", name)
 			informer.Run(stopCh)
+
+			defer wg.Done()
 		}()
 	}
 
@@ -416,7 +420,9 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 	}
 
 	// Update successful
-	log.Printf("[Patcher] Updated istio-system/istio ConfigMap as: \n%v", updatedConfigMap)
+	if config.GlobalCfg.Debug {
+		log.Printf("[Patcher] Updated istio-system/istio ConfigMap as: \n%v", updatedConfigMap)
+	}
 	return nil
 }
 

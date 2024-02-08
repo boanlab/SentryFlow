@@ -31,8 +31,8 @@ func NewAPIAnalyzer() *APIAnalyzer {
 }
 
 // StartAPIAnalyzer Function
-func StartAPIAnalyzer() {
-	go apiAnalyzerRoutine()
+func StartAPIAnalyzer(wg *sync.WaitGroup) {
+	go apiAnalyzerRoutine(wg)
 }
 
 // StopAPIAnalyzer Function
@@ -41,7 +41,8 @@ func StopAPIAnalyzer() {
 }
 
 // apiAnalyzerRoutine Function
-func apiAnalyzerRoutine() {
+func apiAnalyzerRoutine(wg *sync.WaitGroup) {
+	wg.Add(1)
 	for {
 		select {
 		case job, ok := <-aa.apiJob:
@@ -52,6 +53,7 @@ func apiAnalyzerRoutine() {
 			analyzeAPI(job)
 
 		case <-aa.stopChan:
+			wg.Done()
 			break
 		}
 	}

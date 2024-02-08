@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	cfg "numbat/config"
+	"sync"
 )
 
 // Oh Global reference for OtelHandler
@@ -61,17 +62,21 @@ func (oh *OtelHandler) InitOtelServer() error {
 }
 
 // StartOtelServer Function
-func (oh *OtelHandler) StartOtelServer() error {
+func (oh *OtelHandler) StartOtelServer(wg *sync.WaitGroup) error {
 	log.Printf("[OpenTelemetry] Starting server")
 	var err error
 	err = nil
 
 	// Serve is blocking function
 	go func() {
+		wg.Add(1)
 		err = oh.gRPCServer.Serve(oh.listener)
 		if err != nil {
+			wg.Done()
 			return
 		}
+
+		wg.Done()
 	}()
 
 	return err
