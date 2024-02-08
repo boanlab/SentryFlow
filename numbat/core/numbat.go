@@ -185,6 +185,7 @@ func Numbat() {
 	if dm.K8sEnabled && dm.OtelServerEnabled && dm.ExporterEnabled &&
 		dm.LogProcessorEnabled && dm.MetricAnalyzerEnabled {
 		log.Printf("[Numbat] Successfully started Numbat")
+		dm.WgDaemon.Wait()
 	} else {
 		log.Fatalf("[Numbat] Unable to start Numbat successfully")
 	}
