@@ -1,48 +1,31 @@
-# Setup deployment for our example-exporter-stdout
+# Setup deployment for our logger
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: example-exporter-stdout
+  name: logger
   namespace: numbat
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: example-exporter-stdout
+      app: logger
   template:
     metadata:
       labels:
-        app: example-exporter-stdout
+        app: logger
     spec:
-      imagePullSecrets:
-        - name: regcred
       containers:
-      - name: example-exporter-stdout
-        image: boanlab/numbat-logger:v0.0.1
+      - name: logger
+        image: boanlab/numbat-logger:v0.0.2
         ports:
         - containerPort: 8080
           protocol: TCP
           name: grpc
         env:
-        - name: LISTEN_ADDR
-          value: "0.0.0.0"
-        - name: LISTEN_PORT
+        - name: SERVER_ADDR
+          value: "numbat-collector.numbat.svc.cluster.local"
+        - name: SERVER_PORT
           value: "8080"
----
-# Setup service for example-exporter-stdout
-apiVersion: v1
-kind: Service
-metadata:
-  name: example-exporter-stdout
-  namespace: numbat
-spec:
-  selector:
-    app: example-exporter-stdout
-  ports:
-    - protocol: TCP
-      port: 8080
-      targetPort: 8080
-      name: grpc-otlp
 ---
 # Setup PV for mongodb
 apiVersion: v1
@@ -118,7 +101,7 @@ spec:
       port: 27017
       targetPort: 27017
 ---
-# Setup deployment for our example-exporter-stdout
+# Setup deployment for our logger
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -151,7 +134,7 @@ spec:
         - name: MONGODB_HOST
           value: "mongodb://mongo:27017"
 ---
-# Setup service for example-exporter-stdout
+# Setup service for logger
 apiVersion: v1
 kind: Service
 metadata:

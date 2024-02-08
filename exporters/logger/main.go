@@ -24,7 +24,7 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", cfg.ServerAddr, cfg.ServerPort)
 
 	// Set up a connection to the server.
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("could not connect: %v", err)
 	}
