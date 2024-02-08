@@ -1,6 +1,9 @@
 package core
 
-import "log"
+import (
+	"log"
+	cfg "numbat/config"
+)
 
 // StopChan Channel
 var StopChan chan struct{}
@@ -41,18 +44,18 @@ func (dm *NumbatDaemon) PatchK8s() error {
 		return err
 	}
 
-	// @todo make this behavior selectable using config
-	// ie) we can enable/disable automatic Istio injection or not
-	err = K8s.PatchNamespaces()
-	if err != nil {
-		return err
+	if cfg.GlobalCfg.PatchNamespace {
+		err = K8s.PatchNamespaces()
+		if err != nil {
+			return err
+		}
 	}
 
-	// @todo make this behavior selectable using config
-	// ie) we can enable/disable automatic restart for each deployments
-	err = K8s.PatchRestartDeployments()
-	if err != nil {
-		return err
+	if cfg.GlobalCfg.PatchRestartDeployments {
+		err = K8s.PatchRestartDeployments()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

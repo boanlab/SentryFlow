@@ -18,6 +18,9 @@ type NumbatConfig struct {
 	CustomExportListenAddr string // IP address to use for custom exporter gRPC
 	CustomExportListenPort string // Port to use for custom exporter gRPC
 
+	PatchNamespace          bool // Enable/Disable patching namespace for Istio injection
+	PatchRestartDeployments bool // Enable/Disable restarting deployments after patching
+
 	Debug bool // Enable/Disable Numbat debug mode
 }
 
@@ -26,11 +29,13 @@ var GlobalCfg NumbatConfig
 
 // Config const
 const (
-	OtelGRPCListenAddr     string = "otelGRPCListenAddr"
-	OtelGRPCListenPort     string = "otelGRPCListenPort"
-	CustomExportListenAddr string = "customExportListenAddr"
-	CustomExportListenPort string = "customExportListenPort"
-	Debug                  string = "debug"
+	OtelGRPCListenAddr      string = "otelGRPCListenAddr"
+	OtelGRPCListenPort      string = "otelGRPCListenPort"
+	CustomExportListenAddr  string = "customExportListenAddr"
+	CustomExportListenPort  string = "customExportListenPort"
+	PatchNamespace          string = "patchNamespace"
+	PatchRestartDeployments string = "patchRestartDeployments"
+	Debug                   string = "debug"
 )
 
 func readCmdLineParams() {
@@ -38,6 +43,8 @@ func readCmdLineParams() {
 	otelGRPCListenPortStr := flag.String(OtelGRPCListenPort, "4317", "OTEL gRPC server listen port")
 	customExportListenAddrStr := flag.String(CustomExportListenAddr, "0.0.0.0", "Custom export gRPC server listen address")
 	customExportListenPortStr := flag.String(CustomExportListenPort, "8080", "Custom export gRPC server listen port")
+	patchNamespaceB := flag.Bool(PatchNamespace, false, "Enable/Disable patching Istio injection to all namespaces")
+	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
 	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
 
 	var flags []string
@@ -53,6 +60,8 @@ func readCmdLineParams() {
 	viper.SetDefault(OtelGRPCListenPort, *otelGRPCListenPortStr)
 	viper.SetDefault(CustomExportListenAddr, *customExportListenAddrStr)
 	viper.SetDefault(CustomExportListenPort, *customExportListenPortStr)
+	viper.SetDefault(PatchNamespace, *patchNamespaceB)
+	viper.SetDefault(PatchRestartDeployments, *patchRestartDeploymentsB)
 	viper.SetDefault(Debug, *configDebugB)
 }
 
@@ -71,6 +80,8 @@ func LoadConfig() error {
 	GlobalCfg.OtelGRPCListenPort = viper.GetString(OtelGRPCListenPort)
 	GlobalCfg.CustomExportListenAddr = viper.GetString(CustomExportListenAddr)
 	GlobalCfg.CustomExportListenPort = viper.GetString(CustomExportListenPort)
+	GlobalCfg.PatchNamespace = viper.GetBool(PatchNamespace)
+	GlobalCfg.PatchRestartDeployments = viper.GetBool(PatchRestartDeployments)
 	GlobalCfg.Debug = viper.GetBool(Debug)
 
 	log.Printf("Configuration [%+v]", GlobalCfg)
