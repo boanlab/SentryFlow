@@ -2,7 +2,7 @@ module mongo-client
 
 go 1.19
 
-replace numbat/protobuf => ../../protobuf
+replace numbat/protobuf => ../protobuf
 
 require (
 	go.mongodb.org/mongo-driver v1.13.1
