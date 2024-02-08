@@ -14,21 +14,21 @@ COPY /protobuf .
 
 WORKDIR /app
 
-COPY /exporters/client-stdout .
+COPY /exporters/logger .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-RUN go build -o client-stdout
+RUN go build -o logger
 
 ### Make executable image
 
-FROM alpine:3.18 as custom-collector
+FROM alpine:3.18 as logger
 
 RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee -a /etc/apk/repositories
 
 RUN apk --no-cache update
 RUN apk add bash
 
-COPY --from=builder /app/client-stdout .
+COPY --from=builder /app/logger .
 
-CMD ["./client-stdout"]
+CMD ["./logger"]
