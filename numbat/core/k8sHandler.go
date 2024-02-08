@@ -363,7 +363,7 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 	} else {
 		// Check if eps already exists in extensionProviders
 		duplicate := false
-		epSlice := ep.([]map[interface{}]interface{})
+		epSlice := ep.([]map[string]interface{})
 		for _, entry := range epSlice {
 			if entry["name"] == eps["name"] {
 				// If "numbat-collector" already exists, do nothing
