@@ -1,5 +1,5 @@
-IMAGE_NAME = boanlab.com/client-stdout
-TAG = v1
+IMAGE_NAME = boanlab/numbat-logger
+TAG = v0.0.2
 
 .PHONY: build
 

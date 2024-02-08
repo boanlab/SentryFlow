@@ -401,7 +401,9 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 	configMap.Data["mesh"] = string(updatedMeshConfig)
 
 	// Preview changes, for debugging
-	log.Printf("[PATCH] Patching istio-system/istio ConfigMap as: \n%v", configMap)
+	if config.GlobalCfg.Debug {
+		log.Printf("[PATCH] Patching istio-system/istio ConfigMap as: \n%v", configMap)
+	}
 
 	// Patch the ConfigMap back to the cluster
 	updatedConfigMap, err := kh.clientSet.CoreV1().

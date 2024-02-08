@@ -18,24 +18,12 @@ func init() {
 
 // NumbatDaemon Structure
 type NumbatDaemon struct {
-	K8sEnabled            bool
-	ExporterEnabled       bool
-	OtelServerEnabled     bool
-	LogProcessorEnabled   bool
-	MetricAnalyzerEnabled bool
-
 	WgDaemon sync.WaitGroup
 }
 
 // NewNumbatDaemon Function
 func NewNumbatDaemon() *NumbatDaemon {
 	dm := new(NumbatDaemon)
-
-	dm.K8sEnabled = false
-	dm.ExporterEnabled = false
-	dm.OtelServerEnabled = false
-	dm.LogProcessorEnabled = false
-	dm.MetricAnalyzerEnabled = false
 
 	dm.WgDaemon = sync.WaitGroup{}
 
@@ -50,22 +38,25 @@ func (dm *NumbatDaemon) DestroyNumbatDaemon() {
 // watchK8s Function
 func (dm *NumbatDaemon) watchK8s() {
 	dm.WgDaemon.Add(1)
+
 	go func() {
+		defer dm.WgDaemon.Done()
 		K8s.RunInformers(StopChan)
 	}()
-	defer dm.WgDaemon.Done()
 }
 
 // logProcessor Function
 func (dm *NumbatDaemon) logProcessor() {
 	dm.WgDaemon.Add(1)
-
-	// Initialize log processor
-	StartLogProcessor()
-	dm.LogProcessorEnabled = true
-	log.Printf("[Numbat] Initialized log processor")
-
 	defer dm.WgDaemon.Done()
+
+	// Start log processor
+	go func() {
+		defer dm.WgDaemon.Done()
+		StartLogProcessor()
+	}()
+
+	log.Printf("[Numbat] Initialized log processor")
 }
 
 // metricAnalyzer Function
@@ -73,11 +64,12 @@ func (dm *NumbatDaemon) metricAnalyzer() {
 	dm.WgDaemon.Add(1)
 
 	// Initialize metrics analyzer
-	metrics.StartMetricsAnalyzer()
-	dm.MetricAnalyzerEnabled = true
-	log.Printf("[Numbat] Initialized metric analyzer")
+	go func() {
+		defer dm.WgDaemon.Done()
+		metrics.StartMetricsAnalyzer()
+	}()
 
-	defer dm.WgDaemon.Done()
+	log.Printf("[Numbat] Initialized metric analyzer")
 }
 
 // otelServer Function
@@ -91,15 +83,15 @@ func (dm *NumbatDaemon) otelServer() {
 		return
 	}
 
-	err = Oh.StartOtelServer()
-	if err != nil {
-		log.Fatalf("[Numbat] Unable to start OpenTelemetry Server: %v", err)
-		return
-	}
-	dm.OtelServerEnabled = true
-	log.Printf("[Numbat] Initialized OpenTelemetry collector")
-
-	defer dm.WgDaemon.Done()
+	go func() {
+		defer dm.WgDaemon.Done()
+		err = Oh.StartOtelServer()
+		if err != nil {
+			log.Fatalf("[Numbat] Unable to start OpenTelemetry Server: %v", err)
+			return
+		}
+		log.Printf("[Numbat] Initialized OpenTelemetry collector")
+	}()
 }
 
 // exporterServer Function
@@ -113,14 +105,14 @@ func (dm *NumbatDaemon) exporterServer() {
 		return
 	}
 
-	err = exporter.Exp.StartExporterServer()
-	if err != nil {
-		log.Fatalf("[Numbat] Unable to start Exporter Server: %v", err)
-	}
-	dm.ExporterEnabled = true
-	log.Printf("[Numbat] Initialized exporter")
-
-	defer dm.WgDaemon.Done()
+	go func() {
+		defer dm.WgDaemon.Done()
+		err = exporter.Exp.StartExporterServer()
+		if err != nil {
+			log.Fatalf("[Numbat] Unable to start Exporter Server: %v", err)
+		}
+		log.Printf("[Numbat] Initialized exporter")
+	}()
 }
 
 // patchK8s Function
@@ -160,7 +152,6 @@ func Numbat() {
 	}
 
 	log.Printf("[Numbat] Initialized Kubernetes client")
-	dm.K8sEnabled = true
 
 	dm.watchK8s()
 	log.Printf("[Numbat] Started to monitor Kubernetes resources")
@@ -182,11 +173,6 @@ func Numbat() {
 	// Start exporter server
 	dm.exporterServer()
 
-	if dm.K8sEnabled && dm.OtelServerEnabled && dm.ExporterEnabled &&
-		dm.LogProcessorEnabled && dm.MetricAnalyzerEnabled {
-		log.Printf("[Numbat] Successfully started Numbat")
-		dm.WgDaemon.Wait()
-	} else {
-		log.Fatalf("[Numbat] Unable to start Numbat successfully")
-	}
+	log.Printf("[Numbat] Successfully started Numbat")
+	dm.WgDaemon.Wait()
 }
