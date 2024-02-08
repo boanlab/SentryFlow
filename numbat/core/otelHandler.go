@@ -1,6 +1,7 @@
-package otel
+package core
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	otelLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
@@ -12,10 +13,12 @@ import (
 
 // Oh Global reference for OtelHandler
 var Oh *OtelHandler
+var olh *OtelLogServer
 
 // init Function
 func init() {
 	Oh = NewOtelHandler()
+	olh = NewOtelLogServer()
 }
 
 // OtelHandler Structure
@@ -83,4 +86,31 @@ func (oh *OtelHandler) StopOtelServer() {
 	oh.gRPCServer.GracefulStop()
 
 	log.Printf("[OpenTelemetry] Stopped server")
+}
+
+// OtelLogServer structure
+type OtelLogServer struct {
+	otelLogs.UnimplementedLogsServiceServer
+}
+
+// NewOtelLogServer Function
+func NewOtelLogServer() *OtelLogServer {
+	return new(OtelLogServer)
+}
+
+// Export Function
+func (ols *OtelLogServer) Export(_ context.Context, req *otelLogs.ExportLogsServiceRequest) (*otelLogs.ExportLogsServiceResponse, error) {
+	// This is for Log.Export in OpenTelemetry format
+	als := GenerateAccessLogs(req.String())
+
+	for _, al := range als {
+		Lh.InsertLog(al)
+	}
+
+	// For now, we will not consider partial success
+	ret := otelLogs.ExportLogsServiceResponse{
+		PartialSuccess: nil,
+	}
+
+	return &ret, nil
 }

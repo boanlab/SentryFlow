@@ -4,9 +4,7 @@ import (
 	"log"
 	cfg "numbat/config"
 	"numbat/exporter"
-	log2 "numbat/log"
 	"numbat/metrics"
-	"numbat/otel"
 	"sync"
 )
 
@@ -63,7 +61,7 @@ func (dm *NumbatDaemon) logProcessor() {
 	dm.WgDaemon.Add(1)
 
 	// Initialize log processor
-	log2.StartLogProcessor()
+	StartLogProcessor()
 	dm.LogProcessorEnabled = true
 	log.Printf("[Numbat] Initialized log processor")
 
@@ -87,13 +85,13 @@ func (dm *NumbatDaemon) otelServer() {
 	dm.WgDaemon.Add(1)
 
 	// Initialize and start OpenTelemetry Server
-	err := otel.Oh.InitOtelServer()
+	err := Oh.InitOtelServer()
 	if err != nil {
 		log.Fatalf("[Numbat] Unable to intialize OpenTelemetry Server: %v", err)
 		return
 	}
 
-	err = otel.Oh.StartOtelServer()
+	err = Oh.StartOtelServer()
 	if err != nil {
 		log.Fatalf("[Numbat] Unable to start OpenTelemetry Server: %v", err)
 		return
