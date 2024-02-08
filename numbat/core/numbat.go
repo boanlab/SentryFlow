@@ -4,6 +4,7 @@ import (
 	"log"
 	cfg "numbat/config"
 	"numbat/exporter"
+	log2 "numbat/log"
 	"numbat/metrics"
 	"numbat/otel"
 	"sync"
@@ -62,7 +63,7 @@ func (dm *NumbatDaemon) logProcessor() {
 	dm.WgDaemon.Add(1)
 
 	// Initialize log processor
-	StartLogProcessor()
+	log2.StartLogProcessor()
 	dm.LogProcessorEnabled = true
 	log.Printf("[Numbat] Initialized log processor")
 

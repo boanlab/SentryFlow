@@ -3,7 +3,6 @@ package otel
 import (
 	"context"
 	logs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
-	"numbat/core"
 	"numbat/log"
 )
 
@@ -32,7 +31,7 @@ func (ols *OtelLogServer) Export(_ context.Context, req *logs.ExportLogsServiceR
 	als := log.GenerateAccessLogs(req.String())
 
 	for _, al := range als {
-		core.Lh.InsertLog(al)
+		log.Lh.InsertLog(al)
 	}
 
 	// For now, we will not consider partial success
