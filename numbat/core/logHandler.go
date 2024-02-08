@@ -1,8 +1,10 @@
 package core
 
 import (
-	otel "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	"log"
+	"numbat/exporter"
+	"numbat/metrics"
+	"numbat/protobuf"
 )
 
 // Lh global reference for LogHandler
@@ -29,6 +31,16 @@ func NewLogHandler() *LogHandler {
 	return lh
 }
 
+// StartLogProcessor Function
+func StartLogProcessor() {
+	go Lh.logProcessingRoutine()
+}
+
+// StopLogProcessor Function
+func StopLogProcessor() {
+	Lh.stopChan <- struct{}{}
+}
+
 // InsertLog Function
 func (lh *LogHandler) InsertLog(data interface{}) {
 	lh.logChan <- data
@@ -45,16 +57,21 @@ func (lh *LogHandler) logProcessingRoutine() {
 
 			// Check new log's type
 			switch l.(type) {
-			case *otel.ExportLogsServiceRequest:
-				processAccessLog(l.(*otel.ExportLogsServiceRequest))
+			case *protobuf.Log:
+				processAccessLog(l.(*protobuf.Log))
 			}
 
 		case <-lh.stopChan:
+			return
 		}
 	}
 }
 
 // processAccessLog Function
-func processAccessLog(al *otel.ExportLogsServiceRequest) {
+func processAccessLog(al *protobuf.Log) {
+	// Send AccessLog to exporter first
+	exporter.InsertAccessLog(al)
 
+	// Then send AccessLog to metrics
+	metrics.InsertAccessLog(al)
 }

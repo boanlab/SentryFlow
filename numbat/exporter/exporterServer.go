@@ -3,7 +3,7 @@ package exporter
 import (
 	"context"
 	"log"
-	"numbat/core"
+	metricAPI "numbat/metrics/api"
 	"numbat/protobuf"
 )
 
@@ -62,7 +62,7 @@ func (exs *ExporterServer) GetAPIMetrics(_ context.Context, client *protobuf.Cli
 
 	// Construct protobuf return value
 	ret := protobuf.APIMetric{
-		PerAPICounts: core.Mh.GetPerAPICount(),
+		PerAPICounts: metricAPI.GetPerAPICount(),
 	}
 
 	return &ret, nil

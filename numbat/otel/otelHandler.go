@@ -60,14 +60,18 @@ func (oh *OtelHandler) InitOtelServer() error {
 // StartOtelServer Function
 func (oh *OtelHandler) StartOtelServer() error {
 	log.Printf("[OpenTelemetry] Starting server")
+	var err error
+	err = nil
 
 	// Serve is blocking function
-	err := oh.gRPCServer.Serve(oh.listener)
-	if err != nil {
-		return err
-	}
+	go func() {
+		err = oh.gRPCServer.Serve(oh.listener)
+		if err != nil {
+			return
+		}
+	}()
 
-	return nil
+	return err
 }
 
 // StopOtelServer Function

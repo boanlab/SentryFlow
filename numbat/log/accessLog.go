@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-// GenerateLogs Function
-func GenerateLogs(logText string) []*protobuf.Log {
+// GenerateAccessLogs Function
+func GenerateAccessLogs(logText string) []*protobuf.Log {
 	// @todo this needs more optimization, this code is kind of messy
 	// Create an array of AccessLogs for returning gRPC comm
 	var index int

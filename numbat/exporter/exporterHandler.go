@@ -81,14 +81,18 @@ func (exp *ExporterHandler) InitExporterServer() error {
 // StartExporterServer Function
 func (exp *ExporterHandler) StartExporterServer() error {
 	log.Printf("[Exporter] Starting exporter server")
+	var err error
+	err = nil
 
-	// Serve is blocking function
-	err := exp.gRPCServer.Serve(exp.listener)
-	if err != nil {
-		return err
-	}
+	go func() {
+		// Serve is blocking function
+		err = exp.gRPCServer.Serve(exp.listener)
+		if err != nil {
+			return
+		}
+	}()
 
-	return nil
+	return err
 }
 
 // StopExporterServer Function

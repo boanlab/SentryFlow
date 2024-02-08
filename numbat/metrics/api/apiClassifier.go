@@ -1,6 +1,4 @@
-package log
-
-import protobuf "numbat/protobuf"
+package api
 
 type APINode struct {
 	path  string
@@ -14,28 +12,31 @@ type classifiedAPI struct {
 	URIRoot     *APINode
 }
 
-func classifyAPI(accessLogs []protobuf.Log) { // return classifiedAPI
+// classifyAPI Function
+func classifyAPI(api string) {
 }
 
+// generateMetric Function
 func generateMetric(cal classifiedAPI) {
 
 }
 
-// Functions for generating metrics.
+// statisticOfAPIsPerDestination Function
 func statisticOfAPIsPerDestination(cal classifiedAPI) {
 
 }
 
+// statisticOfAPIsPerMin Function
 func statisticOfAPIsPerMin(cal classifiedAPI) {
 
 }
 
+// statisticOfErrorAPI Function
 func statisticOfErrorAPI(cal classifiedAPI) {
 
 }
 
+// statisticOfAPILatency Function
 func statisticOfAPILatency(cal classifiedAPI) {
 
 }
-
-// plan to add features

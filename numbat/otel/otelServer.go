@@ -28,7 +28,8 @@ func NewOtelLogServer() *OtelLogServer {
 // Export Function
 func (ols *OtelLogServer) Export(_ context.Context, req *logs.ExportLogsServiceRequest) (*logs.ExportLogsServiceResponse, error) {
 	// This is for Log.Export in OpenTelemetry format
-	als := log.GenerateLogs(req.String())
+	// @todo: decide whether parting shall stay here or stay in the core/logHandler
+	als := log.GenerateAccessLogs(req.String())
 
 	for _, al := range als {
 		core.Lh.InsertLog(al)
