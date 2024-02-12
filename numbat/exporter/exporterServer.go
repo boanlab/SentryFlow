@@ -28,31 +28,39 @@ func NewExporterServer() *ExporterServer {
 func (exs *ExporterServer) GetLog(client *protobuf.ClientInfo, stream protobuf.Numbat_GetLogServer) error {
 	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
 
-	for {
-		select {
-		case accessLog, ok := <-Exp.logChannel:
-			if !ok {
-				log.Printf("[Error] Unable to receive access log from channel")
-			}
-
-			// Send stream with replies
-			// @todo: make max failure count for a single client
-			curRetry := 0
-			for curRetry < 3 { // @todo make this retry count configurable using configs
-				err := stream.Send(accessLog)
-				if err != nil {
-					log.Printf("[Error] Unable to send access log to %s(%s) (retry=%d/%d): %v",
-						client.Hostname, client.IpAddress, curRetry, 3, err)
-					curRetry++
-				} else {
-					break
-				}
-			}
-
-		case <-Exp.stopChan:
-			return nil
-		}
+	curExporter := &ExporterInform{
+		stream:    stream,
+		Hostname:  client.Hostname,
+		IpAddress: client.IpAddress,
 	}
+	Exp.exporters = append(Exp.exporters, curExporter)
+
+	// for {
+	// 	select {
+	// 	case accessLog, ok := <-Exp.logChannel:
+	// 		if !ok {
+	// 			log.Printf("[Error] Unable to receive access log from channel")
+	// 		}
+
+	// 		// Send stream with replies
+	// 		// @todo: make max failure count for a single client
+	// 		curRetry := 0
+	// 		for curRetry < 3 { // @todo make this retry count configurable using configs
+	// 			err := stream.Send(accessLog)
+	// 			if err != nil {
+	// 				log.Printf("[Error] Unable to send access log to %s(%s) (retry=%d/%d): %v",
+	// 					client.Hostname, client.IpAddress, curRetry, 3, err)
+	// 				curRetry++
+	// 			} else {
+	// 				break
+	// 			}
+	// 		}
+
+	// 	case <-Exp.stopChan:
+	// 		return nil
+	// 	}
+	// }
+	return nil
 }
 
 // GetAPIMetrics Function
