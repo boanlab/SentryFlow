@@ -3,13 +3,14 @@ package exporter
 import (
 	"errors"
 	"fmt"
-	"github.com/emicklei/go-restful/v3/log"
-	"google.golang.org/grpc"
 	"net"
 	cfg "numbat/config"
 	"numbat/protobuf"
 	"sync"
 	"time"
+
+	"github.com/emicklei/go-restful/v3/log"
+	"google.golang.org/grpc"
 )
 
 // Exp global reference for Exporter Handler
@@ -28,8 +29,17 @@ type ExporterHandler struct {
 	lock            sync.Mutex // @todo find better solution for this
 	stopChan        chan struct{}
 
+	exporters []*ExporterInform
+
 	listener   net.Listener
 	gRPCServer *grpc.Server
+}
+
+// ExproterInform structure
+type ExporterInform struct {
+	stream    protobuf.Logs_SendServer
+	Hostname  string
+	IpAddress string
 }
 
 // NewExporterHandler Function
@@ -37,6 +47,7 @@ func NewExporterHandler() *ExporterHandler {
 	exp := &ExporterHandler{
 		baseExecutionID: uint64(time.Now().UnixMicro()),
 		currentLogCount: 0,
+		exporters:       make([]*ExporterInform, 0),
 		logChannel:      make(chan *protobuf.Log),
 		stopChan:        make(chan struct{}),
 		lock:            sync.Mutex{},
@@ -53,7 +64,21 @@ func InsertAccessLog(al *protobuf.Log) {
 	Exp.currentLogCount++
 	Exp.lock.Unlock()
 
-	Exp.logChannel <- al
+	// Send stream with replies
+	// @todo: make max failure count for a single client
+	for _, exp := range Exp.exporters {
+		curRetry := 0
+		for curRetry < 3 { // @todo make this retry count configurable using configs
+			err := exp.stream.Send(al)
+			if err != nil {
+				log.Printf("[Error] Unable to send access log to %s(%s) (retry=%d/%d): %v",
+					exp.Hostname, exp.IpAddress, curRetry, 3, err)
+				curRetry++
+			} else {
+				break
+			}
+		}
+	}
 }
 
 // InitExporterServer Function
