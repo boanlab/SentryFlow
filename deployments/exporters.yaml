@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: logger
-        image: boanlab/numbat-logger:v0.0.1
+        image: boanlab/numbat-logger:v0.0.2
         ports:
         - containerPort: 8080
           protocol: TCP
@@ -121,7 +121,7 @@ spec:
         - name: regcred
       containers:
       - name: mongo-client
-        image: boanlab/mongo-client:v0.0.1
+        image: boanlab/numbat-mongo:v0.0.2
         env:
         - name: SERVER_ADDR
           value: "numbat-collector.numbat.svc.cluster.local"
