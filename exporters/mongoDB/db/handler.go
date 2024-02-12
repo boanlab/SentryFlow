@@ -51,8 +51,8 @@ func New() (*Handler, error) {
 		return nil, errors.New(msg)
 	}
 
-	// Create database of istio-otel and collection of access-logs
-	h.database = h.client.Database("istio-otel")
+	// Create database of numbat and collection of access-logs
+	h.database = h.client.Database("numbat")
 	h.collection = h.database.Collection("access-logs")
 
 	Manager = &h
@@ -68,7 +68,7 @@ func (h *Handler) Disconnect() {
 	return
 }
 
-func (h *Handler) InsertData(data *protobuf.AccessLog) error {
+func (h *Handler) InsertData(data *protobuf.Log) error {
 	_, err := h.collection.InsertOne(context.Background(), data)
 	if err != nil {
 		return err

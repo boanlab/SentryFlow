@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protobuf;
 
-option go_package = "github.com/numbat/protobuf";
+option go_package = "numbat/protobuf";
 
 message Log {
   string timeStamp = 1;
@@ -25,10 +25,17 @@ message Log {
   int64  responseCode = 18;
 }
 
-service Logs {
-  rpc Send(Log) returns (LogResponse);
+message ClientInfo {
+  string hostname = 1;
+  string ipAddress = 2;
 }
 
-message LogResponse {
-  string message = 1;
+message APIMetric {
+  map<string, uint64> perAPICounts = 1;
+  // @todo: add some more metrics here
+}
+
+service Numbat {
+  rpc GetLog(ClientInfo) returns (stream Log);
+  rpc GetAPIMetrics(ClientInfo) returns (APIMetric);
 }

@@ -2,25 +2,15 @@ package main
 
 import (
 	"client-stdout/common"
-	context "context"
+	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
+	"io"
 	"log"
-	"net"
-	protobuf "numbat/protobuf"
+	"numbat/protobuf"
+	"os"
 )
-
-// AccessLogServer implements our gRPC server for stdout
-type AccessLogServer struct {
-	protobuf.UnimplementedLogsServer
-}
-
-// Send implements Send service for AccessLogServer
-func (a AccessLogServer) Send(_ context.Context, accessLog *protobuf.AccessLog) (*protobuf.LogResponse, error) {
-	log.Println(accessLog)
-	return &protobuf.LogResponse{}, nil
-}
 
 // main is the entrypoint of this program
 func main() {
@@ -31,21 +21,45 @@ func main() {
 	}
 
 	// Construct address and start listening
-	addr := fmt.Sprintf("%s:%d", cfg.ListenAddr, cfg.ListenPort)
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Fatalf("[gRPC] Could not start up server at %s: %v", lis, err)
-	}
+	addr := fmt.Sprintf("%s:%d", cfg.ServerAddr, cfg.ServerPort)
 
-	// Create a new gRPC server
-	server := grpc.NewServer()
-	als := AccessLogServer{}
-	protobuf.RegisterLogsServer(server, als)
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+	defer conn.Close()
 
 	// Start serving gRPC server
-	log.Printf("[gRPC] Started to serve on %s", addr)
-	err = server.Serve(lis)
+	log.Printf("[gRPC] Successfully connected to %s", addr)
+
+	// Create a client for the Numbat service.
+	client := protobuf.NewNumbatClient(conn)
+
+	hostname, err := os.Hostname()
 	if err != nil {
-		log.Fatalf("[gRPC] Could not start up gRPC server at %s: %v", addr, err)
+		log.Fatalf("could not find hostname: %v", err)
+	}
+
+	// Define the client information.
+	clientInfo := &protobuf.ClientInfo{
+		Hostname: hostname,
+	}
+
+	// Contact the server and print out its response.
+	stream, err := client.GetLog(context.Background(), clientInfo)
+	if err != nil {
+		log.Fatalf("could not get log: %v", err)
+	}
+
+	for {
+		data, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("failed to receive log: %v", err)
+		}
+		log.Printf("[Client] Received log: %v", data)
 	}
 }

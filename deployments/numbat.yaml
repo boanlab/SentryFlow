@@ -64,13 +64,9 @@ spec:
         - containerPort: 4317
           protocol: TCP
           name: grpc-otlp
-        env:
-        - name: LISTEN_ADDR
-          value: "0.0.0.0"
-        - name: LISTEN_PORT
-          value: "4317"
-        - name: TO_EXPORT
-          value: "example-exporter-stdout:8080,example-exporter-mongo:8080"
+        - containerPort: 8080
+          protocol: TCP
+          name: grpc-export
 ---
 # Setup service for custom-exporter
 apiVersion: v1
@@ -86,3 +82,7 @@ spec:
       port: 4317
       targetPort: 4317
       name: grpc-otlp
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: grpc-export

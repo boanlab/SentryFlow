@@ -5,7 +5,7 @@ go 1.19
 replace numbat/protobuf => ../protobuf
 
 require (
-	google.golang.org/grpc v1.60.1
+	google.golang.org/grpc v1.61.0
 	numbat/protobuf v0.0.0-00010101000000-000000000000
 )
 
