@@ -41,7 +41,7 @@ spec:
     - ReadWriteOnce
   storageClassName: mongodb-storageclass-new
   hostPath:
-    path: "/home/boan/istio/mongo-data-new/"
+    path: "/home/boan/istio/mongo-data-new/" # change this accordingly!!!
 ---
 # Setup PVC for mongodb
 kind: PersistentVolumeClaim
