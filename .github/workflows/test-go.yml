@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  go-fmt:
+  go-fmt-numbat:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -20,7 +20,20 @@ jobs:
         run: make gofmt
         working-directory: numbat
 
-  go-lint:
+  go-fmt-exporters:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "v1.19.1"
+
+      - name: Check go-fmt Exporters
+        run: make gofmt
+        working-directory: exporters
+
+  go-lint-numbat:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -33,7 +46,20 @@ jobs:
         run: make golint
         working-directory: numbat
 
-  go-sec:
+  go-lint-exporters:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "v1.19.1"
+
+      - name: Check Golint Exporters
+        run: make golint
+        working-directory: exporters
+
+  go-sec-numbat:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -46,6 +72,19 @@ jobs:
         run: make gosec
         working-directory: numbat
 
+  go-sec-exporters:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "v1.19.1"
+
+      - name: Run Gosec Security Scanner Exporters
+        run: make golint
+        working-directory: exporters  
+
   license:
     runs-on: ubuntu-20.04
     steps:
@@ -55,3 +94,4 @@ jobs:
         uses: apache/skywalking-eyes@a790ab8dd23a7f861c18bd6aaa9b012e3a234bce
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
