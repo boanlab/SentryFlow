@@ -1,0 +1,52 @@
+name: Numbat Exporters Docker Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Setup Docker Build
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Get tag
+      id: tag
+      run: |
+        if [ ${{ github.ref }} == "refs/heads/main" ]; then
+          echo "tag=latest" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Build Logger Exporter
+      working-directory: ./exporters/logger
+      run: |
+         make TAG=${{ steps.tag.outputs.tag }} build
+
+    - name: Push Logger Exporter Image
+      run: |
+         docker push boanlab/numbat-logger:${{ steps.tag.outputs.tag }}
+
+    - name: Build MongoDB Exporter
+      working-directory: ./exporters/mongoDB
+      run: |
+         make TAG=${{ steps.tag.outputs.tag }} build
+
+    - name: Push MongoDB Exporter Image
+      run: |
+         docker push boanlab/mongo-client:${{ steps.tag.outputs.tag }}
+         
