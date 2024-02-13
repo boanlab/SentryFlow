@@ -104,7 +104,8 @@ func (kh *K8sHandler) initExistingResources() {
 
 	// Add existing Pods to the podMap
 	for _, pod := range podList.Items {
-		kh.podMap[pod.Status.PodIP] = &pod
+		currentPod := pod
+		kh.podMap[pod.Status.PodIP] = &currentPod
 		log.Printf("[K8s] Add existing pod %s: %s/%s", pod.Status.PodIP, pod.Namespace, pod.Name)
 	}
 
@@ -116,20 +117,22 @@ func (kh *K8sHandler) initExistingResources() {
 
 	// Add existing Services to the svcMap
 	for _, service := range serviceList.Items {
+		currentService := service // This will solve G601 for gosec
+
 		// Check if the service has a LoadBalancer type
 		if service.Spec.Type == "LoadBalancer" {
 			for _, lbIngress := range service.Status.LoadBalancer.Ingress {
 				lbIP := lbIngress.IP
 				if lbIP != "" {
-					kh.svcMap[lbIP] = &service
+					kh.svcMap[lbIP] = &currentService
 					log.Printf("[K8s] Add existing service (LoadBalancer) %s: %s/%s", lbIP, service.Namespace, service.Name)
 				}
 			}
 		} else {
-			kh.svcMap[service.Spec.ClusterIP] = &service
+			kh.svcMap[service.Spec.ClusterIP] = &currentService
 			if len(service.Spec.ExternalIPs) != 0 {
 				for _, eIP := range service.Spec.ExternalIPs {
-					kh.svcMap[eIP] = &service
+					kh.svcMap[eIP] = &currentService
 					log.Printf("[K8s] Add existing service %s: %s/%s", eIP, service.Namespace, service.Name)
 				}
 			}
@@ -438,20 +441,22 @@ func (kh *K8sHandler) PatchNamespaces() error {
 	// Loop through each namespace and update it with the desired labels
 	// @todo make this skip adding labeles to namespaces which are defined in the config
 	for _, ns := range namespaces.Items {
+		currentNs := ns
+
 		// We are not going to inject sidecars to numbat namespace
-		if ns.Name == "numbat" {
+		if currentNs.Name == "numbat" {
 			continue
 		}
 
 		// Add istio-injection="enabled" for namespaces
-		ns.Labels["istio-injection"] = "enabled"
+		currentNs.Labels["istio-injection"] = "enabled"
 
 		// Update the namespace in the cluster
-		updatedNamespace, err := kh.clientSet.CoreV1().Namespaces().Update(context.TODO(), &ns, v1.UpdateOptions{
+		updatedNamespace, err := kh.clientSet.CoreV1().Namespaces().Update(context.TODO(), &currentNs, v1.UpdateOptions{
 			FieldManager: "patcher",
 		})
 		if err != nil {
-			log.Printf("[Patcher] Unable to update namespace %s: %v", ns.Name, err)
+			log.Printf("[Patcher] Unable to update namespace %s: %v", currentNs.Name, err)
 			return err
 		}
 
