@@ -29,10 +29,9 @@ jobs:
         with:
           go-version: "v1.19.1"
 
-      - name: Run Revive Action Numbat
-        uses: morphy2k/revive-action@v2
-        with:
-          path: "./numbat/..."
+      - name: Check Golint 
+        run: make golint
+        working-directory: numbat
 
   go-sec:
     runs-on: ubuntu-20.04
