@@ -34,7 +34,11 @@ This will start installing the required environment for development. Depending o
 
 ## 3. Development and Code Quality
 ### Development
-Once starting up the Kubernetes and Istio environment is finished, under the`/home/vagrant/numbat` directory, there will be a full source code for this project. You can modify, build, and apply the changes to Numbat as well.
+Once Vagrant has successfully been initialized, you can use the Istio and Kubernetes environment by:
+```
+$ vagrant ssh
+```
+Project source for Numbat will be stored under `/home/vagrant/numbat` and this will be synced with the current host's workdirectory as well. 
 
 Once a change has been made to Numbat's source code, you can build it by navigating to `/numbat` directory and executing Makefile
 ```
@@ -63,4 +67,4 @@ $ vagrant destroy
 ==> numbat: Forcing shutdown of VM...
 ==> numbat: Destroying VM and associated drives...
 ```
-This will destroy the VM that you were working on. The changes that you have made will be stored under the `work/` directory.
+This will destroy the VM that you were working on. The changes that you have made will be stored under `work/` directory.
