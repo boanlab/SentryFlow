@@ -2,16 +2,16 @@
 
 package api
 
-type APINode struct {
+type node struct {
 	path  string
 	count int
-	child []*APINode
+	child []*node
 }
 
 type classifiedAPI struct {
 	destination string
 	method      string
-	URIRoot     *APINode
+	URIRoot     *node
 }
 
 // classifyAPI Function

@@ -16,22 +16,22 @@ import (
 )
 
 // Exp global reference for Exporter Handler
-var Exp *ExporterHandler
+var Exp *Handler
 
 // init Function
 func init() {
 	Exp = NewExporterHandler()
 }
 
-// ExporterHandler structure
-type ExporterHandler struct {
+// Handler structure
+type Handler struct {
 	baseExecutionID uint64
 	currentLogCount uint64
 	logChannel      chan *protobuf.Log
 	lock            sync.Mutex // @todo find better solution for this
 	stopChan        chan struct{}
 
-	exporters    []*ExporterInform
+	exporters    []*Inform
 	exporterLock sync.Mutex
 	exporterLogs chan *protobuf.Log
 
@@ -39,20 +39,20 @@ type ExporterHandler struct {
 	gRPCServer *grpc.Server
 }
 
-// ExporterInform structure
-type ExporterInform struct {
+// Inform structure
+type Inform struct {
 	stream    protobuf.Numbat_GetLogServer
 	error     chan error
 	Hostname  string
-	IpAddress string
+	IPAddress string
 }
 
 // NewExporterHandler Function
-func NewExporterHandler() *ExporterHandler {
-	exp := &ExporterHandler{
+func NewExporterHandler() *Handler {
+	exp := &Handler{
 		baseExecutionID: uint64(time.Now().UnixMicro()),
 		currentLogCount: 0,
-		exporters:       make([]*ExporterInform, 0),
+		exporters:       make([]*Inform, 0),
 		logChannel:      make(chan *protobuf.Log),
 		stopChan:        make(chan struct{}),
 		lock:            sync.Mutex{},
@@ -75,7 +75,7 @@ func InsertAccessLog(al *protobuf.Log) {
 }
 
 // InitExporterServer Function
-func (exp *ExporterHandler) InitExporterServer() error {
+func (exp *Handler) InitExporterServer() error {
 	listenAddr := fmt.Sprintf("%s:%s", cfg.GlobalCfg.CustomExportListenAddr, cfg.GlobalCfg.CustomExportListenPort)
 
 	// Start listening
@@ -97,7 +97,7 @@ func (exp *ExporterHandler) InitExporterServer() error {
 }
 
 // StartExporterServer Function
-func (exp *ExporterHandler) StartExporterServer(wg *sync.WaitGroup) error {
+func (exp *Handler) StartExporterServer(wg *sync.WaitGroup) error {
 	log.Printf("[Exporter] Starting exporter server")
 	var err error
 	err = nil
@@ -120,7 +120,7 @@ func (exp *ExporterHandler) StartExporterServer(wg *sync.WaitGroup) error {
 }
 
 // exportRoutine Function
-func (exp *ExporterHandler) exportRoutine(wg *sync.WaitGroup) {
+func (exp *Handler) exportRoutine(wg *sync.WaitGroup) {
 	wg.Add(1)
 	log.Printf("[Exporter] Starting export routine")
 
@@ -149,7 +149,7 @@ routineLoop:
 }
 
 // sendLogs Function
-func (exp *ExporterHandler) sendLogs(l *protobuf.Log) error {
+func (exp *Handler) sendLogs(l *protobuf.Log) error {
 	exp.exporterLock.Lock()
 	defer exp.exporterLock.Unlock()
 
@@ -166,7 +166,7 @@ func (exp *ExporterHandler) sendLogs(l *protobuf.Log) error {
 			err = exporter.stream.Send(l)
 			if err != nil {
 				log.Printf("[Exporter] Unable to send log to %s(%s) retry=%d/%d: %v",
-					exporter.Hostname, exporter.IpAddress, curRetry, 3, err)
+					exporter.Hostname, exporter.IPAddress, curRetry, 3, err)
 				curRetry++
 			} else {
 				break
@@ -183,13 +183,13 @@ func (exp *ExporterHandler) sendLogs(l *protobuf.Log) error {
 	if failed != 0 {
 		msg := fmt.Sprintf("unable to send logs properly %d/%d failed", failed, total)
 		return errors.New(msg)
-	} else {
-		return nil
 	}
+
+	return nil
 }
 
 // StopExporterServer Function
-func (exp *ExporterHandler) StopExporterServer() {
+func (exp *Handler) StopExporterServer() {
 	// Gracefully stop all client connections
 	exp.stopChan <- struct{}{}
 

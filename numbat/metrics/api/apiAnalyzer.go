@@ -7,15 +7,15 @@ import (
 )
 
 // aa Local reference for API analyzer
-var aa *APIAnalyzer
+var aa *Analyzer
 
 // init function
 func init() {
 	aa = NewAPIAnalyzer()
 }
 
-// APIAnalyzer Structure
-type APIAnalyzer struct {
+// Analyzer Structure
+type Analyzer struct {
 	perAPICount     map[string]uint64
 	perAPICountLock sync.Mutex // @todo perhaps combine those two?
 
@@ -24,8 +24,8 @@ type APIAnalyzer struct {
 }
 
 // NewAPIAnalyzer Function
-func NewAPIAnalyzer() *APIAnalyzer {
-	ret := &APIAnalyzer{
+func NewAPIAnalyzer() *Analyzer {
+	ret := &Analyzer{
 		perAPICount: make(map[string]uint64),
 	}
 
