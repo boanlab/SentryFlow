@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 ### Builder
 
 FROM golang:1.19-alpine3.17 as builder
