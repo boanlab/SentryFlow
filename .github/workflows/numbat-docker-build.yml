@@ -23,9 +23,21 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    - name: Get tag
+      id: tag
+      run: |
+        if [ ${{ github.ref }} == "refs/heads/main" ]; then
+          echo "tag=latest" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+        fi
+
     - name: Build Docker Image
       working-directory: ./numbat  # todo: change according to the file structures in the future
       run: |
-        make build
+         make TAG=${{ steps.tag.outputs.tag }} build
 
-    # todo: automatic tagging and pushing to Docker Hub perhaps?
+    - name: Push Docker Image
+      run: |
+         docker push boanlab/numbat:${{ steps.tag.outputs.tag }}
+         
