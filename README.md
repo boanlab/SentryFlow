@@ -1,5 +1,5 @@
 # Numbat : API Observability for 5G
-[![Numbat Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml)
+[![Numbat Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml) [![test-go](https://github.com/boanlab/numbat/actions/workflows/test-go.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/test-go.yml)
 
 Numbat efficiently preprocesses log data , produces API-related metrics, and performs additional exporting. Here's an overview:
 
