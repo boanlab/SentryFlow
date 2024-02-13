@@ -1,0 +1,48 @@
+Vagrant.require_version ">= 2.0.0"
+
+VM_NAME = "numbat"
+IMG_NAME = "generic/ubuntu2204"
+
+NUM_OF_VCPUS = 4
+SIZE_OF_VMEM = 4096
+
+## == ##
+
+# create ssh keys if needed
+system("
+    if [ #{ARGV[0]} = 'up' ]; then
+      if [ ! -f ~/.ssh/id_rsa ]; then
+        echo '~/.ssh/id_rsa keys does not exist.'
+        ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa
+      fi
+    fi
+")
+
+## == ##
+
+Vagrant.configure("2") do |config|
+  # vagrant@VM_NAME
+  config.vm.hostname = VM_NAME
+
+  config.vm.define VM_NAME do |cfg|
+    cfg.vm.box = IMG_NAME
+
+    cfg.vm.provider "virtualbox" do |vb|
+      vb.memory = SIZE_OF_VMEM
+      vb.cpus = NUM_OF_VCPUS
+    end
+  end
+
+  # sync directories
+  config.vm.synced_folder "../", "/home/vagrant/numbat", owner:"vagrant", group:"vagrant"
+
+  # configure SSH
+  config.ssh.insert_key = false
+
+  # copy ssh keys
+  config.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "/home/vagrant/.ssh/id_rsa.pub"
+  config.vm.provision :shell, :inline => "cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys", run: "always"
+
+  # setup k8s and IStio
+  config.vm.provision "shell", path: "setup.sh"
+end
