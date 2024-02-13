@@ -35,34 +35,15 @@ func (exs *ExporterServer) GetLog(client *protobuf.ClientInfo, stream protobuf.N
 		Hostname:  client.Hostname,
 		IpAddress: client.IpAddress,
 	}
+
+	// Append new exporter client for future use
+	Exp.exporterLock.Lock()
 	Exp.exporters = append(Exp.exporters, curExporter)
+	Exp.exporterLock.Unlock()
 
-	// for {
-	// 	select {
-	// 	case accessLog, ok := <-Exp.logChannel:
-	// 		if !ok {
-	// 			log.Printf("[Error] Unable to receive access log from channel")
-	// 		}
-
-	// 		// Send stream with replies
-	// 		// @todo: make max failure count for a single client
-	// 		curRetry := 0
-	// 		for curRetry < 3 { // @todo make this retry count configurable using configs
-	// 			err := stream.Send(accessLog)
-	// 			if err != nil {
-	// 				log.Printf("[Error] Unable to send access log to %s(%s) (retry=%d/%d): %v",
-	// 					client.Hostname, client.IpAddress, curRetry, 3, err)
-	// 				curRetry++
-	// 			} else {
-	// 				break
-	// 			}
-	// 		}
-
-	// 	case <-Exp.stopChan:
-	// 		return nil
-	// 	}
-	// }
-	return nil
+	// Keeping gRPC stream alive
+	// refer https://stackoverflow.com/questions/36921131/
+	return <-curExporter.error
 }
 
 // GetAPIMetrics Function

@@ -31,15 +31,18 @@ type ExporterHandler struct {
 	lock            sync.Mutex // @todo find better solution for this
 	stopChan        chan struct{}
 
-	exporters []*ExporterInform
+	exporters    []*ExporterInform
+	exporterLock sync.Mutex
+	exporterLogs chan *protobuf.Log
 
 	listener   net.Listener
 	gRPCServer *grpc.Server
 }
 
-// ExproterInform structure
+// ExporterInform structure
 type ExporterInform struct {
-	stream    protobuf.Logs_SendServer
+	stream    protobuf.Numbat_GetLogServer
+	error     chan error
 	Hostname  string
 	IpAddress string
 }
@@ -53,6 +56,8 @@ func NewExporterHandler() *ExporterHandler {
 		logChannel:      make(chan *protobuf.Log),
 		stopChan:        make(chan struct{}),
 		lock:            sync.Mutex{},
+		exporterLock:    sync.Mutex{},
+		exporterLogs:    make(chan *protobuf.Log),
 	}
 
 	return exp
@@ -66,21 +71,7 @@ func InsertAccessLog(al *protobuf.Log) {
 	Exp.currentLogCount++
 	Exp.lock.Unlock()
 
-	// Send stream with replies
-	// @todo: make max failure count for a single client
-	for _, exp := range Exp.exporters {
-		curRetry := 0
-		for curRetry < 3 { // @todo make this retry count configurable using configs
-			err := exp.stream.Send(al)
-			if err != nil {
-				log.Printf("[Error] Unable to send access log to %s(%s) (retry=%d/%d): %v",
-					exp.Hostname, exp.IpAddress, curRetry, 3, err)
-				curRetry++
-			} else {
-				break
-			}
-		}
-	}
+	Exp.exporterLogs <- al
 }
 
 // InitExporterServer Function
@@ -111,6 +102,8 @@ func (exp *ExporterHandler) StartExporterServer(wg *sync.WaitGroup) error {
 	var err error
 	err = nil
 
+	go exp.exportRoutine(wg)
+
 	go func() {
 		wg.Add(1)
 		// Serve is blocking function
@@ -124,6 +117,75 @@ func (exp *ExporterHandler) StartExporterServer(wg *sync.WaitGroup) error {
 	}()
 
 	return err
+}
+
+// exportRoutine Function
+func (exp *ExporterHandler) exportRoutine(wg *sync.WaitGroup) {
+	wg.Add(1)
+	log.Printf("[Exporter] Starting export routine")
+
+routineLoop:
+	for {
+		select {
+		// @todo add more channels for this
+		case al, ok := <-exp.exporterLogs:
+			if !ok {
+				log.Printf("[Exporter] Log exporter channel closed")
+				break routineLoop
+			}
+
+			err := exp.sendLogs(al)
+			if err != nil {
+				log.Printf("[Exporter] Log exporting failed %v:", err)
+			}
+
+		case <-exp.stopChan:
+			break routineLoop
+		}
+	}
+
+	defer wg.Done()
+	return
+}
+
+// sendLogs Function
+func (exp *ExporterHandler) sendLogs(l *protobuf.Log) error {
+	exp.exporterLock.Lock()
+	defer exp.exporterLock.Unlock()
+
+	// iterate and send logs
+	failed := 0
+	total := len(exp.exporters)
+	for _, exporter := range exp.exporters {
+		curRetry := 0
+
+		// @todo: make max retry count per logs using config
+		// @todo: make max retry count per single exporter before removing the exporter using config
+		var err error
+		for curRetry < 3 {
+			err = exporter.stream.Send(l)
+			if err != nil {
+				log.Printf("[Exporter] Unable to send log to %s(%s) retry=%d/%d: %v",
+					exporter.Hostname, exporter.IpAddress, curRetry, 3, err)
+				curRetry++
+			} else {
+				break
+			}
+		}
+
+		// Count failed
+		if err != nil {
+			failed++
+		}
+	}
+
+	// notify failed count
+	if failed != 0 {
+		msg := fmt.Sprintf("unable to send logs properly %d/%d failed", failed, total)
+		return errors.New(msg)
+	} else {
+		return nil
+	}
 }
 
 // StopExporterServer Function
