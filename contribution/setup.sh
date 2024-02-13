@@ -27,4 +27,14 @@ sudo apt-get install make
 curl -L https://istio.io/downloadIstio | sh -
 export PATH="$PATH:/home/vagrant/istio-1.20.3/bin"
 istioctl install --set profile=default -y
+sudo chown -R vagrant /home/vagrant/istio-1.20.3/
 
+# Now install golang, this is for golint, gosec, gofmt
+wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+
+# Setup bashrc
+echo export GOPATH="/home/vagrant/go" >> /home/vagrant/.bashrc
+echo export PATH="$PATH:/usr/local/go/bin:/home/vagrant/istio-1.20.3/bin:/home/vagrant/go/bin/" >> /home/vagrant/.bashrc
