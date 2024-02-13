@@ -1,3 +1,4 @@
+
 # Nephio
 This example is for capturing access logs from [Nephio](https://github.com/nephio-project/nephio) which is running on top of Istio using Numbat.
 
@@ -174,8 +175,7 @@ This will show live logs such as:
 Alongside with logger, we also have another exporter that stores every data coming from `numbat-collector` into MongoDB deployment. We can use `mongosh` for checking what is being stored in MongoDB. This can be achieved by:
 
 ```
-$ export MONGODB_POD=$(kubectl get pod -n numbat -l app=mongodb --context regional-admin@regional --template '{{range .items}}{{.metadata.name}}{{"\n"}}{
-{end}}')
+$ export MONGODB_POD=$(kubectl get pod -n numbat -l app=mongodb --context regional-admin@regional -o jsonpath='{.items[0].metadata.name}')
 $ kubectl exec -it $MONGODB_POD -n numbat --context regional-admin@regional mongosh
 ```
 Once we have entered `mongosh` we can check entries stored in the DB. Numbat uses DB named `numbat` and collection `access-logs` for storing access logs.
