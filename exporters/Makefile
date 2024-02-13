@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 .PHONY: gofmt
 gofmt:
 	cd $(CURDIR); gofmt -w -s -d $(shell find . -type f -name '*.go' -print)

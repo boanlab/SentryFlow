@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 IMAGE_NAME = boanlab/mongo-client
 TAG = v0.0.1
 
