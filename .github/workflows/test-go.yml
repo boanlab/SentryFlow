@@ -20,6 +20,19 @@ jobs:
         run: make gofmt
         working-directory: numbat
 
+  go-fmt-exporters:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "v1.19.1"
+
+      - name: Check go-fmt Exporters
+        run: make gofmt
+        working-directory: exporters
+
   go-lint:
     runs-on: ubuntu-20.04
     steps:
@@ -33,6 +46,19 @@ jobs:
         run: make golint
         working-directory: numbat
 
+  go-lint-exporters:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "v1.19.1"
+
+      - name: Check Golint Exporters
+        run: make golint
+        working-directory: exporters
+
   go-sec:
     runs-on: ubuntu-20.04
     steps:
@@ -45,6 +71,19 @@ jobs:
       - name: Run Gosec Security Scanner
         run: make gosec
         working-directory: numbat
+
+  go-sec-exporters:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "v1.19.1"
+
+      - name: Run Gosec Security Scanner Exporters
+        run: make golint
+        working-directory: exporters  
 
   license:
     runs-on: ubuntu-20.04
