@@ -24,3 +24,6 @@ Numbat performs the following tasks to share or store generated log and metric d
 
 ## Document:
 - [Getting Started](docs/Getting_Started.md)
+
+## Examples:
+- [Nephio](examples/nephio): Collecting `free5gc-cp` logs from Nephio using Numbat
