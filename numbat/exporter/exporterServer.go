@@ -9,31 +9,31 @@ import (
 	"numbat/protobuf"
 )
 
-var exs *ExporterServer
+var exs *Server
 
 // init Function
 func init() {
 	exs = NewExporterServer()
 }
 
-// ExporterServer Structure
-type ExporterServer struct {
+// Server Structure
+type Server struct {
 	protobuf.UnimplementedNumbatServer
 }
 
 // NewExporterServer Function
-func NewExporterServer() *ExporterServer {
-	return new(ExporterServer)
+func NewExporterServer() *Server {
+	return new(Server)
 }
 
 // GetLog Function
-func (exs *ExporterServer) GetLog(client *protobuf.ClientInfo, stream protobuf.Numbat_GetLogServer) error {
+func (exs *Server) GetLog(client *protobuf.ClientInfo, stream protobuf.Numbat_GetLogServer) error {
 	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
 
-	curExporter := &ExporterInform{
+	curExporter := &Inform{
 		stream:    stream,
 		Hostname:  client.Hostname,
-		IpAddress: client.IpAddress,
+		IPAddress: client.IpAddress,
 	}
 
 	// Append new exporter client for future use
@@ -47,7 +47,7 @@ func (exs *ExporterServer) GetLog(client *protobuf.ClientInfo, stream protobuf.N
 }
 
 // GetAPIMetrics Function
-func (exs *ExporterServer) GetAPIMetrics(_ context.Context, client *protobuf.ClientInfo) (*protobuf.APIMetric, error) {
+func (exs *Server) GetAPIMetrics(_ context.Context, client *protobuf.ClientInfo) (*protobuf.APIMetric, error) {
 	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
 
 	// Construct protobuf return value
