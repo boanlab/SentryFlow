@@ -34,5 +34,6 @@ sudo rm -rf /usr/local/go
 sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
 export PATH=$PATH:/usr/local/go/bin
 
-echo PATH=$PATH:/usr/local/go/bin >> /home/vagrant/.bashrc
+echo export PATH=$PATH:/usr/local/go/bin >> /home/vagrant/.bashrc
 echo export PATH="$PATH:/home/vagrant/istio-1.20.3/bin" >> /home/vagrant/.bashrc
+echo export PATH="$PATH:$HOME/go/bin" >> /home/vagrant/.bashrc
