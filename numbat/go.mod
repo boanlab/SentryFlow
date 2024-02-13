@@ -1,6 +1,6 @@
 module numbat
 
-go 1.19.1
+go 1.19
 
 replace numbat/protobuf => ../protobuf
 
