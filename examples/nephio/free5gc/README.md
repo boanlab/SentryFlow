@@ -1,5 +1,4 @@
-
-# Nephio
+# Nephio - Free5GC
 This example is for capturing access logs from [Nephio](https://github.com/nephio-project/nephio) which is running on top of Istio using Numbat.
 
 > **Note**: Be advised that any information regarding Nephio in this document might be outdated as Nephio is under early stage of development
