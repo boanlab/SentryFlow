@@ -21,7 +21,7 @@ Numbat is a cloud-native API observability system that collects logs, produces m
 
 ### Contribution
 - [Contribution Guide](contribution/README.md)
-- [Issues](/issues) 
+- [Issues](https://github.com/boanlab/numbat/issues)
 
 ## Credits
 This project is funded by NSF grant
