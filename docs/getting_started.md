@@ -12,7 +12,7 @@ Numbat operates on top of the Istio environment. The following table shows the e
 |[Istio](https://istio.io/latest/)|1.20.2|
 |[Kubernetes](https://kubernetes.io/)|v1.27.1|
 
-> **Note**: For details on Kubernetes settings, such as CNI, CRI, and their runtime settings, please refer to the [compatability matrix](k8s_compatibility.d) for more information.
+> **Note**: For details on Kubernetes settings, such as CNI, CRI, and their runtime settings, please refer to the [compatability matrix](k8s_compatibility.md) for more information.
 
 ## 1. Deploying Numbat Collector
 Numbat can be deployed just using `kubectl` command. This can be achieved by the following commands:
