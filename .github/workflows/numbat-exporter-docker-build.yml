@@ -3,8 +3,6 @@ name: Numbat Exporters Docker Build
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   build:
@@ -29,7 +27,7 @@ jobs:
         if [ ${{ github.ref }} == "refs/heads/main" ]; then
           echo "tag=latest" >> $GITHUB_OUTPUT
         else
-          echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+          echo "tag=tmp" >> $GITHUB_OUTPUT
         fi
 
     - name: Build Logger Exporter

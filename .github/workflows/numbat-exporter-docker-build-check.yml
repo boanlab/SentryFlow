@@ -1,7 +1,7 @@
-name: Numbat Docker Build
+name: Numbat Exporters Docker Build Check
 
 on:
-  push:
+  pull_request:
     branches: [main]
 
 jobs:
@@ -30,12 +30,12 @@ jobs:
           echo "tag=tmp" >> $GITHUB_OUTPUT
         fi
 
-    - name: Build Docker Image
-      working-directory: ./numbat  # todo: change according to the file structures in the future
+    - name: Build Logger Exporter
+      working-directory: ./exporters/logger
       run: |
          make TAG=${{ steps.tag.outputs.tag }} build
 
-    - name: Push Docker Image
+    - name: Build MongoDB Exporter
+      working-directory: ./exporters/mongoDB
       run: |
-         docker push boanlab/numbat:${{ steps.tag.outputs.tag }}
-         
+         make TAG=${{ steps.tag.outputs.tag }} build

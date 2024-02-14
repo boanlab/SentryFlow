@@ -1,7 +1,7 @@
-name: Numbat Docker Build
+name: Numbat Docker Build Check
 
 on:
-  push:
+  pull_request:
     branches: [main]
 
 jobs:
@@ -34,8 +34,3 @@ jobs:
       working-directory: ./numbat  # todo: change according to the file structures in the future
       run: |
          make TAG=${{ steps.tag.outputs.tag }} build
-
-    - name: Push Docker Image
-      run: |
-         docker push boanlab/numbat:${{ steps.tag.outputs.tag }}
-         
