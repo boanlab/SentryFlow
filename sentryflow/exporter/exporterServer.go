@@ -4,9 +4,9 @@ package exporter
 
 import (
 	"context"
+	metricAPI "github.com/5GSEC/sentryflow/metrics/api"
+	"github.com/5GSEC/sentryflow/protobuf"
 	"log"
-	metricAPI "sentryflow/metrics/api"
-	"sentryflow/protobuf"
 )
 
 var exs *Server

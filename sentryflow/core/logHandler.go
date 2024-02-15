@@ -3,11 +3,11 @@
 package core
 
 import (
+	"github.com/5GSEC/sentryflow/common"
+	"github.com/5GSEC/sentryflow/exporter"
+	"github.com/5GSEC/sentryflow/metrics"
+	"github.com/5GSEC/sentryflow/protobuf"
 	"log"
-	"sentryflow/common"
-	"sentryflow/exporter"
-	"sentryflow/metrics"
-	"sentryflow/protobuf"
 	"strconv"
 	"strings"
 	"sync"

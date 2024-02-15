@@ -5,20 +5,21 @@
 FROM golang:1.19-alpine3.17 as builder
 
 RUN apk --no-cache update
-RUN apk add --no-cache git clang llvm make gcc protobuf
+RUN apk add --no-cache git clang llvm make gcc protobuf make
+RUN go install github.com/golang/protobuf/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 RUN mkdir /app
 RUN mkdir /protobuf
 
 WORKDIR /protobuf
 COPY /protobuf .
+RUN make build
 
 WORKDIR /app
 COPY /sentryflow .
 
-RUN go install github.com/golang/protobuf/protoc-gen-go@latest
-RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-RUN go build -o sentryflow
+RUN go build
 
 ### Make executable image
 

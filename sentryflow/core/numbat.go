@@ -3,10 +3,10 @@
 package core
 
 import (
+	cfg "github.com/5GSEC/sentryflow/config"
+	"github.com/5GSEC/sentryflow/exporter"
+	"github.com/5GSEC/sentryflow/metrics"
 	"log"
-	cfg "sentryflow/config"
-	"sentryflow/exporter"
-	"sentryflow/metrics"
 	"sync"
 )
 
