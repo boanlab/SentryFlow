@@ -331,32 +331,32 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 	// Work with defaultProviders.accessLogs
 	dp, exists := meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"]
 	if !exists { // Add defaultProviders.accessLogs if it does not exist
-		meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = []string{"sentryflow-collector"}
-	} else { // Just add a new entry sentryflow-collector if it exists
+		meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = []string{"sentryflow"}
+	} else { // Just add a new entry sentryflow if it exists
 		dpSlice := dp.([]interface{}) // @todo find better solution for this
 		duplicate := false
 		for _, entry := range dpSlice {
-			if entry == "sentryflow-collector" {
-				// If "sentryflow-collector" already exists, do nothing
+			if entry == "sentryflow" {
+				// If "sentryflow" already exists, do nothing
 				log.Printf("[Patcher] istio-system/istio ConfigMap has " +
-					"sentryflow-collector under defaultProviders.accessLogs, ignoring... ")
+					"sentryflow under defaultProviders.accessLogs, ignoring... ")
 				duplicate = true
 				break
 			}
 		}
 
-		// If "sentryflow-collector" does not exist, append it
+		// If "sentryflow" does not exist, append it
 		if !duplicate {
-			dpSlice = append(dpSlice, "sentryflow-collector")
+			dpSlice = append(dpSlice, "sentryflow")
 			meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = dpSlice
 		}
 	}
 
 	// ExtensionProvider for our service
 	eps := map[interface{}]interface{}{
-		"name": "sentryflow-collector",
+		"name": "sentryflow",
 		"envoyOtelAls": map[interface{}]interface{}{
-			"service": "sentryflow-collector.sentryflow.svc.cluster.local",
+			"service": "sentryflow.sentryflow.svc.cluster.local",
 			"port":    config.GlobalCfg.OtelGRPCListenPort,
 		},
 	}
@@ -382,8 +382,8 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 				log.Printf("[Patcher] istio-system/istio ConfigMap extensionProviders entry has unexpected type")
 			}
 			if entryMap["name"] == eps["name"] {
-				// If "sentryflow-collector" already exists, do nothing
-				log.Printf("[Patcher] istio-system/istio ConfigMap has sentryflow-collector under extensionProviders, ignoring... ")
+				// If "sentryflow" already exists, do nothing
+				log.Printf("[Patcher] istio-system/istio ConfigMap has sentryflow under extensionProviders, ignoring... ")
 				duplicate = true
 				break
 			}
