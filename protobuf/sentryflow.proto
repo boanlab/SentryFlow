@@ -9,10 +9,6 @@ message ClientInfo {
   string IPAddress = 2;
 }
 
-message LogFilter {
-  string logFilter = 1;
-}
-
 message APILog {
   uint64 id = 1;
   string timeStamp = 2;
@@ -34,11 +30,7 @@ message APILog {
   string protocol = 31;
   string method = 32;
   string path = 33;
-  int64 responseCode = 34;
-}
-
-message MetricFilter {
-  string metricFilter = 1;
+  int32 responseCode = 34;
 }
 
 message APIMetric {
@@ -46,17 +38,7 @@ message APIMetric {
   // @todo: add some more metrics here
 }
 
-message GetLogParam {
-  ClientInfo info = 1;
-  LogFilter filter = 2;
-}
-
-message GetAPIMetricsParam {
-  ClientInfo info = 1;
-  MetricFilter filter = 2;
-}
-
 service SentryFlow {
-  rpc GetLog(GetLogParam) returns (stream APILog);
-  rpc GetAPIMetrics(GetAPIMetricsParam) returns (APIMetric);
+  rpc GetLog(ClientInfo) returns (stream APILog);
+  rpc GetAPIMetrics(ClientInfo) returns (APIMetric);
 }

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-IMAGE_NAME = 5GSEC/sentryflow-log-client
+IMAGE_NAME = 5gsec/sentryflow-log-client
 TAG = v0.1
 
 .PHONY: build

@@ -50,7 +50,7 @@ func main() {
 
 	// Define the client information.
 	clientInfo := &protobuf.ClientInfo{
-		Hostname: hostname,
+		HostName: hostname,
 	}
 
 	// Contact the server and print out its response.

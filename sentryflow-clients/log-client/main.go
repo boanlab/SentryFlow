@@ -3,6 +3,7 @@
 package main
 
 import (
+	"log-client/common"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
@@ -43,7 +44,7 @@ func main() {
 
 	// Define the client information
 	clientInfo := &protobuf.ClientInfo{
-		Hostname: hostname,
+		HostName: hostname,
 	}
 
 	// Contact the server and print out its response
