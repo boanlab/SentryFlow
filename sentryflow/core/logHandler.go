@@ -4,10 +4,10 @@ package core
 
 import (
 	"log"
-	"numbat/common"
-	"numbat/exporter"
-	"numbat/metrics"
-	"numbat/protobuf"
+	"sentryflow/common"
+	"sentryflow/exporter"
+	"sentryflow/metrics"
+	"sentryflow/protobuf"
 	"strconv"
 	"strings"
 	"sync"

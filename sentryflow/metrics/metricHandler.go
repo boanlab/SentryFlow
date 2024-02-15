@@ -3,8 +3,8 @@
 package metrics
 
 import (
-	"numbat/metrics/api"
-	"numbat/protobuf"
+	"sentryflow/metrics/api"
+	"sentryflow/protobuf"
 	"sync"
 )
 

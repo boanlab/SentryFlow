@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	cfg "numbat/config"
-	"numbat/protobuf"
+	cfg "sentryflow/config"
+	"sentryflow/protobuf"
 	"sync"
 	"time"
 

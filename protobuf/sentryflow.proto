@@ -46,7 +46,17 @@ message APIMetric {
   // @todo: add some more metrics here
 }
 
+message GetLogParam {
+  ClientInfo info = 1;
+  LogFilter filter = 2;
+}
+
+message GetAPIMetricsParam {
+  ClientInfo info = 1;
+  MetricFilter filter = 2;
+}
+
 service SentryFlow {
-  rpc GetLog(ClientInfo, LogFilter) returns (stream APILog);
-  rpc GetAPIMetrics(ClientInfo, MetricFilter) returns (APIMetric);
+  rpc GetLog(GetLogParam) returns (stream APILog);
+  rpc GetAPIMetrics(GetAPIMetricsParam) returns (APIMetric);
 }

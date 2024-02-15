@@ -1,10 +1,11 @@
-module numbat
+module sentryflow
 
 go 1.19
 
-replace numbat/protobuf => ../protobuf
+replace sentryflow/protobuf => ../protobuf
 
 require (
+	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/spf13/viper v1.18.2
 	go.opentelemetry.io/proto/otlp v1.0.0
 	google.golang.org/grpc v1.61.0
@@ -12,12 +13,11 @@ require (
 	k8s.io/api v0.29.0
 	k8s.io/apimachinery v0.29.0
 	k8s.io/client-go v0.29.0
-	numbat/protobuf v0.0.0-00010101000000-000000000000
+	sentryflow/protobuf v0.0.0-00010101000000-000000000000
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/emicklei/go-restful/v3 v3.11.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
@@ -50,7 +50,6 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect

@@ -5,8 +5,8 @@ package exporter
 import (
 	"context"
 	"log"
-	metricAPI "numbat/metrics/api"
-	"numbat/protobuf"
+	metricAPI "sentryflow/metrics/api"
+	"sentryflow/protobuf"
 )
 
 var exs *Server
