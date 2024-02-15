@@ -30,7 +30,7 @@ jobs:
 
       - name: Check go-fmt Exporters
         run: make gofmt
-        working-directory: exporters
+        working-directory: sentryflow-clients
 
   go-lint-sentryflow:
     runs-on: ubuntu-20.04
@@ -56,7 +56,7 @@ jobs:
 
       - name: Check Golint Exporters
         run: make golint
-        working-directory: exporters
+        working-directory: sentryflow-clients
 
   go-sec-sentryflow:
     runs-on: ubuntu-20.04
@@ -82,7 +82,7 @@ jobs:
 
       - name: Run Gosec Security Scanner Exporters
         run: make golint
-        working-directory: exporters  
+        working-directory: sentryflow-clients  
 
   license:
     runs-on: ubuntu-20.04
