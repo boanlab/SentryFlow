@@ -8,4 +8,4 @@ spec:
       app: sleep
   accessLogging:
     - providers:
-      - name: numbat-collector
+      - name: sentryflow
