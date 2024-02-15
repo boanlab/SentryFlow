@@ -6,6 +6,7 @@ TAG = v0.0.1
 
 .PHONY: build
 build:
+	go mod tidy
 	go build -o sentryflow
 
 .PHONY: image

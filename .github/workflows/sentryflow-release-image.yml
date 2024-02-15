@@ -33,7 +33,7 @@ jobs:
     - name: Build Docker Image
       working-directory: ./sentryflow
       run: |
-         make TAG=${{ steps.tag.outputs.tag }} build
+         make TAG=${{ steps.tag.outputs.tag }} image
 
     # - name: Push Docker Image
     #   run: |
