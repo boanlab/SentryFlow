@@ -166,7 +166,7 @@ func GenerateAccessLogs(logText string) []*protobuf.APILog {
 			Protocol:     protocolName,
 			Method:       method,
 			Path:         path,
-			ResponseCode: resCode,
+			ResponseCode: int32(resCode),
 		}
 
 		ret = append(ret, &cur)
