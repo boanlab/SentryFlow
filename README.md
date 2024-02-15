@@ -1,7 +1,7 @@
 
 # SentryFlow
 
-[![Numbat Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml) [![Numbat Exporters Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-exporter-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-exporter-docker-build.yml) [![test-go](https://github.com/boanlab/numbat/actions/workflows/test-go.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/test-go.yml)
+[![SentryFlow Docker Build](https://github.com/boanlab/numbat/actions/workflows/sentryflow-release-image.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/sentryflow-release-image.yml) [![CI Test](https://github.com/boanlab/numbat/actions/workflows/ci-test-go.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/ci-test-go.yml)
 
 SentryFlow is a cloud-native system for API observability and security, specializing in log collection, metric production, and data exportation.
 
