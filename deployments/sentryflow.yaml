@@ -54,7 +54,7 @@ spec:
       serviceAccountName: sa-sentryflow
       containers:
       - name: sentryflow
-        image: 5GSEC/sentryflow:v0.1
+        image: 5gsec/sentryflow:v0.0.1
         ports:
         - containerPort: 4317
           protocol: TCP

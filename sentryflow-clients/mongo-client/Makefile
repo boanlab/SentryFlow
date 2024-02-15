@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-IMAGE_NAME = 5gsec/mongo-client
+IMAGE_NAME = 5gsec/sentryflow-mongo-client
 TAG = v0.1
 
 .PHONY: build
