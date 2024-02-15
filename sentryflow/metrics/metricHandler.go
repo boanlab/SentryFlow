@@ -38,7 +38,7 @@ func StopMetricsAnalyzer() {
 }
 
 // InsertAccessLog Function
-func InsertAccessLog(al *protobuf.Log) {
+func InsertAccessLog(al *protobuf.APILog) {
 	// @todo: make this fixed, for now will just send path from AccessLog
 	api.InsertAnalyzeJob(al.Path)
 }
