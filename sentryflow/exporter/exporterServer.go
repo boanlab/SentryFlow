@@ -27,13 +27,13 @@ func NewExporterServer() *Server {
 }
 
 // GetLog Function
-func (exs *Server) GetLog(param *protobuf.GetLogParam, stream protobuf.SentryFlow_GetLogServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected", param.Info.HostName, param.Info.IPAddress)
+func (exs *Server) GetLog(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetLogServer) error {
+	log.Printf("[Exporter] Client %s(%s) connected", info.HostName, info.IPAddress)
 
 	curExporter := &Inform{
 		stream:    stream,
-		Hostname:  param.Info.HostName,
-		IPAddress: param.Info.IPAddress,
+		Hostname:  info.HostName,
+		IPAddress: info.IPAddress,
 	}
 
 	// Append new exporter client for future use
@@ -47,8 +47,8 @@ func (exs *Server) GetLog(param *protobuf.GetLogParam, stream protobuf.SentryFlo
 }
 
 // GetAPIMetrics Function
-func (exs *Server) GetAPIMetrics(_ context.Context, param *protobuf.GetAPIMetricsParam) (*protobuf.APIMetric, error) {
-	log.Printf("[Exporter] Client %s(%s) connected", param.Info.HostName, param.Info.IPAddress)
+func (exs *Server) GetAPIMetrics(_ context.Context, info *protobuf.ClientInfo) (*protobuf.APIMetric, error) {
+	log.Printf("[Exporter] Client %s(%s) connected", info.HostName, info.IPAddress)
 
 	// Construct protobuf return value
 	ret := protobuf.APIMetric{
