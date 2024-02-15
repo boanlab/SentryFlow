@@ -14,21 +14,21 @@ WORKDIR /protobuf
 COPY /protobuf .
 
 WORKDIR /app
-COPY /numbat .
+COPY /sentryflow .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-RUN go build -o numbat
+RUN go build -o sentryflow
 
 ### Make executable image
 
-FROM alpine:3.18 as numbat
+FROM alpine:3.18 as sentryflow
 
 RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee -a /etc/apk/repositories
 
 RUN apk --no-cache update
 RUN apk add bash
 
-COPY --from=builder /app/numbat .
+COPY --from=builder /app/sentryflow .
 
-CMD ["./numbat"]
+CMD ["./sentryflow"]
