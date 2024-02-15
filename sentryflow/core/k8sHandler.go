@@ -4,8 +4,8 @@ package core
 
 import (
 	"context"
-	"github.com/5GSEC/sentryflow/common"
 	"github.com/5GSEC/sentryflow/config"
+	"github.com/5GSEC/sentryflow/types"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -267,12 +267,12 @@ func (kh *K8sHandler) lookupIPAddress(ipAddr string) interface{} {
 }
 
 // LookupNetworkedResource Function
-func LookupNetworkedResource(srcIP string) common.K8sNetworkedResource {
-	ret := common.K8sNetworkedResource{
+func LookupNetworkedResource(srcIP string) types.K8sNetworkedResource {
+	ret := types.K8sNetworkedResource{
 		Name:      "Unknown",
 		Namespace: "Unknown",
 		Labels:    make(map[string]string),
-		Type:      common.K8sResourceTypeUnknown,
+		Type:      types.K8sResourceTypeUnknown,
 	}
 
 	// Find Kubernetes resource from source IP (service or a pod)
@@ -286,7 +286,7 @@ func LookupNetworkedResource(srcIP string) common.K8sNetworkedResource {
 			ret.Name = pod.Name
 			ret.Namespace = pod.Namespace
 			ret.Labels = pod.Labels
-			ret.Type = common.K8sResourceTypePod
+			ret.Type = types.K8sResourceTypePod
 		}
 	case *corev1.Service:
 		svc, ok := raw.(*corev1.Service)
@@ -294,10 +294,10 @@ func LookupNetworkedResource(srcIP string) common.K8sNetworkedResource {
 			ret.Name = svc.Name
 			ret.Namespace = svc.Namespace
 			ret.Labels = svc.Labels
-			ret.Type = common.K8sResourceTypeService
+			ret.Type = types.K8sResourceTypeService
 		}
 	default:
-		ret.Type = common.K8sResourceTypeUnknown
+		ret.Type = types.K8sResourceTypeUnknown
 	}
 
 	return ret

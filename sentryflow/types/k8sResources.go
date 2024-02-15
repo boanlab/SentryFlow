@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-package common
+package types
 
 // k8sResources const
 const (

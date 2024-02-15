@@ -3,10 +3,10 @@
 package core
 
 import (
-	"github.com/5GSEC/sentryflow/common"
 	"github.com/5GSEC/sentryflow/exporter"
 	"github.com/5GSEC/sentryflow/metrics"
 	"github.com/5GSEC/sentryflow/protobuf"
+	"github.com/5GSEC/sentryflow/types"
 	"log"
 	"strconv"
 	"strings"
@@ -156,13 +156,13 @@ func GenerateAccessLogs(logText string) []*protobuf.APILog {
 			SrcLabel:     src.Labels,
 			SrcIP:        srcIP,
 			SrcPort:      srcPort,
-			SrcType:      common.K8sResourceTypeToString(src.Type),
+			SrcType:      types.K8sResourceTypeToString(src.Type),
 			DstNamespace: dst.Namespace,
 			DstName:      dst.Name,
 			DstLabel:     dst.Labels,
 			DstIP:        dstIP,
 			DstPort:      dstPort,
-			DstType:      common.K8sResourceTypeToString(dst.Type),
+			DstType:      types.K8sResourceTypeToString(dst.Type),
 			Protocol:     protocolName,
 			Method:       method,
 			Path:         path,

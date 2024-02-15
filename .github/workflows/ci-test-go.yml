@@ -19,19 +19,6 @@ jobs:
         run: make gofmt
         working-directory: sentryflow
 
-  go-fmt-exporters:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: "v1.19.1"
-
-      - name: Check go-fmt Exporters
-        run: make gofmt
-        working-directory: sentryflow-clients
-
   go-lint-sentryflow:
     runs-on: ubuntu-20.04
     steps:
@@ -45,19 +32,6 @@ jobs:
         run: make golint
         working-directory: sentryflow
 
-  go-lint-exporters:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: "v1.19.1"
-
-      - name: Check Golint Exporters
-        run: make golint
-        working-directory: sentryflow-clients
-
   go-sec-sentryflow:
     runs-on: ubuntu-20.04
     steps:
@@ -70,19 +44,6 @@ jobs:
       - name: Run Gosec Security Scanner
         run: make gosec
         working-directory: sentryflow
-
-  go-sec-exporters:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: "v1.19.1"
-
-      - name: Run Gosec Security Scanner Exporters
-        run: make golint
-        working-directory: sentryflow-clients  
 
   license:
     runs-on: ubuntu-20.04

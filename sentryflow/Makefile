@@ -3,8 +3,14 @@
 IMAGE_NAME = 5gsec/sentryflow
 TAG = v0.0.1
 
+
 .PHONY: build
 build:
+	go mod tidy
+	go build -o sentryflow
+
+.PHONY: image
+image:
 	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../
 
 .PHONY: clean
