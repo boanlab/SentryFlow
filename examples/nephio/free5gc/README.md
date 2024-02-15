@@ -81,7 +81,7 @@ namespace/free5gc-cp labeled
 ## Step 3. Deploying Numbat
 Now, it is time for Nubmat to be deployed. We can achieve this by:
 ```
-$ kubectl create -f ../../deployments/numbat.yaml --context regional-admin@regional
+$ kubectl create -f ../../../deployments/numbat.yaml --context regional-admin@regional
 namespace/numbat created
 serviceaccount/sa-numbat created
 clusterrole.rbac.authorization.k8s.io/cr-numbat created
@@ -91,7 +91,7 @@ service/numbat-collector created
 ```
 Also, additionally, we can deploy exporters for Numbat as well by:
 ```
-$ kubectl create -f ../../deployments/exporters.yaml --context regional-admin@regional
+$ kubectl create -f ../../../deployments/exporters.yaml --context regional-admin@regional
 deployment.apps/logger created
 persistentvolume/mongodb-pv-new created
 persistentvolumeclaim/mongodb-pvc-new created
