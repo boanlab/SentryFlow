@@ -10,8 +10,8 @@ import (
 	"log"
 	"mongo-client/common"
 	"mongo-client/db"
-	protobuf "sentryflow/protobuf"
 	"os"
+	protobuf "sentryflow/protobuf"
 )
 
 func main() {

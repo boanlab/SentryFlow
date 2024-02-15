@@ -3,15 +3,15 @@
 package main
 
 import (
-	"log-client/common"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 	"io"
 	"log"
-	"sentryflow/protobuf"
+	"log-client/common"
 	"os"
+	"sentryflow/protobuf"
 )
 
 func main() {

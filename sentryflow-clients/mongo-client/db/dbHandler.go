@@ -9,8 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	protobuf "sentryflow/protobuf"
 	"os"
+	protobuf "sentryflow/protobuf"
 	"time"
 )
 
