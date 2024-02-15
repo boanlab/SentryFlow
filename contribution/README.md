@@ -50,7 +50,7 @@ $ vagrant ssh
 
 The source code for SentryFlow will be located in `/home/vagrant/sentryflow` within the virtual environment, and this directory will also be synchronized with the current work directory on the host machine.
 
-After making modifications to the source code of SentryFlow, you can build the changes by moving to the `/sentryflow` directory and running the Makefile.
+After making modifications to the source code of SentryFlow, you can build the changes by moving to the `sentryflow` directory and running the Makefile.
 
 ```
 make build
@@ -62,7 +62,7 @@ Executing the Makefile will result in the construction of container images, each
 
 To maintain a clean and secure code base for SentryFlow, we conduct several checks, including `gofmt` for code formatting, `golint` for code style and linting, and `gosec` for security scanning.
 
-To evaluate the quality of your code, navigate to the `/sentryflow` directory and execute the following commands:
+To evaluate the quality of your code, navigate to the `sentryflow` directory and execute the following commands:
 
 ```
 make golint # will run golint checks
