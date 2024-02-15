@@ -1,9 +1,9 @@
 
-# Numbat
+# SentryFlow
 
 [![Numbat Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-docker-build.yml) [![Numbat Exporters Docker Build](https://github.com/boanlab/numbat/actions/workflows/numbat-exporter-docker-build.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/numbat-exporter-docker-build.yml) [![test-go](https://github.com/boanlab/numbat/actions/workflows/test-go.yml/badge.svg)](https://github.com/boanlab/numbat/actions/workflows/test-go.yml)
 
-Numbat is a cloud-native system for API observability and security, specializing in log collection, metric production, and data exportation.
+SentryFlow is a cloud-native system for API observability and security, specializing in log collection, metric production, and data exportation.
 
 ## Architecture Overview
 
