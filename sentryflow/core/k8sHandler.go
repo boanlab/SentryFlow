@@ -4,6 +4,8 @@ package core
 
 import (
 	"context"
+	"github.com/5GSEC/sentryflow/common"
+	"github.com/5GSEC/sentryflow/config"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,8 +14,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"log"
-	"sentryflow/common"
-	"sentryflow/config"
 	"sync"
 	"time"
 )

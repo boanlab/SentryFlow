@@ -3,10 +3,10 @@
 package main
 
 import (
+	cfg "github.com/5GSEC/sentryflow/config"
+	core "github.com/5GSEC/sentryflow/core"
 	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 	"log"
-	cfg "sentryflow/config"
-	core "sentryflow/core"
 )
 
 // main is the entrypoint of this program

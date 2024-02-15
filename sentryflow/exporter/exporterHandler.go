@@ -5,9 +5,9 @@ package exporter
 import (
 	"errors"
 	"fmt"
+	cfg "github.com/5GSEC/sentryflow/config"
+	"github.com/5GSEC/sentryflow/protobuf"
 	"net"
-	cfg "sentryflow/config"
-	"sentryflow/protobuf"
 	"sync"
 	"time"
 

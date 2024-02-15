@@ -3,8 +3,8 @@
 package metrics
 
 import (
-	"sentryflow/metrics/api"
-	"sentryflow/protobuf"
+	"github.com/5GSEC/sentryflow/metrics/api"
+	"github.com/5GSEC/sentryflow/protobuf"
 	"sync"
 )
 

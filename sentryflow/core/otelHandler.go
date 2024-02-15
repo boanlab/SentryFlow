@@ -6,11 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	cfg "github.com/5GSEC/sentryflow/config"
 	otelLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	cfg "sentryflow/config"
 	"sync"
 )
 
