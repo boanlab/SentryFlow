@@ -1,15 +1,16 @@
 # Nephio - Free5GC
-This example is for capturing access logs from [Nephio](https://github.com/nephio-project/nephio) which is running on top of Istio using Numbat.
 
-> **Note**: Be advised that any information regarding Nephio in this document might be outdated as Nephio is under early stage of development
+This example demonstrates capturing access logs from [Nephio](https://github.com/nephio-project/nephio), which operates on top of Istio using SentryFlow for log collection.
+
+> **Note**: The information about Nephio provided in this document may be outdated, as Nephio is currently in the early stages of development.
 
 ## Step 1. Setting Up Nephio and Istio
-In this document, we are going to discuss monitoring `free5gc-cp` from the `regional` cluster to monitor API activities within the control plane.
 
-> **Note**: To setup Nephio, please refer to their official document [here](https://github.com/nephio-project/docs/blob/main/content/en/docs/guides/user-guides/exercise-1-free5gc.md), also, in this document, we are going to assume that every step through **Step 6** is performed properly.
+In this document, we will discuss monitoring `free5gc-cp` from the `regional` cluster to observe API activities within the control plane.
 
+> **Note**: To configure Nephio, please consult their official documentation available [here](https://github.com/nephio-project/docs/blob/main/content/en/docs/guides/user-guides/exercise-1-free5gc.md). Additionally, for the purpose of this document, it will be assumed that all steps up to and including **Step 6** have been executed correctly.
 
-Check if Nephio has cluster `regional` running properly as well as `free5gc-cp` namespaces.
+Ensure that the Nephio `regional` cluster is functioning correctly, as well as the `free5gc-cp` namespaces within it.
 
 ```bash
 $ kubectl get pods --context regional-admin@regional -n free5gc-cp
@@ -24,7 +25,8 @@ free5gc-webui-ddd948585-nzkrf   1/1     Running   0          16s
 mongodb-0                       1/1     Running   0          7d9h
 ```
 
-To collect access logs within the namespace, we need to install Istio into the cluster.  
+To gather access logs from within the namespace, Istio must be installed in the cluster. 
+
 ```
 $ istioctl install --set profile=default --context regional-admin@regional
 This will install the Istio 1.20.2 "default" profile (with components: Istio core, Istiod, and Ingress gateways) into the cluster. Proceed? (y/N) y
@@ -34,30 +36,38 @@ This will install the Istio 1.20.2 "default" profile (with components: Istio cor
 ✔ Installation complete    
 Made this installation the default for injection and validation.
 ```
-Once Istio was successfully installed into the cluster, you can check if the Istio system is up and running properly by
+
+After successfully installing Istio in the cluster, you can verify that the Istio system is operational and running correctly by executing the following command:
+
 ```
 $ kubectl get pods -n istio-system --context regional-admin@regional
 ```
 
 ## Step 2. Injecting Sidecars into Nephio
-Till now, we have installed Istio in the cluster where `regional` cluster is running. However, this does NOT imply that we have any sidecar proxies running alongside each pod. To properly inject sidecar into Nephio, we need to perform the following steps:
+
+Up to this point, Istio has been installed in the cluster where the `regional` cluster is operational. However, this does not necessarily mean that sidecar proxies are running alongside each pod. To ensure proper injection of sidecars into Nephio, the following steps need to be undertaken:
+
 ### 2.1 Lowering Restriction: podSecurityStandard
-Nephio creates clusters for each clusters (ex: `regional`, `edge01`, `edge02`) using **podSecurityContext**. By default, Nephio has the following standards:
+
+Nephio creates clusters for each type (e.g., `regional`, `edge01`, `edge02`) using **podSecurityContext**. By default, Nephio adheres to the following standards:
+
 - `enforce`: `baseline`
 - `audit` and `warn`: `restricted`
 
-Those securityContexts avoid using `NET_ADMIN` and `NET_RAW` capabilities which are [required](https://istio.io/latest/docs/ops/deployment/requirements/) for proper side-car injection for `istio-init`. Therefore, we need to explicitly set those profiles across all namespaces as `privileged` for injecting Istio properly.
+The security contexts employed by Nephio intentionally exclude the `NET_ADMIN` and `NET_RAW` capabilities, which are [required](https://istio.io/latest/docs/ops/deployment/requirements/) for the correct injection of the `istio-init` sidecar. Consequently, it is essential to explicitly designate these profiles as `privileged` across all namespaces to ensure Istio is injected properly.
 
 We can achieve this by:
+
 ```
 $ kubectl label --overwrite ns --all pod-security.kubernetes.io/audit=privileged --context regional-admin@regional
 $ kubectl label --overwrite ns --all pod-security.kubernetes.io/enforce=privileged --context regional-admin@regional
 $ kubectl label --overwrite ns --all pod-security.kubernetes.io/warn=privileged --context regional-admin@regional
 ```
 
-> **Note**: Setting `podSecurityStandard` using `kubectl edit cluster regional-admin@regional` will revert settings to default, thus, directly modify the namespace instead.
+> **Note**: Modifying `podSecurityStandard` via `kubectl edit cluster regional-admin@regional` will reset the settings to their defaults. Therefore, it's recommended to directly alter the namespace configuration instead.
 
 Now, verify if those labels were set properly by:
+
 ```
 $ kubectl describe ns free5gc-cp --context regional-admin@regional
 Name:         free5gc-cp
@@ -70,64 +80,78 @@ Labels:       app.kubernetes.io/managed-by=configmanagement.gke.io
 ...
 ```
 
-
 ### 2.2 Preparing Sidecars
-Now, we need to inject sidecars using Istio by tagging namespaces with label. For current demo, we are just going to tag `free5gc-cp` namespaces.
+
+To inject sidecars using Istio, we will label the namespaces accordingly. For the purposes of this demonstration, we will specifically label the `free5gc-cp` namespaces.
+
 ```
 $ kubectl label namespace free5gc-cp istio-injection=enabled --overwrite --context regional-admin@regional
 namespace/free5gc-cp labeled
 ```
 
-## Step 3. Deploying Numbat
-Now, it is time for Nubmat to be deployed. We can achieve this by:
+## Step 3. Deploying SentryFlow
+
+Now is the moment to deploy SentryFlow. This can be accomplished by executing the following steps:
+
 ```
-$ kubectl create -f ../../../deployments/numbat.yaml --context regional-admin@regional
-namespace/numbat created
-serviceaccount/sa-numbat created
-clusterrole.rbac.authorization.k8s.io/cr-numbat created
-clusterrolebinding.rbac.authorization.k8s.io/rb-numbat created
-deployment.apps/numbat-collector created
-service/numbat-collector created
+$ kubectl create -f ../../../deployments/sentryflow.yaml --context regional-admin@regional
+namespace/sentryflow created
+serviceaccount/sa-sentryflow created
+clusterrole.rbac.authorization.k8s.io/cr-sentryflow created
+clusterrolebinding.rbac.authorization.k8s.io/rb-sentryflow created
+deployment.apps/sentryflow created
+service/sentryflow created
 ```
-Also, additionally, we can deploy exporters for Numbat as well by:
+
+Also, we can deploy exporters for SentryFlow by following these additional steps:
+
 ```
-$ kubectl create -f ../../../deployments/exporters.yaml --context regional-admin@regional
-deployment.apps/logger created
-persistentvolume/mongodb-pv-new created
-persistentvolumeclaim/mongodb-pvc-new created
-deployment.apps/mongodb-deployment created
-service/mongo created
+$ kubectl create -f ../../../deployments/log-client.yaml --context regional-admin@regional
+deployment.apps/log-client created
+
+$ kubectl create -f ../../../deployments/mongo-client.yaml --context regional-admin@regional
+deployment.apps/mongodb created
+service/mongodb created
 deployment.apps/mongo-client created
 ```
-Verify if Pods in Numbat are properly by:
+
+Verify if Pods in SentryFlow are properly by:
+
 ```
-$ kubectl get pods -n numbat --context regional-admin@regional
-NAME                                  READY   STATUS    RESTARTS   AGE
-logger-75695cd4d4-z6rns               1/1     Running   0          37s
-mongo-client-67dfb6ffbb-4psdh         1/1     Running   0          37s
-mongodb-deployment-575549748d-9n6lx   1/1     Running   0          37s
-numbat-collector-5bf9f6987c-kmpgx     1/1     Running   0          60s
+$ kubectl get pods -n sentryflow --context regional-admin@regional
+NAME                            READY   STATUS    RESTARTS   AGE
+log-client-75695cd4d4-z6rns     1/1     Running   0          37s
+mongo-client-67dfb6ffbb-4psdh   1/1     Running   0          37s
+mongodb-575549748d-9n6lx        1/1     Running   0          37s
+sentryflow-5bf9f6987c-kmpgx     1/1     Running   0          60s
 ```
-> **Note**: Namespace `numbat` will not have `istio-injection=enabled`. If we enable this, each OpenTelemetry export will be logged as access logs, causing too many logs to be captured.
-> **Note**: Deploying `numbat-collector` will automatically update Istio's mesh config (`istio-system/istio`) to export access logs to our collector
+
+> **Note**: 
+The `sentryflow` namespace will not have `istio-injection=enabled`. Enabling this would result in each OpenTelemetry export being logged as an access log, leading to an excessive number of logs being captured.
+
+> **Note**: Deploying `sentryflow` will automatically modify the Istio mesh configuration (`istio-system/istio`) to direct the export of access logs to it.
 
 ## Step 4. Restarting Deployments
+
 Till now we have:
-- Setup Numbat
+- Setup SentryFlow
 - Prepared Istio injection
 - Lowered podSecurityStandard
 
-However, this will not generate any logs yet. For Numbat to get access logs, we need to add `telemetry` as well as restart deployments under `free5gc-cp`.
-> **Note**: Restarting deployments before applying telemetry will make side-cars not report access logs to our collector. Therefore, apply telemetry before restarting deployments.
+However, this action alone will not yet produce any logs. To enable Numbat to collect access logs, it is necessary to add `telemetry` configurations and also restart the deployments under `free5gc-cp`.
 
+> **Note**: Restarting deployments before implementing telemetry will result in the sidecars not transmitting access logs to our collector. Hence, it is important to apply telemetry configurations prior to restarting the deployments.
 
-We can add telemetry to watch `free5gc-cp` namespace by:
+Telemetry can be configured to monitor the `free5gc-cp` namespace by executing the following steps:
+
 ```
 $ kubectl create -f telemetry.yaml --context regional-admin@regional
 telemetry.telemetry.istio.io/free5gc-logging created
 ```
-Now, we are going to restart all deployments under namespace `free5gc-cp` by:
-> **Note**: This requires restarting deployments within the `free5gc-cp` namespace. If there are any jobs running 
+
+To restart all deployments within the `free5gc-cp` namespace, you can proceed with the following command:
+
+> **Note**: Restarting deployments within the `free5gc-cp` namespace is necessary. If there are any jobs currently running, additional steps may be needed to manage those jobs during the restart process. 
 
 ```
 $ kubectl rollout restart deployment -n free5gc-cp --context regional-admin@regional
@@ -139,7 +163,9 @@ deployment.apps/free5gc-udm restarted
 deployment.apps/free5gc-udr restarted
 deployment.apps/free5gc-webui restarted
 ```
-Once rollout restart was issued, we can check if the Pods actually have side-cars by:
+
+After issuing the rollout restart command, you can verify whether the Pods now include sidecars by executing the following command:
+
 ```
 $ kubectl get pods --context regional-admin@regional -n free5gc-cp
 NAME                            READY   STATUS    RESTARTS   AGE
@@ -152,18 +178,23 @@ free5gc-udr-67f5fdf44d-4ckwd    2/2     Running   0          21s
 free5gc-webui-cf788755c-9bwzd   2/2     Running   0          21s
 mongodb-0                       1/1     Running   0          7d10h
 ```
-As we can see, each Pod has 2 containers instead of 1. (You can check if this is `istio-proxy` container by `kubectl describe`)
+
+Observing that each Pod now contains 2 containers instead of just 1 indicates the presence of sidecars. To confirm that the additional container is indeed the `istio-proxy`, you can use the `kubectl describe` command for further verification.
 
 ## Step 5. Checking Logs
-From now on, `numbat-collector` will be receiving logs from each deployment. We can check how deployments within our `free5gc-cp` namespace is communicating by two methods: logger and MongoDB.
+
+Starting from this point, `sentryflow` will begin receiving logs from each deployment. To examine how deployments within the `free5gc-cp` namespace are communicating, there are two methods available: using a log client and a mongo client.
 
 ### 5.1 Checking Logger
-The deployment `logger` will receive logs from `numbat-collector` using our export format and display those logs out as stdout. We can check live logs by:
+
+The `log-client` deployment is configured to receive logs from `sentryflow` in our specified export format and output these logs as stdout. To view live logs, you can use the following command:
 
 ```
-$ kubectl logs -n numbat -l app=logger -f --context regional-admin@regional
+$ kubectl logs -n sentryflow -l app=log-client -f --context regional-admin@regional
 ```
+
 This will show live logs such as:
+
 ```
 2024/02/12 20:37:19 [Client] Received log: timeStamp:"[2024-02-12T20:37:19.318Z]"  id:1707769691204491  srcNamespace:"free5gc-cp"  srcName:"free5gc-pcf-c7b8ff6bb-t2zrq"  srcLabel:{key:"nf"  value:"pcf"}  srcLabel:{key:"pod-template-hash"  value:"c7b8ff6bb"}  srcLabel:{key:"project"  value:"free5gc"}  srcLabel:{key:"security.istio.io/tlsMode"  value:"istio"}  srcLabel:{key:"service.istio.io/canonical-name"  value:"free5gc-pcf"}  srcLabel:{key:"service.istio.io/canonical-revision"  value:"latest"}  srcIP:"192.168.1.122"  srcPort:"45542"  srcType:"Pod"  dstNamespace:"free5gc-cp"  dstName:"nrf-nnrf"  dstLabel:{key:"app.kubernetes.io/managed-by"  value:"configmanagement.gke.io"}  dstLabel:{key:"app.kubernetes.io/version"  value:"v3.1.1"}  dstLabel:{key:"configsync.gke.io/declared-version"  value:"v1"}  dstLabel:{key:"nf"  value:"nrf"}  dstLabel:{key:"project"  value:"free5gc"}  dstIP:"10.141.104.225"  dstPort:"8000"  dstType:"Service"  protocol:"HTTP/2"  method:"GET"  path:"/nnrf-disc/v1/nf-instances?requester-nf-type=PCF&service-names=nudr-dr&target-nf-type=UDR"  responseCode:200
 2024/02/12 20:37:20 [Client] Received log: timeStamp:"[2024-02-12T20:37:20.292Z]"  id:1707769691204493  srcNamespace:"free5gc-cp"  srcName:"free5gc-udm-65947bb776-xs6vf"  srcLabel:{key:"nf"  value:"udm"}  srcLabel:{key:"pod-template-hash"  value:"65947bb776"}  srcLabel:{key:"project"  value:"free5gc"}  srcLabel:{key:"security.istio.io/tlsMode"  value:"istio"}  srcLabel:{key:"service.istio.io/canonical-name"  value:"free5gc-udm"}  srcLabel:{key:"service.istio.io/canonical-revision"  value:"latest"}  srcIP:"192.168.1.124"  srcPort:"36488"  srcType:"Pod"  dstNamespace:"free5gc-cp"  dstName:"nrf-nnrf"  dstLabel:{key:"app.kubernetes.io/managed-by"  value:"configmanagement.gke.io"}  dstLabel:{key:"app.kubernetes.io/version"  value:"v3.1.1"}  dstLabel:{key:"configsync.gke.io/declared-version"  value:"v1"}  dstLabel:{key:"nf"  value:"nrf"}  dstLabel:{key:"project"  value:"free5gc"}  dstIP:"10.141.104.225"  dstPort:"8000"  dstType:"Service"  protocol:"HTTP/2"  method:"PUT"  path:"/nnrf-nfm/v1/nf-instances/8ac564d2-e5cc-421c-96cc-8c57b9c85ded"  responseCode:201
@@ -171,19 +202,22 @@ This will show live logs such as:
 ```
 
 ### 5.2 Checking MongoDB
-Alongside with logger, we also have another exporter that stores every data coming from `numbat-collector` into MongoDB deployment. We can use `mongosh` for checking what is being stored in MongoDB. This can be achieved by:
+
+We have another client (`mongo-client`) that stores all data received from the `sentryflow` into the MongoDB deployment. You can use `mongosh` to inspect the contents stored in MongoDB by executing the following command:
 
 ```
-$ export MONGODB_POD=$(kubectl get pod -n numbat -l app=mongodb --context regional-admin@regional -o jsonpath='{.items[0].metadata.name}')
-$ kubectl exec -it $MONGODB_POD -n numbat --context regional-admin@regional mongosh
+$ export MONGODB_POD=$(kubectl get pod -n sentryflow -l app=mongodb --context regional-admin@regional -o jsonpath='{.items[0].metadata.name}')
+$ kubectl exec -it $MONGODB_POD -n sentryflow --context regional-admin@regional mongosh
 ```
-Once we have entered `mongosh` we can check entries stored in the DB. Numbat uses DB named `numbat` and collection `access-logs` for storing access logs.
+
+Once we have entered `mongosh` we can check entries stored in the DB. SentryFlow uses DB named `sentryflow` and collection `access-logs` for storing access logs.
 
 An example command of checking all access logs stored in DB would be:
+
 ```
-test> use numbat
-use numbat
-numbat> db["access-logs"].find()
+test> use sentryflow
+use sentryflow
+sentryflow> db["api-logs"].find()
 ...
   {
     _id: ObjectId('65ca77e4ef0f86784e2fa544'),
@@ -221,10 +255,11 @@ numbat> db["access-logs"].find()
   },
 ...
 ```
-Another example will be filtering out only `"protocol":"HTTP/1.1"` to check only API calls:
+
+Another example would involve filtering out only logs with `protocol":"HTTP/1.1` to specifically examine API calls:
 
 ```
-numbat> db["access-logs"].find({"protocol":"HTTP/1.1"})
+sentryflow> db["access-logs"].find({"protocol":"HTTP/1.1"})
 ...
   {
     _id: ObjectId('65ca77e4ef0f86784e2fa545'),

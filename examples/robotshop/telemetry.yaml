@@ -6,4 +6,4 @@ metadata:
 spec:
   accessLogging:
     - providers:
-      - name: numbat-collector
+      - name: sentryflow
