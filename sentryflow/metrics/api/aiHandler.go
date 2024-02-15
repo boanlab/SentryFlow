@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 package api
 
 // ah Local reference for AI handler server
