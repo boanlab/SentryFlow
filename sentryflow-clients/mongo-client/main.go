@@ -10,11 +10,10 @@ import (
 	"log"
 	"mongo-client/common"
 	"mongo-client/db"
-	protobuf "numbat/protobuf"
+	protobuf "sentryflow/protobuf"
 	"os"
 )
 
-// main is the entrypoint of this program
 func main() {
 	// Init DB
 	_, err := db.New()
@@ -41,8 +40,8 @@ func main() {
 	// Start serving gRPC server
 	log.Printf("[gRPC] Successfully connected to %s", addr)
 
-	// Create a client for the Numbat service.
-	client := protobuf.NewNumbatClient(conn)
+	// Create a client for the SentryFlow service.
+	client := protobuf.NewSentryFlowClient(conn)
 
 	hostname, err := os.Hostname()
 	if err != nil {

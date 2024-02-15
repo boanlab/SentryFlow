@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-client
+  namespace: sentryflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-client
+  template:
+    metadata:
+      labels:
+        app: log-client
+    spec:
+      containers:
+      - name: log-client
+        image: 5GSEC/sentryflow-log-client:v0.1
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: grpc
+        env:
+        - name: SERVER_ADDR
+          value: "sentryflow.sentryflow.svc.cluster.local"
+        - name: SERVER_PORT
+          value: "8080"

@@ -1,5 +1,4 @@
-name: test-go
-
+name: ci-test-go
 on:
   push:
     branches: [main]
@@ -7,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  go-fmt-numbat:
+  go-fmt-sentryflow:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -18,7 +17,7 @@ jobs:
 
       - name: Check go-fmt
         run: make gofmt
-        working-directory: numbat
+        working-directory: sentryflow
 
   go-fmt-exporters:
     runs-on: ubuntu-20.04
@@ -33,7 +32,7 @@ jobs:
         run: make gofmt
         working-directory: exporters
 
-  go-lint-numbat:
+  go-lint-sentryflow:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -44,7 +43,7 @@ jobs:
 
       - name: Check Golint 
         run: make golint
-        working-directory: numbat
+        working-directory: sentryflow
 
   go-lint-exporters:
     runs-on: ubuntu-20.04
@@ -59,7 +58,7 @@ jobs:
         run: make golint
         working-directory: exporters
 
-  go-sec-numbat:
+  go-sec-sentryflow:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -70,7 +69,7 @@ jobs:
 
       - name: Run Gosec Security Scanner
         run: make gosec
-        working-directory: numbat
+        working-directory: sentryflow
 
   go-sec-exporters:
     runs-on: ubuntu-20.04
@@ -94,4 +93,3 @@ jobs:
         uses: apache/skywalking-eyes@a790ab8dd23a7f861c18bd6aaa9b012e3a234bce
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

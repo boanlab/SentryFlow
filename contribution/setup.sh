@@ -1,19 +1,23 @@
 #!/bin/bash
 
-# From our lab's tools scripts, install Docker and Kubeadn
+# From BoanLab's tools scripts
 git clone https://github.com/boanlab/tools.git
+
+# Install Docker
 bash tools/containers/install-docker.sh
+
+# Install Kubeadm
 bash tools/kubernetes/install-kubeadm.sh
 
-# Initialize Kubernetes for single node
-# We are going to use Docker with Kubernetes and CNI with Calico.
-# Even if Docker is outdated with Kubernetes, it is easier for us
-# to build containers and deploy them without us having to export images
-# into containerd. So for development purpose, we are using Docker as CRI.
-export MULTI=false
-export CNI=calico
+# Disable Swap
 sudo swapoff -a
+
+# Initialize Kubernetes for single node
+export MULTI=false
 bash tools/kubernetes/initialize-kubeadm.sh
+
+# Deploy Calico
+export CNI=calico
 bash tools/kubernetes/deploy-cni.sh
 
 # Make kubectl related commands accessable for vagrant user
@@ -21,10 +25,9 @@ sudo mkdir -p /home/vagrant/.kube
 sudo cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
 sudo chown $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
 
-# Till here, we have successfully installed Kubernetes in Vagrant
 # Now install Istio
 sudo apt-get install make
-curl -L https://istio.io/downloadIstio | sh -
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.20.3 sh -
 export PATH="$PATH:/home/vagrant/istio-1.20.3/bin"
 istioctl install --set profile=default -y
 sudo chown -R vagrant /home/vagrant/istio-1.20.3/

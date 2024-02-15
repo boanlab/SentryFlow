@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	protobuf "numbat/protobuf"
+	protobuf "sentryflow/protobuf"
 	"os"
 	"time"
 )
@@ -35,27 +35,27 @@ func New() (*Handler, error) {
 		return nil, errors.New("$MONGODB_HOST not set")
 	}
 
-	// Yes this is deprecated, but we are just doing a demo
+	// Create a MongoDB client
 	h.client, err = mongo.NewClient(options.Client().ApplyURI(dbHost))
 	if err != nil {
 		msg := fmt.Sprintf("unable to initialize monogoDB client for %s: %v", dbHost, err)
 		return nil, errors.New(msg)
 	}
 
-	// Set timeout as 10 sec
+	// Set timeout (10 sec)
 	var ctx context.Context
 	ctx, h.cancel = context.WithTimeout(context.Background(), 10*time.Second)
 
-	// Try connecting server
+	// Try connecting the server
 	err = h.client.Connect(ctx)
 	if err != nil {
 		msg := fmt.Sprintf("unable to connect mongoDB server %s: %v", dbHost, err)
 		return nil, errors.New(msg)
 	}
 
-	// Create database of numbat and collection of access-logs
-	h.database = h.client.Database("numbat")
-	h.collection = h.database.Collection("access-logs")
+	// Create 'sentryflow' database and 'api-logs' collection
+	h.database = h.client.Database("sentryflow")
+	h.collection = h.database.Collection("api-logs")
 
 	Manager = &h
 	return &h, nil

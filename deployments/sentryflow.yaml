@@ -1,11 +1,7 @@
-# Setup namespace for numbat
-# Nephio will create clusters using kind (regional or edge) with high podSecurityStandards
-# so for our system to be deployed properly, we need to override the policies of audit, enforce, warn
-# as priviliged to have no security policy conflicts
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: numbat
+  name: sentryflow
   labels:
     istio-injection: disabled # avoid Istio sidecar injection
     pod-security.kubernetes.io/audit: privileged 
@@ -15,13 +11,13 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: sa-numbat
-  namespace: numbat
+  name: sa-sentryflow
+  namespace: sentryflow
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cr-numbat
+  name: cr-sentryflow
 rules:
 - apiGroups: ["*"]
   verbs: ["*"]
@@ -30,36 +26,35 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: rb-numbat
+  name: rb-sentryflow
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cr-numbat
+  name: cr-sentryflow
 subjects:
 - kind: ServiceAccount
-  name: sa-numbat
-  namespace: numbat
+  name: sa-sentryflow
+  namespace: sentryflow
 ---
-# Setup deployment for our custom-exporter
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: numbat-collector
-  namespace: numbat
+  name: sentryflow
+  namespace: sentryflow
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: numbat-collector
+      app: sentryflow
   template:
     metadata:
       labels:
-        app: numbat-collector
+        app: sentryflow
     spec:
-      serviceAccountName: sa-numbat
+      serviceAccountName: sa-sentryflow
       containers:
-      - name: numbat-collector
-        image: boanlab/numbat:v0.0.2
+      - name: sentryflow
+        image: 5GSEC/sentryflow:v0.1
         ports:
         - containerPort: 4317
           protocol: TCP
@@ -68,15 +63,14 @@ spec:
           protocol: TCP
           name: grpc-export
 ---
-# Setup service for custom-exporter
 apiVersion: v1
 kind: Service
 metadata:
-  name: numbat-collector
-  namespace: numbat
+  name: sentryflow
+  namespace: sentryflow
 spec:
   selector:
-    app: numbat-collector
+    app: sentryflow
   ports:
     - protocol: TCP
       port: 4317

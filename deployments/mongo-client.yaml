@@ -1,0 +1,64 @@
+# Setup deployment for mongodb
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: sentryflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+---
+# Setup service for mongodb
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: sentryflow
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+---
+# Setup deployment for mongo-client
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-client
+  namespace: sentryflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-client
+  template:
+    metadata:
+      labels:
+        app: mongo-client
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+      - name: mongo-client
+        image: 5GSEC/sentryflow-mongo-client:v0.0.2
+        env:
+        - name: SERVER_ADDR
+          value: "sentryflow.sentryflow.svc.cluster.local"
+        - name: SERVER_PORT
+          value: "8080"
+        - name: MONGODB_HOST
+          value: "mongodb://mongo:27017"

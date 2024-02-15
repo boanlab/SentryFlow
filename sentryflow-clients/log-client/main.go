@@ -3,18 +3,16 @@
 package main
 
 import (
-	"client-stdout/common"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 	"io"
 	"log"
-	"numbat/protobuf"
+	"sentryflow/protobuf"
 	"os"
 )
 
-// main is the entrypoint of this program
 func main() {
 	// Load environment variables
 	cfg, err := common.LoadEnvVars()
@@ -35,20 +33,20 @@ func main() {
 	// Start serving gRPC server
 	log.Printf("[gRPC] Successfully connected to %s", addr)
 
-	// Create a client for the Numbat service.
-	client := protobuf.NewNumbatClient(conn)
+	// Create a client for the SentryFlow service
+	client := protobuf.NewSentryFlowClient(conn)
 
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.Fatalf("could not find hostname: %v", err)
 	}
 
-	// Define the client information.
+	// Define the client information
 	clientInfo := &protobuf.ClientInfo{
 		Hostname: hostname,
 	}
 
-	// Contact the server and print out its response.
+	// Contact the server and print out its response
 	stream, err := client.GetLog(context.Background(), clientInfo)
 	if err != nil {
 		log.Fatalf("could not get log: %v", err)

@@ -1,5 +1,6 @@
 # Kubernetes Compatability Matrix
-This document lists possible combinations of Kubernetes setup and their compatibility with Numbat.
+
+This document outlines various Kubernetes configurations and their compatibility with SentryFlow.
 
 |OS|Kubernetes Version|CRI|CNI|
 |--|--|--|--|

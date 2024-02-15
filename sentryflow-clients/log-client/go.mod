@@ -1,12 +1,12 @@
-module client-stdout
+module log-client
 
 go 1.19
 
-replace numbat/protobuf => ../protobuf
+replace sentryflow/protobuf => ../protobuf
 
 require (
 	google.golang.org/grpc v1.61.0
-	numbat/protobuf v0.0.0-00010101000000-000000000000
+	sentryflow/protobuf v0.0.0-00010101000000-000000000000
 )
 
 require (

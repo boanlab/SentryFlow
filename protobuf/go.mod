@@ -1,4 +1,4 @@
-module github.com/numbat/protobuf
+module github.com/5GSEC/sentryflow/protobuf
 
 go 1.19
 

@@ -16,21 +16,21 @@ COPY /protobuf .
 
 WORKDIR /app
 
-COPY /exporters/mongoDB .
+COPY /sentryflow-clients/mongo-client .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-RUN go build -o client-mongo
+RUN go build -o mongo-client
 
 ### Make executable image
 
-FROM alpine:3.18 as custom-collector
+FROM alpine:3.18 as client
 
 RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee -a /etc/apk/repositories
 
 RUN apk --no-cache update
 RUN apk add bash
 
-COPY --from=builder /app/client-mongo .
+COPY --from=builder /app/mongo-client /
 
-CMD ["./client-mongo"]
+CMD ["/mongo-client"]

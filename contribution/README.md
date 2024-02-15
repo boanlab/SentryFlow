@@ -1,55 +1,69 @@
 # Development Guide
-Numbat runs on top of Istio environment with Kubernetes. This means that anybody who wants to contribute to our project would require an Istio environment installed.
 
-To reduce the overhead of installing and uninstalling Kubernetes as well as Istio setup just for our project, we have set up a simple Vagantfile which starts up a Ubuntu virtual machine with a fully functioning Kubernetes with Istio environment in it.
+SentryFlow operates within an Istio environment on Kubernetes, indicating that contributors to our project will need to have an Istio environment set up.
+
+To minimize the hassle of installing and uninstalling Kubernetes and configuring Istio solely for our project, we have provided a straightforward Vagrantfile. This Vagrantfile initializes an Ubuntu virtual machine equipped with a fully operational Kubernetes and Istio environment.
 
 ## 1. Prerequisites
-We utilize Vagrant for provisioning VirtualBox virtual machines to provide a Kubernetes environment. Therefore, the following package suggested version is highly recommended to be installed in your local environment:
+
+We employ Vagrant to provision VirtualBox virtual machines, creating a Kubernetes environment. As such, it is highly recommended to install the following package versions in your local environment:
 
 - **[Vagrant](https://www.vagrantup.com/)** - v2.2.9
 - **[VirtualBox](https://www.virtualbox.org/)** - v6.1
 
-## 2. Starting up VM
-We have set up a Vagrantfile that starts a Ubuntu22.04 machine with Kubernetes installed. The Kubernetes setup is as follows:
-> **Note:** We understand that Kubernetes has officially recommended using containerd instead of Docker as CRI. However, using containerd as CRI for Kubernetes in our development environemtn will require us to export images built in Docker to containerd images every time. Therefore, to remove this extra step, we are using Docker as CRI for Kubernetes. 
+## 2. Starting up a VM
+
+We have configured a Vagrantfile that initiates an Ubuntu 22.04 machine with Kubernetes pre-installed. The setup for Kubernetes is as described below:
+
+> **Note:** Although Kubernetes officially advises the use of containerd over Docker as the Container Runtime Interface (CRI), we have chosen to use Docker as the CRI within our Kubernetes setup. This decision facilitates the building and testing of SentryFlow and its client images.
 
 - Kubernetes: 1.23
 - [CRI] Docker: 24.0.7
 - [CNI] Calico: 0.3.1
 
-Execute following command under `contributing/` directory
+To proceed, execute the following command within the `contribution/` directory:
+
 ```bash
 $ vagrant up
-Bringing machine 'numbat' up with 'virtualbox' provider...
-==> numbat: Importing base box 'generic/ubuntu2204'...
-==> numbat: Matching MAC address for NAT networking...
-==> numbat: Checking if box 'generic/ubuntu2204' version '4.3.10' is up to date...
+Bringing machine 'sentryflow' up with 'virtualbox' provider...
+==> sentryflow: Importing base box 'generic/ubuntu2204'...
+==> sentryflow: Matching MAC address for NAT networking...
+==> sentryflow: Checking if box 'generic/ubuntu2204' version '4.3.10' is up to date...
 ...
-    numbat: clusterrolebinding.rbac.authorization.k8s.io/calico-node created
-    numbat: clusterrolebinding.rbac.authorization.k8s.io/calico-cni-plugin created
-    numbat: daemonset.apps/calico-node created
-    numbat: deployment.apps/calico-kube-controllers created
+    sentryflow: clusterrolebinding.rbac.authorization.k8s.io/calico-node created
+    sentryflow: clusterrolebinding.rbac.authorization.k8s.io/calico-cni-plugin created
+    sentryflow: daemonset.apps/calico-node created
+    sentryflow: deployment.apps/calico-kube-controllers created
 ```
-This will start installing the required environment for development. Depending on your network connection, this might take some minutes.
+
+This command will initiate the installation of the necessary development environment. The duration of this process may vary, primarily depending on the speed of your network connection, and could take several minutes to complete.
 
 ## 3. Development and Code Quality
+
 ### Development
-Once Vagrant has successfully been initialized, you can use the Istio and Kubernetes environment by:
+
+After Vagrant has been successfully initialized, you can access the Istio and Kubernetes environment by executing the following steps:
+
 ```
 $ vagrant ssh
 ```
-Project source for Numbat will be stored under `/home/vagrant/numbat` and this will be synced with the current host's workdirectory as well. 
 
-Once a change has been made to Numbat's source code, you can build it by navigating to `/numbat` directory and executing Makefile
+The source code for SentryFlow will be located in `/home/vagrant/sentryflow` within the virtual environment, and this directory will also be synchronized with the current work directory on the host machine.
+
+After making modifications to the source code of SentryFlow, you can build the changes by moving to the `/sentryflow` directory and running the Makefile.
+
 ```
 make build
 ```
-This will build container images with given tags.
+
+Executing the Makefile will result in the construction of container images, each tagged as specified.
 
 ### Code Quality
-For Numbat to retain clean and safe code base, we perform some checks. Those include: gofmt, golint, and gosec.
 
-You can check your code's quality by navigating to `/numbat` directory and executing following commands
+To maintain a clean and secure code base for SentryFlow, we conduct several checks, including `gofmt` for code formatting, `golint` for code style and linting, and `gosec` for security scanning.
+
+To evaluate the quality of your code, navigate to the `/sentryflow` directory and execute the following commands:
+
 ```
 make golint # will run golint checks
 make gofmt # will run gofmt checks
@@ -57,14 +71,18 @@ make gosec # will run gosec checks
 ```
 
 ### Pull Request
-Once everything was properly set, you can now pull request. Please refer to our guidelines for PR.
+
+Once everything is correctly set up, you are ready to create a pull request. Please refer to our guidelines for submitting PRs.
 
 ## 4. Cleaning Up
-Once you have successfully made changes into Numbat and wish to clean up the workspace that has been created, you can simply use:
+
+If you have successfully made changes to SentryFlow and wish to clean up the created workspace, you can simply use the following command:
+
 ```
 $ vagrant destroy
-    numbat: Are you sure you want to destroy the 'numbat' VM? [y/N] y
-==> numbat: Forcing shutdown of VM...
-==> numbat: Destroying VM and associated drives...
+    sentryflow: Are you sure you want to destroy the 'sentryflow' VM? [y/N] y
+==> sentryflow: Forcing shutdown of VM...
+==> sentryflow: Destroying VM and associated drives...
 ```
-This will destroy the VM that you were working on. The changes that you have made will be stored under `work/` directory.
+
+Executing the command will terminate and remove the VM that you were working on.

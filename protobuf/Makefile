@@ -1,4 +1,4 @@
-PROTO:=numbat.proto
+PROTO:=sentryflow.proto
 PBGO:=$(PROTO:.proto=.pb.go)
 
 .PHONY: build

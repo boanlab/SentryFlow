@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package protobuf;
+
+option go_package = "sentryflow/protobuf";
+
+message ClientInfo {
+  string hostName = 1;
+  string IPAddress = 2;
+}
+
+message LogFilter {
+  string logFilter = 1;
+}
+
+message APILog {
+  uint64 id = 1;
+  string timeStamp = 2;
+
+  string srcNamespace = 11;
+  string srcName = 12;
+  map<string, string> srcLabel = 13;
+  string srcType = 16;
+  string srcIP = 17;
+  string srcPort = 18;
+
+  string dstNamespace = 21;
+  string dstName = 22;
+  map<string, string> dstLabel = 23;
+  string dstType = 26;
+  string dstIP = 27;
+  string dstPort = 28;
+
+  string protocol = 31;
+  string method = 32;
+  string path = 33;
+  int64 responseCode = 34;
+}
+
+message MetricFilter {
+  string metricFilter = 1;
+}
+
+message APIMetric {
+  map<string, uint64> perAPICounts = 1;
+  // @todo: add some more metrics here
+}
+
+service SentryFlow {
+  rpc GetLog(ClientInfo, LogFilter) returns (stream APILog);
+  rpc GetAPIMetrics(ClientInfo, MetricFilter) returns (APIMetric);
+}

@@ -16,21 +16,21 @@ COPY /protobuf .
 
 WORKDIR /app
 
-COPY /exporters/logger .
+COPY /sentryflow-clients/log-client .
 
 RUN go install github.com/golang/protobuf/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-RUN go build -o logger
+RUN go build -o log-client
 
 ### Make executable image
 
-FROM alpine:3.18 as logger
+FROM alpine:3.18 as client
 
 RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee -a /etc/apk/repositories
 
 RUN apk --no-cache update
 RUN apk add bash
 
-COPY --from=builder /app/logger .
+COPY --from=builder /app/log-client /
 
-CMD ["./logger"]
+CMD ["/log-client"]

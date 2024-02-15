@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-IMAGE_NAME = boanlab/numbat-logger
-TAG = v0.0.2
+IMAGE_NAME = 5GSEC/mongo-client
+TAG = v0.1
 
 .PHONY: build
 
