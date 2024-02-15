@@ -1,7 +1,7 @@
 apiVersion: telemetry.istio.io/v1alpha1
 kind: Telemetry
 metadata:
-  name: free5gc-logging
+  name: oai-logging
   namespace: istio-system
 spec:
   accessLogging:
