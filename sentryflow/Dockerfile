@@ -19,7 +19,8 @@ RUN make build
 WORKDIR /app
 COPY /sentryflow .
 
-RUN go build
+RUN go mod tidy
+RUN go build -o sentryflow
 
 ### Make executable image
 
