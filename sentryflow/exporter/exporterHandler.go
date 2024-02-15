@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	cfg "numbat/config"
-	"numbat/protobuf"
+	cfg "sentryflow/config"
+	"sentryflow/protobuf"
 	"sync"
 	"time"
 
@@ -27,13 +27,13 @@ func init() {
 type Handler struct {
 	baseExecutionID uint64
 	currentLogCount uint64
-	logChannel      chan *protobuf.Log
+	logChannel      chan *protobuf.APILog
 	lock            sync.Mutex // @todo find better solution for this
 	stopChan        chan struct{}
 
 	exporters    []*Inform
 	exporterLock sync.Mutex
-	exporterLogs chan *protobuf.Log
+	exporterLogs chan *protobuf.APILog
 
 	listener   net.Listener
 	gRPCServer *grpc.Server
@@ -41,7 +41,7 @@ type Handler struct {
 
 // Inform structure
 type Inform struct {
-	stream    protobuf.Numbat_GetLogServer
+	stream    protobuf.SentryFlow_GetLogServer
 	error     chan error
 	Hostname  string
 	IPAddress string
@@ -53,18 +53,18 @@ func NewExporterHandler() *Handler {
 		baseExecutionID: uint64(time.Now().UnixMicro()),
 		currentLogCount: 0,
 		exporters:       make([]*Inform, 0),
-		logChannel:      make(chan *protobuf.Log),
+		logChannel:      make(chan *protobuf.APILog),
 		stopChan:        make(chan struct{}),
 		lock:            sync.Mutex{},
 		exporterLock:    sync.Mutex{},
-		exporterLogs:    make(chan *protobuf.Log),
+		exporterLogs:    make(chan *protobuf.APILog),
 	}
 
 	return exp
 }
 
 // InsertAccessLog Function
-func InsertAccessLog(al *protobuf.Log) {
+func InsertAccessLog(al *protobuf.APILog) {
 	// Avoid race condition for currentLogCount, otherwise we might have duplicate IDs
 	Exp.lock.Lock()
 	al.Id = Exp.baseExecutionID + Exp.currentLogCount
@@ -87,7 +87,7 @@ func (exp *Handler) InitExporterServer() error {
 
 	// Create gRPC server
 	server := grpc.NewServer()
-	protobuf.RegisterNumbatServer(server, exs)
+	protobuf.RegisterSentryFlowServer(server, exs)
 
 	exp.listener = lis
 	exp.gRPCServer = server
@@ -149,7 +149,7 @@ routineLoop:
 }
 
 // sendLogs Function
-func (exp *Handler) sendLogs(l *protobuf.Log) error {
+func (exp *Handler) sendLogs(l *protobuf.APILog) error {
 	exp.exporterLock.Lock()
 	defer exp.exporterLock.Unlock()
 

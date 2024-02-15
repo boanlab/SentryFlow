@@ -4,10 +4,10 @@ package core
 
 import (
 	"log"
-	"numbat/common"
-	"numbat/exporter"
-	"numbat/metrics"
-	"numbat/protobuf"
+	"sentryflow/common"
+	"sentryflow/exporter"
+	"sentryflow/metrics"
+	"sentryflow/protobuf"
 	"strconv"
 	"strings"
 	"sync"
@@ -64,8 +64,8 @@ func (lh *LogHandler) logProcessingRoutine(wg *sync.WaitGroup) {
 
 			// Check new log's type
 			switch l.(type) {
-			case *protobuf.Log:
-				go processAccessLog(l.(*protobuf.Log))
+			case *protobuf.APILog:
+				go processAccessLog(l.(*protobuf.APILog))
 			}
 
 		case <-lh.stopChan:
@@ -76,7 +76,7 @@ func (lh *LogHandler) logProcessingRoutine(wg *sync.WaitGroup) {
 }
 
 // processAccessLog Function
-func processAccessLog(al *protobuf.Log) {
+func processAccessLog(al *protobuf.APILog) {
 	// Send AccessLog to exporter first
 	exporter.InsertAccessLog(al)
 
@@ -85,11 +85,11 @@ func processAccessLog(al *protobuf.Log) {
 }
 
 // GenerateAccessLogs Function
-func GenerateAccessLogs(logText string) []*protobuf.Log {
+func GenerateAccessLogs(logText string) []*protobuf.APILog {
 	// @todo this needs more optimization, this code is kind of messy
 	// Create an array of AccessLogs for returning gRPC comm
 	var index int
-	ret := make([]*protobuf.Log, 0)
+	ret := make([]*protobuf.APILog, 0)
 
 	// Preprocess redundant chars
 	logText = strings.ReplaceAll(logText, `\"`, "")
@@ -148,7 +148,7 @@ func GenerateAccessLogs(logText string) []*protobuf.Log {
 		dst := LookupNetworkedResource(dstIP)
 
 		// Create AccessLog in our gRPC format
-		cur := protobuf.Log{
+		cur := protobuf.APILog{
 			TimeStamp:    timeStamp,
 			Id:           0, //  do 0 for now, we are going to write it later
 			SrcNamespace: src.Namespace,

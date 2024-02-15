@@ -12,8 +12,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"log"
-	"numbat/common"
-	"numbat/config"
+	"sentryflow/common"
+	"sentryflow/config"
 	"sync"
 	"time"
 )
@@ -331,32 +331,32 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 	// Work with defaultProviders.accessLogs
 	dp, exists := meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"]
 	if !exists { // Add defaultProviders.accessLogs if it does not exist
-		meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = []string{"numbat-collector"}
-	} else { // Just add a new entry numbat-collector if it exists
+		meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = []string{"sentryflow-collector"}
+	} else { // Just add a new entry sentryflow-collector if it exists
 		dpSlice := dp.([]interface{}) // @todo find better solution for this
 		duplicate := false
 		for _, entry := range dpSlice {
-			if entry == "numbat-collector" {
-				// If "numbat-collector" already exists, do nothing
+			if entry == "sentryflow-collector" {
+				// If "sentryflow-collector" already exists, do nothing
 				log.Printf("[Patcher] istio-system/istio ConfigMap has " +
-					"numbat-collector under defaultProviders.accessLogs, ignoring... ")
+					"sentryflow-collector under defaultProviders.accessLogs, ignoring... ")
 				duplicate = true
 				break
 			}
 		}
 
-		// If "numbat-collector" does not exist, append it
+		// If "sentryflow-collector" does not exist, append it
 		if !duplicate {
-			dpSlice = append(dpSlice, "numbat-collector")
+			dpSlice = append(dpSlice, "sentryflow-collector")
 			meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = dpSlice
 		}
 	}
 
 	// ExtensionProvider for our service
 	eps := map[interface{}]interface{}{
-		"name": "numbat-collector",
+		"name": "sentryflow-collector",
 		"envoyOtelAls": map[interface{}]interface{}{
-			"service": "numbat-collector.numbat.svc.cluster.local",
+			"service": "sentryflow-collector.sentryflow.svc.cluster.local",
 			"port":    config.GlobalCfg.OtelGRPCListenPort,
 		},
 	}
@@ -382,8 +382,8 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 				log.Printf("[Patcher] istio-system/istio ConfigMap extensionProviders entry has unexpected type")
 			}
 			if entryMap["name"] == eps["name"] {
-				// If "numbat-collector" already exists, do nothing
-				log.Printf("[Patcher] istio-system/istio ConfigMap has numbat-collector under extensionProviders, ignoring... ")
+				// If "sentryflow-collector" already exists, do nothing
+				log.Printf("[Patcher] istio-system/istio ConfigMap has sentryflow-collector under extensionProviders, ignoring... ")
 				duplicate = true
 				break
 			}
@@ -443,8 +443,8 @@ func (kh *K8sHandler) PatchNamespaces() error {
 	for _, ns := range namespaces.Items {
 		currentNs := ns
 
-		// We are not going to inject sidecars to numbat namespace
-		if currentNs.Name == "numbat" {
+		// We are not going to inject sidecars to sentryflow namespace
+		if currentNs.Name == "sentryflow" {
 			continue
 		}
 
@@ -478,8 +478,8 @@ func (kh *K8sHandler) PatchRestartDeployments() error {
 
 	// Iterate over each deployment and restart it
 	for _, deployment := range deployments.Items {
-		// We are not going to inject sidecars to numbat namespace
-		if deployment.Namespace == "numbat" {
+		// We are not going to inject sidecars to sentryflow namespace
+		if deployment.Namespace == "sentryflow" {
 			continue
 		}
 

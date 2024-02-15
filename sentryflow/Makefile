@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-IMAGE_NAME = boanlab/numbat
+IMAGE_NAME = 5gsec/sentryflow
 TAG = v0.0.1
 
 .PHONY: build

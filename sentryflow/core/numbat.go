@@ -4,9 +4,9 @@ package core
 
 import (
 	"log"
-	cfg "numbat/config"
-	"numbat/exporter"
-	"numbat/metrics"
+	cfg "sentryflow/config"
+	"sentryflow/exporter"
+	"sentryflow/metrics"
 	"sync"
 )
 
@@ -45,13 +45,13 @@ func (dm *NumbatDaemon) watchK8s() {
 // logProcessor Function
 func (dm *NumbatDaemon) logProcessor() {
 	StartLogProcessor(dm.WgDaemon)
-	log.Printf("[Numbat] Started log processor")
+	log.Printf("[SentryFlow] Started log processor")
 }
 
 // metricAnalyzer Function
 func (dm *NumbatDaemon) metricAnalyzer() {
 	metrics.StartMetricsAnalyzer(dm.WgDaemon)
-	log.Printf("[Numbat] Started metric analyzer")
+	log.Printf("[SentryFlow] Started metric analyzer")
 }
 
 // otelServer Function
@@ -59,17 +59,17 @@ func (dm *NumbatDaemon) otelServer() {
 	// Initialize and start OpenTelemetry Server
 	err := Oh.InitOtelServer()
 	if err != nil {
-		log.Fatalf("[Numbat] Unable to intialize OpenTelemetry Server: %v", err)
+		log.Fatalf("[SentryFlow] Unable to intialize OpenTelemetry Server: %v", err)
 		return
 	}
 
 	err = Oh.StartOtelServer(dm.WgDaemon)
 	if err != nil {
-		log.Fatalf("[Numbat] Unable to start OpenTelemetry Server: %v", err)
+		log.Fatalf("[SentryFlow] Unable to start OpenTelemetry Server: %v", err)
 		return
 	}
 
-	log.Printf("[Numbat] Started OpenTelemetry collector")
+	log.Printf("[SentryFlow] Started OpenTelemetry collector")
 }
 
 // exporterServer Function
@@ -77,15 +77,15 @@ func (dm *NumbatDaemon) exporterServer() {
 	// Initialize and start exporter server
 	err := exporter.Exp.InitExporterServer()
 	if err != nil {
-		log.Fatalf("[Numbat] Unable to initialize Exporter Server: %v", err)
+		log.Fatalf("[SentryFlow] Unable to initialize Exporter Server: %v", err)
 		return
 	}
 
 	err = exporter.Exp.StartExporterServer(dm.WgDaemon)
 	if err != nil {
-		log.Fatalf("[Numbat] Unable to start Exporter Server: %v", err)
+		log.Fatalf("[SentryFlow] Unable to start Exporter Server: %v", err)
 	}
-	log.Printf("[Numbat] Initialized exporter")
+	log.Printf("[SentryFlow] Initialized exporter")
 }
 
 // patchK8s Function
@@ -112,8 +112,8 @@ func (dm *NumbatDaemon) patchK8s() error {
 	return nil
 }
 
-// Numbat Function
-func Numbat() {
+// SentryFlow Function
+func SentryFlow() {
 	// create a daemon
 	dm := NewNumbatDaemon()
 
@@ -124,15 +124,15 @@ func Numbat() {
 		return
 	}
 
-	log.Printf("[Numbat] Initialized Kubernetes client")
+	log.Printf("[SentryFlow] Initialized Kubernetes client")
 
 	dm.watchK8s()
-	log.Printf("[Numbat] Started to monitor Kubernetes resources")
+	log.Printf("[SentryFlow] Started to monitor Kubernetes resources")
 
 	if dm.patchK8s() != nil {
-		log.Printf("[Numbat] Failed to patch Kubernetes")
+		log.Printf("[SentryFlow] Failed to patch Kubernetes")
 	}
-	log.Printf("[Numbat] Patched Kubernetes and Istio configuration")
+	log.Printf("[SentryFlow] Patched Kubernetes and Istio configuration")
 
 	// Start log processor
 	dm.logProcessor()
@@ -146,6 +146,6 @@ func Numbat() {
 	// Start exporter server
 	dm.exporterServer()
 
-	log.Printf("[Numbat] Successfully started Numbat")
+	log.Printf("[SentryFlow] Successfully started SentryFlow")
 	dm.WgDaemon.Wait()
 }

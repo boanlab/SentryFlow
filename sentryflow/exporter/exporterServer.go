@@ -5,8 +5,8 @@ package exporter
 import (
 	"context"
 	"log"
-	metricAPI "numbat/metrics/api"
-	"numbat/protobuf"
+	metricAPI "sentryflow/metrics/api"
+	"sentryflow/protobuf"
 )
 
 var exs *Server
@@ -18,7 +18,7 @@ func init() {
 
 // Server Structure
 type Server struct {
-	protobuf.UnimplementedNumbatServer
+	protobuf.UnimplementedSentryFlowServer // @todo: make this fixed.
 }
 
 // NewExporterServer Function
@@ -27,13 +27,13 @@ func NewExporterServer() *Server {
 }
 
 // GetLog Function
-func (exs *Server) GetLog(client *protobuf.ClientInfo, stream protobuf.Numbat_GetLogServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
+func (exs *Server) GetLog(param *protobuf.GetLogParam, stream protobuf.SentryFlow_GetLogServer) error {
+	log.Printf("[Exporter] Client %s(%s) connected", param.Info.HostName, param.Info.IPAddress)
 
 	curExporter := &Inform{
 		stream:    stream,
-		Hostname:  client.Hostname,
-		IPAddress: client.IpAddress,
+		Hostname:  param.Info.HostName,
+		IPAddress: param.Info.IPAddress,
 	}
 
 	// Append new exporter client for future use
@@ -47,8 +47,8 @@ func (exs *Server) GetLog(client *protobuf.ClientInfo, stream protobuf.Numbat_Ge
 }
 
 // GetAPIMetrics Function
-func (exs *Server) GetAPIMetrics(_ context.Context, client *protobuf.ClientInfo) (*protobuf.APIMetric, error) {
-	log.Printf("[Exporter] Client %s(%s) connected", client.Hostname, client.Hostname)
+func (exs *Server) GetAPIMetrics(_ context.Context, param *protobuf.GetAPIMetricsParam) (*protobuf.APIMetric, error) {
+	log.Printf("[Exporter] Client %s(%s) connected", param.Info.HostName, param.Info.IPAddress)
 
 	// Construct protobuf return value
 	ret := protobuf.APIMetric{

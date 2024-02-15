@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	cfg "numbat/config"
+	cfg "sentryflow/config"
 	"sync"
 )
 

@@ -23,10 +23,10 @@ type NumbatConfig struct {
 	PatchNamespace          bool // Enable/Disable patching namespace for Istio injection
 	PatchRestartDeployments bool // Enable/Disable restarting deployments after patching
 
-	Debug bool // Enable/Disable Numbat debug mode
+	Debug bool // Enable/Disable SentryFlow debug mode
 }
 
-// GlobalCfg Global configuration for Numbat
+// GlobalCfg Global configuration for SentryFlow
 var GlobalCfg NumbatConfig
 
 // Config const
