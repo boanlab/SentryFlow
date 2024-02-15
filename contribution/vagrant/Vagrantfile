@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
   end
 
   # sync directories
-  config.vm.synced_folder "../", "/home/vagrant/sentryflow", owner:"vagrant", group:"vagrant"
+  config.vm.synced_folder "../../", "/home/vagrant/sentryflow", owner:"vagrant", group:"vagrant"
 
   # configure SSH
   config.ssh.insert_key = false
