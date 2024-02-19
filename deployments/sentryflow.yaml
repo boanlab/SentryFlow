@@ -8,6 +8,43 @@ metadata:
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/warn: privileged
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-engine
+  namespace: sentryflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-engine
+  template:
+    metadata:
+      labels:
+        app: ai-engine
+    spec:
+      containers:
+      - name: sentryflow
+        image: 5gsec/sentryflow-ai-engine:v0.0.1
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+          name: grpc-sentryflow
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-engine
+  namespace: sentryflow
+spec:
+  selector:
+    app: ai-engine
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      name: grpc-sentryflow    
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
