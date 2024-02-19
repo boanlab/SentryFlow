@@ -1,38 +1,96 @@
-from pymongo import MongoClient
+import os
+import grpc
+
 from stringlifier.api import Stringlifier
-from flask import Flask
+from concurrent import futures
 
-app = Flask(__name__)
-s = Stringlifier()
+from protobuf import sentryflow_metrics_pb2_grpc
+from protobuf import sentryflow_metrics_pb2
 
-@app.route('/api_metrics')
-def api_metrics():
-    # Connect to MongoDB
-    client = MongoClient('mongodb://mongo:27017')
 
-    # Access the numbat database
-    db = client.numbat
+class HandlerServer:
+    """
+    Class for gRPC Servers
+    """
+    def __init__(self):
+        try:
+            self.listen_addr = os.environ["AI_ENGINE_ADDRESS"]
+        except KeyError:
+            self.listen_addr = "0.0.0.0:5000"
 
-    # Access the access-logs collection
-    collection = db['access-logs']
+        self.server = None
+        self.grpc_servers = list()
 
-    # Retrieve all documents from the collection
-    logs = list(collection.find({}))
+    def init_grpc_servers(self):
+        """
+        init_grpc_servers method that initializes and registers gRPC servers
+        :return: None
+        """
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        self.grpc_servers.append(APIClassificationServer())  # @todo: make this configurable
 
-    # Close the MongoDB connection
-    client.close()
+        grpc_server: GRPCServer
+        for grpc_server in self.grpc_servers:
+            grpc_server.register(self.server)
 
-    paths = list()
+    def serve(self):
+        """
+        serve method that starts serving gRPC servers, this is blocking function.
+        :return: None
+        """
+        self.server.add_insecure_port(self.listen_addr)
 
-    # Print out all entries
-    for log in logs:
-        paths.append(log["path"])
+        print("[INFO] Starting to serve on {}".format(self.listen_addr))
+        self.server.start()
+        self.server.wait_for_termination()
 
-    parsed = s(paths)
-    print(set(parsed))
 
-    return str(set(parsed))
+class GRPCServer:
+    """
+    Abstract class for an individual gRPC Server
+    """
+    def register(self, server):
+        """
+        register method that registers gRPC service to target server
+        :param server: The server
+        :return: None
+        """
+        pass
+
+
+class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServicer, GRPCServer):
+    """
+    Class for API Classification Server using Stringlifier
+    """
+
+    def __init__(self):
+        self.stringlifier = Stringlifier()
+        print("[Init] Successfully initialized APIClassificationServer")
+
+    def register(self, server):
+        sentryflow_metrics_pb2_grpc.add_SentryFlowMetricsServicer_to_server(self, server)
+
+    def GetAPIClassification(self, request_iterator, context):
+        """
+        GetAPIClassification method that runs multiple API ML Classification at once
+        :param request_iterator: The requests
+        :param context: The context
+        :return: Ther results
+        """
+
+        batch = list()
+        for req in request_iterator:
+            batch.append(req.path)
+
+        ml_results = self.stringlifier(batch)
+        results = list()
+        for ml_result in ml_results:
+            results.append(sentryflow_metrics_pb2.APIClassificationSingleResponse(merged=ml_result, fields=[]))
+
+        return sentryflow_metrics_pb2.APIClassificationResponse(results)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    hs = HandlerServer()
+    hs.init_grpc_servers()
+    hs.serve()

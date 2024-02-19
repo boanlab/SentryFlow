@@ -17,8 +17,10 @@ COPY /ai-engine .
 RUN pip install grpcio grpcio-tools
 RUN mkdir protobuf/
 COPY /protobuf ./protobuf
-WORKDIR /app/protobuf
-RUN python3 -m grpc_tools.protoc --python_out=. --pyi_out=. --grpc_python_out=. -I=. sentryflow_metrics.proto
+
+# Due to python import bugs, we have to compile protoc using this command
+# Refer to https://github.com/protocolbuffers/protobuf/issues/1491#issuecomment-261621112 for more information on this
+RUN python3 -m grpc_tools.protoc --python_out=. --pyi_out=. --grpc_python_out=. -I=. protobuf/sentryflow_metrics.proto
 
 WORKDIR /app
 RUN pip install -r requirements.txt
