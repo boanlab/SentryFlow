@@ -3,14 +3,24 @@
 # Dockerfile
 FROM ubuntu:latest
 
-RUN apt-get update && apt-get -y install python3 python3-pip wget git 
+RUN apt-get update && apt-get -y install python3 python3-pip wget git
 
-RUN git clone https://github.com/adobe/stringlifier
+RUN git clone https://github.com/isu-kim/stringlifier.git
+WORKDIR ./stringlifier
+RUN pip install .
 
-RUN pip3 install ./stringlifier pymongo Flask
+RUN mkdir /app
+WORKDIR /app
+COPY /ai-engine .
+
+# Build protobuf for Python
+RUN pip install grpcio grpcio-tools
+RUN mkdir protobuf/
+COPY /protobuf ./protobuf
+WORKDIR /app/protobuf
+RUN python3 -m grpc_tools.protoc --python_out=. --pyi_out=. --grpc_python_out=. -I=. sentryflow_metrics.proto
 
 WORKDIR /app
-
-COPY . .
+RUN pip install -r requirements.txt
 
 CMD ["python3", "ai-engine.py"]
