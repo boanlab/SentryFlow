@@ -2,7 +2,7 @@
 
 ### Builder
 
-FROM golang:1.19-alpine3.17 as builder
+FROM golang:1.21-alpine3.17 as builder
 
 RUN apk --no-cache update
 RUN apk add --no-cache git clang llvm make gcc protobuf make
