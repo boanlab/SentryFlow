@@ -75,7 +75,7 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServi
         GetAPIClassification method that runs multiple API ML Classification at once
         :param request_iterator: The requests
         :param context: The context
-        :return: Ther results
+        :return: The results
         """
 
         for req in request_iterator:
