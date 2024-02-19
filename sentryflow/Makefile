@@ -13,12 +13,8 @@ build:
 image:
 	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../
 
-.PHONY: clean-build
-clean-build:
-	rm -f sentryflow
-
-.PHONY: clean-image
-clean-image:
+.PHONY: clean
+clean:
 	docker rmi $(IMAGE_NAME):$(TAG)
 
 .PHONY: run
