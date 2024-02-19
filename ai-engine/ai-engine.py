@@ -78,16 +78,14 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServi
         :return: Ther results
         """
 
-        batch = list()
         for req in request_iterator:
-            batch.append(req.path)
+            paths = req.paths
+            ml_results = self.stringlifier(paths)
+            print("{} -> {}".format(paths, ml_results))
 
-        ml_results = self.stringlifier(batch)
-        results = list()
-        for ml_result in ml_results:
-            results.append(sentryflow_metrics_pb2.APIClassificationSingleResponse(merged=ml_result, fields=[]))
-
-        return sentryflow_metrics_pb2.APIClassificationResponse(results)
+            results = [sentryflow_metrics_pb2.APIClassificationSingleResponse(merged=ml_result, fields=[]) for ml_result
+                       in ml_results]
+            yield sentryflow_metrics_pb2.APIClassificationResponse(response=results)
 
 
 if __name__ == '__main__':
