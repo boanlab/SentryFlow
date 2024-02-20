@@ -12,8 +12,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// NumbatConfig structure
-type NumbatConfig struct {
+// SentryFlowConfig structure
+type SentryFlowConfig struct {
 	OtelGRPCListenAddr string // IP address to use for OTEL gRPC
 	OtelGRPCListenPort string // Port to use for OTEL gRPC
 
@@ -28,11 +28,12 @@ type NumbatConfig struct {
 
 	MetricsDBFileName string // String value of MetricsDB file (sqlite3 db file)
 
-	Debug bool // Enable/Disable SentryFlow debug mode
+	CollectorEnableOpenTelemetry bool // Enable/Disable OpenTelemetry Collector
+	Debug                        bool // Enable/Disable SentryFlow debug mode
 }
 
 // GlobalCfg Global configuration for SentryFlow
-var GlobalCfg NumbatConfig
+var GlobalCfg SentryFlowConfig
 
 // init Function
 func init() {
@@ -41,16 +42,17 @@ func init() {
 
 // Config const
 const (
-	OtelGRPCListenAddr      string = "otelGRPCListenAddr"
-	OtelGRPCListenPort      string = "otelGRPCListenPort"
-	CustomExportListenAddr  string = "customExportListenAddr"
-	CustomExportListenPort  string = "customExportListenPort"
-	PatchNamespace          string = "patchNamespace"
-	PatchRestartDeployments string = "patchRestartDeployments"
-	AIEngineService         string = "AIEngineService"
-	AIEngineBatchSize       string = "AIEngineBatchSize"
-	MetricsDBFileName       string = "MetricsDBFileName"
-	Debug                   string = "debug"
+	OtelGRPCListenAddr           string = "otelGRPCListenAddr"
+	OtelGRPCListenPort           string = "otelGRPCListenPort"
+	CustomExportListenAddr       string = "customExportListenAddr"
+	CustomExportListenPort       string = "customExportListenPort"
+	PatchNamespace               string = "patchNamespace"
+	PatchRestartDeployments      string = "patchRestartDeployments"
+	AIEngineService              string = "aiEngineService"
+	AIEngineBatchSize            string = "aiEngineBatchSize"
+	MetricsDBFileName            string = "metricsDBFileName"
+	CollectorEnableOpenTelemetry string = "collectorEnableOpenTelemetry"
+	Debug                        string = "debug"
 )
 
 func readCmdLineParams() {
@@ -60,9 +62,10 @@ func readCmdLineParams() {
 	customExportListenPortStr := flag.String(CustomExportListenPort, "8080", "Custom export gRPC server listen port")
 	patchNamespaceB := flag.Bool(PatchNamespace, false, "Enable/Disable patching Istio injection to all namespaces")
 	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
-	AIEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
-	AIEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size fo SentryFlow AI Engine")
+	aiEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
+	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size fo SentryFlow AI Engine")
 	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/metrics.db", "File name for local metrics DB")
+	collectorEnableOpenTelemetryB := flag.Bool(CollectorEnableOpenTelemetry, true, "Enable/Disable OpenTelemetry Collector")
 	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
 
 	var flags []string
@@ -80,9 +83,10 @@ func readCmdLineParams() {
 	viper.SetDefault(CustomExportListenPort, *customExportListenPortStr)
 	viper.SetDefault(PatchNamespace, *patchNamespaceB)
 	viper.SetDefault(PatchRestartDeployments, *patchRestartDeploymentsB)
-	viper.SetDefault(AIEngineService, *AIEngineServiceStr)
-	viper.SetDefault(AIEngineBatchSize, *AIEngineBatchSizeInt)
+	viper.SetDefault(AIEngineService, *aiEngineServiceStr)
+	viper.SetDefault(AIEngineBatchSize, *aiEngineBatchSizeInt)
 	viper.SetDefault(MetricsDBFileName, *metricsDBFileNameStr)
+	viper.SetDefault(CollectorEnableOpenTelemetry, *collectorEnableOpenTelemetryB)
 	viper.SetDefault(Debug, *configDebugB)
 }
 
@@ -106,6 +110,7 @@ func LoadConfig() error {
 	GlobalCfg.AIEngineService = viper.GetString(AIEngineService)
 	GlobalCfg.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
 	GlobalCfg.MetricsDBFileName = viper.GetString(MetricsDBFileName)
+	GlobalCfg.CollectorEnableOpenTelemetry = viper.GetBool(CollectorEnableOpenTelemetry)
 	GlobalCfg.Debug = viper.GetBool(Debug)
 
 	log.Printf("Configuration [%+v]", GlobalCfg)
