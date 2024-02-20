@@ -139,6 +139,7 @@ func SentryFlow() {
 		dm.DestroyNumbatDaemon()
 		return
 	}
+	log.Printf("[SentryFlow] Successfuly initialized metrics DB")
 
 	// Start log processor
 	dm.logProcessor()

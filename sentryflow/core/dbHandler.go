@@ -29,16 +29,19 @@ func init() {
 
 // NewMetricsDBHandler Function
 func NewMetricsDBHandler() *MetricsDBHandler {
-	ret := new(MetricsDBHandler)
-	ret.dbFile = cfg.GlobalCfg.MetricsDBFileName
+	ret := &MetricsDBHandler{
+		dbFile: cfg.GlobalCfg.MetricsDBFileName,
+	}
 	return ret
 }
 
 // InitMetricsDBHandler Function
 func (md *MetricsDBHandler) InitMetricsDBHandler() bool {
+	log.Printf("[DB] Using DB File as %s", md.dbFile)
 	targetDir := filepath.Dir(md.dbFile)
 	_, err := os.Stat(targetDir)
-	if os.IsNotExist(err) {
+	if err != nil {
+		log.Printf("[DB] Unable to find target directory %s, creating one...", targetDir)
 		err := os.Mkdir(targetDir, 0750)
 		if err != nil {
 			log.Printf("[Error] Unable to create directory for metrics DB %s: %v", targetDir, err)
