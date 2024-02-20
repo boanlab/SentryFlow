@@ -10,22 +10,21 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
 
       - name: check Python pip3
-      - run: pip install -r requirements.txt
-      - run: pip test
+        run: |
+          pip install -r requirements.txt
+          pip test
         working-directory: ai-engine
 
   py-lint-ai-sentryflow:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
