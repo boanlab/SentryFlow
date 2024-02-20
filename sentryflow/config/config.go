@@ -26,6 +26,8 @@ type NumbatConfig struct {
 	AIEngineService   string
 	AIEngineBatchSize int
 
+	MetricsDBFileName string // String value of MetricsDB file (sqlite3 db file)
+
 	Debug bool // Enable/Disable SentryFlow debug mode
 }
 
@@ -42,6 +44,7 @@ const (
 	PatchRestartDeployments string = "patchRestartDeployments"
 	AIEngineService         string = "AIEngineService"
 	AIEngineBatchSize       string = "AIEngineBatchSize"
+	MetricsDBFileName       string = "MetricsDBFileName"
 	Debug                   string = "debug"
 )
 
@@ -54,6 +57,7 @@ func readCmdLineParams() {
 	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
 	AIEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
 	AIEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size fo SentryFlow AI Engine")
+	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/sqlite.db", "File name for local metrics DB")
 	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
 
 	var flags []string
@@ -73,6 +77,7 @@ func readCmdLineParams() {
 	viper.SetDefault(PatchRestartDeployments, *patchRestartDeploymentsB)
 	viper.SetDefault(AIEngineService, *AIEngineServiceStr)
 	viper.SetDefault(AIEngineBatchSize, *AIEngineBatchSizeInt)
+	viper.SetDefault(MetricsDBFileName, *metricsDBFileNameStr)
 	viper.SetDefault(Debug, *configDebugB)
 }
 
@@ -95,6 +100,7 @@ func LoadConfig() error {
 	GlobalCfg.PatchRestartDeployments = viper.GetBool(PatchRestartDeployments)
 	GlobalCfg.AIEngineService = viper.GetString(AIEngineService)
 	GlobalCfg.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
+	GlobalCfg.MetricsDBFileName = viper.GetString(MetricsDBFileName)
 	GlobalCfg.Debug = viper.GetBool(Debug)
 
 	log.Printf("Configuration [%+v]", GlobalCfg)
