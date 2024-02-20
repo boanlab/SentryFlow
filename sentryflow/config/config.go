@@ -34,6 +34,11 @@ type NumbatConfig struct {
 // GlobalCfg Global configuration for SentryFlow
 var GlobalCfg NumbatConfig
 
+// init Function
+func init() {
+	_ = LoadConfig()
+}
+
 // Config const
 const (
 	OtelGRPCListenAddr      string = "otelGRPCListenAddr"
@@ -57,7 +62,7 @@ func readCmdLineParams() {
 	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
 	AIEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
 	AIEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size fo SentryFlow AI Engine")
-	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/sqlite.db", "File name for local metrics DB")
+	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/metrics.db", "File name for local metrics DB")
 	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
 
 	var flags []string
