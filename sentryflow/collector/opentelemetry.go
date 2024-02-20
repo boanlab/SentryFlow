@@ -17,7 +17,8 @@ type OtelLogServer struct {
 
 // newOtelLogServer Function
 func newOtelLogServer() *OtelLogServer {
-	return new(OtelLogServer)
+	ret := &OtelLogServer{}
+	return ret
 }
 
 // registerService Function

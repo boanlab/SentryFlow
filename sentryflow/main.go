@@ -11,8 +11,9 @@ import (
 
 // main is the entrypoint of this program
 func main() {
-
-	core.SentryFlow()
+	go func() {
+		core.SentryFlow()
+	}()
 
 	err := collector.Ch.InitGRPCServer()
 	if err != nil {
