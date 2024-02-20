@@ -10,22 +10,20 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: check Python pip3
-      - run: pip install -r requirements.txt
-      - run: pip test
+      - name: check Python pip3 requirements
+        run: |
+          pip install -r requirements.txt
         working-directory: ai-engine
 
   py-lint-ai-sentryflow:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
@@ -43,3 +41,12 @@ jobs:
           ruff --output-format=github .
         continue-on-error: true
         working-directory: ai-engine
+
+  py-pep8-ai-sentryflow:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: 'Run PEP8'
+        uses: quentinguidee/pep8-action@v1
+        with:
+          arguments: '--max-line-length=120'    
