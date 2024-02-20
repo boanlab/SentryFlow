@@ -15,10 +15,9 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: check Python pip3
+      - name: check Python pip3 requirements
         run: |
           pip install -r requirements.txt
-          pip test
         working-directory: ai-engine
 
   py-lint-ai-sentryflow:
