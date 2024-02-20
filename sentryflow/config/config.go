@@ -23,9 +23,6 @@ type NumbatConfig struct {
 	PatchNamespace          bool // Enable/Disable patching namespace for Istio injection
 	PatchRestartDeployments bool // Enable/Disable restarting deployments after patching
 
-	AIEngineService   string
-	AIEngineBatchSize int
-
 	Debug bool // Enable/Disable SentryFlow debug mode
 }
 
@@ -40,8 +37,6 @@ const (
 	CustomExportListenPort  string = "customExportListenPort"
 	PatchNamespace          string = "patchNamespace"
 	PatchRestartDeployments string = "patchRestartDeployments"
-	AIEngineService         string = "AIEngineService"
-	AIEngineBatchSize       string = "AIEngineBatchSize"
 	Debug                   string = "debug"
 )
 
@@ -52,8 +47,6 @@ func readCmdLineParams() {
 	customExportListenPortStr := flag.String(CustomExportListenPort, "8080", "Custom export gRPC server listen port")
 	patchNamespaceB := flag.Bool(PatchNamespace, false, "Enable/Disable patching Istio injection to all namespaces")
 	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
-	AIEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
-	AIEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size fo SentryFlow AI Engine")
 	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
 
 	var flags []string
@@ -71,8 +64,6 @@ func readCmdLineParams() {
 	viper.SetDefault(CustomExportListenPort, *customExportListenPortStr)
 	viper.SetDefault(PatchNamespace, *patchNamespaceB)
 	viper.SetDefault(PatchRestartDeployments, *patchRestartDeploymentsB)
-	viper.SetDefault(AIEngineService, *AIEngineServiceStr)
-	viper.SetDefault(AIEngineBatchSize, *AIEngineBatchSizeInt)
 	viper.SetDefault(Debug, *configDebugB)
 }
 
@@ -85,7 +76,7 @@ func LoadConfig() error {
 	viper.AutomaticEnv()
 
 	// todo: read configuration from config file
-	_ = os.Getenv("SENTRYFLOW_CFG")
+	_ = os.Getenv("NUMBAT_CFG")
 
 	GlobalCfg.OtelGRPCListenAddr = viper.GetString(OtelGRPCListenAddr)
 	GlobalCfg.OtelGRPCListenPort = viper.GetString(OtelGRPCListenPort)
@@ -93,8 +84,6 @@ func LoadConfig() error {
 	GlobalCfg.CustomExportListenPort = viper.GetString(CustomExportListenPort)
 	GlobalCfg.PatchNamespace = viper.GetBool(PatchNamespace)
 	GlobalCfg.PatchRestartDeployments = viper.GetBool(PatchRestartDeployments)
-	GlobalCfg.AIEngineService = viper.GetString(AIEngineService)
-	GlobalCfg.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
 	GlobalCfg.Debug = viper.GetBool(Debug)
 
 	log.Printf("Configuration [%+v]", GlobalCfg)

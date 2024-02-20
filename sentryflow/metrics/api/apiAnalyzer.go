@@ -19,9 +19,6 @@ type Analyzer struct {
 	perAPICount     map[string]uint64
 	perAPICountLock sync.Mutex // @todo perhaps combine those two?
 
-	curBatchCount  int
-	batchCountLock sync.Mutex
-
 	stopChan chan struct{}
 	apiJob   chan string
 }
