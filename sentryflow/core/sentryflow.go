@@ -134,6 +134,12 @@ func SentryFlow() {
 	}
 	log.Printf("[SentryFlow] Patched Kubernetes and Istio configuration")
 
+	if !MDB.InitMetricsDBHandler() {
+		log.Printf("[Error] Failed to initialize Metrics DB")
+		dm.DestroyNumbatDaemon()
+		return
+	}
+
 	// Start log processor
 	dm.logProcessor()
 

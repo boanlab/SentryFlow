@@ -39,7 +39,7 @@ func (md *MetricsDBHandler) InitMetricsDBHandler() bool {
 	targetDir := filepath.Dir(md.dbFile)
 	_, err := os.Stat(targetDir)
 	if os.IsNotExist(err) {
-		err := os.Mkdir(targetDir, 666)
+		err := os.Mkdir(targetDir, 0750)
 		if err != nil {
 			log.Printf("[Error] Unable to create directory for metrics DB %s: %v", targetDir, err)
 			return false
@@ -59,6 +59,11 @@ func (md *MetricsDBHandler) InitMetricsDBHandler() bool {
 	}
 
 	return true
+}
+
+// StopMetricsDBHandler Function
+func (md *MetricsDBHandler) StopMetricsDBHandler() {
+	_ = md.db.Close()
 }
 
 // initDBTables Function
