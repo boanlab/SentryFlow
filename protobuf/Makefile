@@ -1,4 +1,4 @@
-PROTO:=sentryflow.proto sentryflow_metrics.proto
+PROTO:=sentryflow.proto
 PBGO:=$(PROTO:.proto=.pb.go)
 
 .PHONY: build
