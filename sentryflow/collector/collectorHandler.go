@@ -73,8 +73,9 @@ func (h *Handler) InitGRPCServer() error {
 func (h *Handler) initCollectors() error {
 	// @todo make configuration determine which collector to start or not
 	h.collectors = append(h.collectors, newOtelLogServer())
+	h.collectors = append(h.collectors, newEnvoyMetricsServer())
+	h.collectors = append(h.collectors, newEnvoyAccessLogsServer())
 
-	// @todo add prometheus, envoy collectors here
 	return nil
 }
 

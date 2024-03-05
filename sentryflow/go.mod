@@ -7,6 +7,7 @@ replace github.com/5GSEC/sentryflow/protobuf => ../protobuf
 require (
 	github.com/5GSEC/sentryflow/protobuf v0.0.0-00010101000000-000000000000
 	github.com/emicklei/go-restful/v3 v3.11.0
+	github.com/envoyproxy/go-control-plane v0.11.1
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/spf13/viper v1.18.2
 	go.opentelemetry.io/proto/otlp v1.0.0
@@ -18,7 +19,9 @@ require (
 )
 
 require (
+	github.com/cncf/xds/go v0.0.0-20231109132714-523115ebc101 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.0.2 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.6 // indirect
@@ -41,6 +44,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
+	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
