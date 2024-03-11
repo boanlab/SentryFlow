@@ -11,6 +11,8 @@ import (
 	"log"
 	"log-client/common"
 	"os"
+	"os/signal"
+	"syscall"
 	"sentryflow/protobuf"
 )
 
@@ -32,7 +34,7 @@ func main() {
 	defer conn.Close()
 
 	// Start serving gRPC server
-	log.Printf("[gRPC] Successfully connected to %s", addr)
+	log.Printf("[gRPC] Successfully connected to %s for AccessLog", addr)
 
 	// Create a client for the SentryFlow service
 	client := protobuf.NewSentryFlowClient(conn)
@@ -48,19 +50,58 @@ func main() {
 	}
 
 	// Contact the server and print out its response
-	stream, err := client.GetLog(context.Background(), clientInfo)
+	accessLogStream, err := client.GetLog(context.Background(), clientInfo)
+	metricStream, err := client.GetEnvoyMetrics(context.Background(), clientInfo)
 	if err != nil {
 		log.Fatalf("could not get log: %v", err)
 	}
 
+	done := make(chan struct{})
+
+	go accessLogRoutine(accessLogStream, done)
+	go metricRoutine(metricStream, done)
+
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+	<-signalChan
+
+	close(done)
+}
+
+func accessLogRoutine(stream protobuf.SentryFlow_GetLogClient, done chan struct{}) {
 	for {
-		data, err := stream.Recv()
-		if err == io.EOF {
-			break
+		select {
+		default:
+			data, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("failed to receive log: %v", err)
+			}
+			log.Printf("[Client] Received log: %v", data)
+		case <-done:
+			return
 		}
-		if err != nil {
-			log.Fatalf("failed to receive log: %v", err)
+	}
+}
+
+func metricRoutine(stream protobuf.SentryFlow_GetEnvoyMetricsClient, done chan struct{}) {
+	for {
+		select {
+		default:
+			data, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("failed to receive metric: %v", err)
+			}
+			log.Printf("[Client] Received metric: %v", data)
+		case <-done:
+			return
 		}
-		log.Printf("[Client] Received log: %v", data)
 	}
 }

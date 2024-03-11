@@ -27,13 +27,13 @@ func init() {
 type Handler struct {
 	baseExecutionID uint64
 	currentLogCount uint64
-	logChannel      chan *protobuf.APILog
-	lock            sync.Mutex // @todo find better solution for this
 	stopChan        chan struct{}
-
+	lock		 sync.Mutex	
 	exporters    []*Inform
+	metricExporters []*metricStreamInform
 	exporterLock sync.Mutex
 	exporterLogs chan *protobuf.APILog
+	exporterMetrics chan *protobuf.EnvoyMetric
 
 	listener   net.Listener
 	gRPCServer *grpc.Server
@@ -41,8 +41,15 @@ type Handler struct {
 
 // Inform structure
 type Inform struct {
-	stream    protobuf.SentryFlow_GetLogServer
+	stream    protobuf.SentryFlow_GetLogServer	
 	error     chan error
+	Hostname  string
+	IPAddress string
+}
+
+type metricStreamInform struct {
+	metricStream	  protobuf.SentryFlow_GetEnvoyMetricsServer
+	error chan error
 	Hostname  string
 	IPAddress string
 }
@@ -53,11 +60,11 @@ func NewExporterHandler() *Handler {
 		baseExecutionID: uint64(time.Now().UnixMicro()),
 		currentLogCount: 0,
 		exporters:       make([]*Inform, 0),
-		logChannel:      make(chan *protobuf.APILog),
 		stopChan:        make(chan struct{}),
 		lock:            sync.Mutex{},
 		exporterLock:    sync.Mutex{},
 		exporterLogs:    make(chan *protobuf.APILog),
+		exporterMetrics: make(chan *protobuf.EnvoyMetric),
 	}
 
 	return exp
@@ -72,6 +79,11 @@ func InsertAccessLog(al *protobuf.APILog) {
 	Exp.lock.Unlock()
 
 	Exp.exporterLogs <- al
+}
+
+//InsertEnvoyMetric Function
+func InsertEnvoyMetric(em *protobuf.EnvoyMetric) {
+	Exp.exporterMetrics <- em
 }
 
 // InitExporterServer Function
@@ -139,6 +151,17 @@ routineLoop:
 				log.Printf("[Exporter] Log exporting failed %v:", err)
 			}
 
+		case em, ok := <-exp.exporterMetrics:
+			if !ok {
+				log.Printf("[Exporter] EnvoyMetric exporter channel closed")
+				break routineLoop
+			}
+
+			err := exp.sendMetrics(em)
+			if err != nil {
+				log.Printf("[Exporter] Metric exporting failed %v:", err)
+			}
+
 		case <-exp.stopChan:
 			break routineLoop
 		}
@@ -182,6 +205,46 @@ func (exp *Handler) sendLogs(l *protobuf.APILog) error {
 	// notify failed count
 	if failed != 0 {
 		msg := fmt.Sprintf("unable to send logs properly %d/%d failed", failed, total)
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+// sendMetrics Function
+func (exp *Handler) sendMetrics(l *protobuf.EnvoyMetric) error {
+	exp.exporterLock.Lock()
+	defer exp.exporterLock.Unlock()
+
+	// iterate and send logs
+	failed := 0
+	total := len(exp.metricExporters)
+	for _, exporter := range exp.metricExporters {
+		curRetry := 0
+
+		// @todo: make max retry count per logs using config
+		// @todo: make max retry count per single exporter before removing the exporter using config
+		var err error
+		for curRetry < 3 {
+			err = exporter.metricStream.Send(l)
+			if err != nil {
+				log.Printf("[Exporter] Unable to send metric to %s(%s) retry=%d/%d: %v",
+					exporter.Hostname, exporter.IPAddress, curRetry, 3, err)
+				curRetry++
+			} else {
+				break
+			}
+		}
+
+		// Count failed
+		if err != nil {
+			failed++
+		}
+	}
+
+	// notify failed count
+	if failed != 0 {
+		msg := fmt.Sprintf("unable to send metrics properly %d/%d failed", failed, total)
 		return errors.New(msg)
 	}
 

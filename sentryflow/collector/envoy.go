@@ -5,9 +5,14 @@ package collector
 import (
 	envoyAls "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
 	envoyMetrics "github.com/envoyproxy/go-control-plane/envoy/service/metrics/v3"
+	"github.com/5GSEC/sentryflow/core"
+	"github.com/5GSEC/sentryflow/protobuf"
+	"github.com/5GSEC/sentryflow/types"
 	"google.golang.org/grpc"
+	"strconv"
 	"io"
 	"log"
+	"fmt"
 )
 
 // EnvoyMetricsServer Structure
@@ -49,13 +54,35 @@ func (ems *EnvoyMetricsServer) StreamMetrics(stream envoyMetrics.MetricsService_
 		identifier.GetNode().GetMetadata()
 
 		if identifier != nil {
-			log.Printf("ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
-			log.Printf("Metrics:")
-			for _, metric := range event.GetEnvoyMetrics() {
-				log.Printf(" - %s(%s): %s", metric.GetName(), metric.GetType(), metric.GetMetric())
-			}
-		}
+			log.Printf("[Envoy] Received EnvoyMetric - ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
 
+			nodeID := identifier.GetNode().GetId()
+    		cluster := identifier.GetNode().GetCluster()
+    
+    		curIdentifier := fmt.Sprintf("%s, %s", nodeID, cluster)
+			envoyMetric := &protobuf.EnvoyMetric{
+				Identifier: curIdentifier,
+				Metric:     []*protobuf.Metric{},
+			}
+			
+			
+			for _, metric := range event.GetEnvoyMetrics() {
+				metricType := metric.GetType().String()
+				metricName := metric.GetName()
+				tempMetrics := metric.GetMetric()
+				metrics := fmt.Sprintf("%s", tempMetrics)
+				
+				curMetric := &protobuf.Metric{
+					Type:  metricType,
+					Key:   metricName,
+					Value: metrics,
+				}
+				
+				envoyMetric.Metric = append(envoyMetric.Metric, curMetric)
+			}
+
+			core.Lh.InsertLog(envoyMetric)
+		}
 	}
 }
 
@@ -79,7 +106,9 @@ func (eas *EnvoyAccessLogsServer) registerService(server *grpc.Server) {
 // StreamAccessLogs Function
 func (eas *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAls.AccessLogService_StreamAccessLogsServer) error {
 	for {
+		log.Printf("Start Recv waiting")
 		event, err := stream.Recv()
+		log.Printf("Received!!!!!")
 		if err == io.EOF {
 			return nil
 		}
@@ -94,37 +123,57 @@ func (eas *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAls.AccessLogServ
 			log.Printf("[Envoy] Failed to validate stream: %v", err)
 		}
 
-		// Check HTTP logs first, then TCP Logs
+		// Check HTTP logs
 		// Envoy will send HTTP logs with higher priority.
 		if event.GetHttpLogs() != nil {
 			for _, entry := range event.GetHttpLogs().LogEntry {
 				identifier := event.GetIdentifier()
 				if identifier != nil {
-					log.Printf("=====================[ACCESS LOG - HTTP]=====================")
-					log.Printf("ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
+					log.Printf("[Envoy] Received EnvoyAccessLog - ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
 
-					// @todo parse this entry into proto.Log format
+					srcInform := entry.GetCommonProperties().GetDownstreamRemoteAddress().GetSocketAddress()
+					srcIP := srcInform.GetAddress()
+					srcPort := strconv.Itoa(int(srcInform.GetPortValue()))
+					src := core.LookupNetworkedResource(srcIP)
+
+					dstInform := entry.GetCommonProperties().GetUpstreamRemoteAddress().GetSocketAddress()
+					dstIP := dstInform.GetAddress()
+					dstPort := strconv.Itoa(int(dstInform.GetPortValue()))
+					dst := core.LookupNetworkedResource(dstIP)
+
 					req := entry.GetRequest()
-					resp := entry.GetResponse()
-					proto := entry.GetProtocolVersion()
+					res := entry.GetResponse()
 					comm := entry.GetCommonProperties()
-					log.Printf("Request: request=%v, resp=%v, proto=%v, comm=%v",
-						req.String(), resp.String(), proto.String(), comm.String())
-				}
-			}
-		}
+					proto := entry.GetProtocolVersion()
 
-		// Check TCP logs later
-		// In Envoy, even if HTTP is based on TCP, it will just send HTTP logs
-		if event.GetTcpLogs() != nil {
-			for _, entry := range event.GetTcpLogs().LogEntry {
-				identifier := event.GetIdentifier()
-				// @todo parse this entry into proto.Log format
-
-				if identifier != nil {
-					log.Printf("=====================[ACCESS LOG - TCP]=====================")
-					log.Printf("ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
-					log.Printf("Data: %v", entry.String())
+					timeStamp := comm.GetStartTime().Seconds
+					path := req.GetPath()
+					method := req.GetRequestMethod().String()
+					protocolName := proto.String()
+					resCode := res.GetResponseCode().GetValue()
+	
+					envoyAccessLog := &protobuf.APILog{
+						TimeStamp:    strconv.FormatInt(timeStamp, 10),
+						Id:           0, //  do 0 for now, we are going to write it later
+						SrcNamespace: src.Namespace,
+						SrcName:      src.Name,
+						SrcLabel:     src.Labels,
+						SrcIP:        srcIP,
+						SrcPort:      srcPort,
+						SrcType:      types.K8sResourceTypeToString(src.Type),
+						DstNamespace: dst.Namespace,
+						DstName:      dst.Name,
+						DstLabel:     dst.Labels,
+						DstIP:        dstIP,
+						DstPort:      dstPort,
+						DstType:      types.K8sResourceTypeToString(dst.Type),
+						Protocol:     protocolName,
+						Method:       method,
+						Path:         path,
+						ResponseCode: int32(resCode),
+					}
+					
+					core.Lh.InsertLog(envoyAccessLog)
 				}
 			}
 		}

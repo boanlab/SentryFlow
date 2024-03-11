@@ -66,8 +66,10 @@ func (lh *LogHandler) logProcessingRoutine(wg *sync.WaitGroup) {
 			switch l.(type) {
 			case *protobuf.APILog:
 				go processAccessLog(l.(*protobuf.APILog))
+			case *protobuf.EnvoyMetric:
+				go processEnvoyMetric(l.(*protobuf.EnvoyMetric))
 			}
-
+		
 		case <-lh.stopChan:
 			wg.Done()
 			return
@@ -82,6 +84,10 @@ func processAccessLog(al *protobuf.APILog) {
 
 	// Then send AccessLog to metrics
 	metrics.InsertAccessLog(al)
+}
+
+func processEnvoyMetric(em *protobuf.EnvoyMetric) {
+	exporter.InsertEnvoyMetric(em)
 }
 
 // GenerateAccessLogs Function

@@ -83,9 +83,8 @@ func (h *Handler) initCollectors() error {
 func (h *Handler) registerServices() {
 	for _, col := range h.collectors {
 		col.registerService(h.grpcServer)
+		log.Printf("[Collector] Successfully registered services")
 	}
-
-	log.Printf("[Collector] Successfully registered services")
 }
 
 // Serve Function

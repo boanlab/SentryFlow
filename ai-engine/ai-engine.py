@@ -4,8 +4,8 @@ import grpc
 from stringlifier.api import Stringlifier
 from concurrent import futures
 
-from protobuf import sentryflow_metrics_pb2_grpc
-from protobuf import sentryflow_metrics_pb2
+from protobuf import sentryflow_metrics_pb_grpc
+from protobuf import sentryflow_metrics_pb
 
 
 class HandlerServer:
@@ -87,8 +87,8 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServi
                        in ml_results]
             yield sentryflow_metrics_pb2.APIClassificationResponse(response=results)
 
-
 if __name__ == '__main__':
     hs = HandlerServer()
     hs.init_grpc_servers()
     hs.serve()
+    
