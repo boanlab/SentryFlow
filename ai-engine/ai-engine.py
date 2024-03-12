@@ -4,8 +4,8 @@ import grpc
 from stringlifier.api import Stringlifier
 from concurrent import futures
 
-from protobuf import sentryflow_metrics_pb2_grpc
-from protobuf import sentryflow_metrics_pb2
+from protobuf import sentryflow_metrics_pb_grpc
+from protobuf import sentryflow_metrics_pb
 
 
 class HandlerServer:

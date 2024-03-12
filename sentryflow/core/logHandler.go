@@ -7,6 +7,7 @@ import (
 	"github.com/5GSEC/sentryflow/metrics"
 	"github.com/5GSEC/sentryflow/protobuf"
 	"github.com/5GSEC/sentryflow/types"
+	accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
 	"log"
 	"strconv"
 	"strings"
@@ -66,6 +67,8 @@ func (lh *LogHandler) logProcessingRoutine(wg *sync.WaitGroup) {
 			switch l.(type) {
 			case *protobuf.APILog:
 				go processAccessLog(l.(*protobuf.APILog))
+			case *protobuf.EnvoyMetric:
+				go processEnvoyMetric(l.(*protobuf.EnvoyMetric))
 			}
 
 		case <-lh.stopChan:
@@ -84,8 +87,12 @@ func processAccessLog(al *protobuf.APILog) {
 	metrics.InsertAccessLog(al)
 }
 
-// GenerateAccessLogs Function
-func GenerateAccessLogs(logText string) []*protobuf.APILog {
+func processEnvoyMetric(em *protobuf.EnvoyMetric) {
+	exporter.InsertEnvoyMetric(em)
+}
+
+// GenerateAccessLogsFromOtel Function
+func GenerateAccessLogsFromOtel(logText string) []*protobuf.APILog {
 	// @todo this needs more optimization, this code is kind of messy
 	// Create an array of AccessLogs for returning gRPC comm
 	var index int
@@ -173,4 +180,51 @@ func GenerateAccessLogs(logText string) []*protobuf.APILog {
 	}
 
 	return ret
+}
+
+// GenerateAccessLogsFromEnvoy Function
+func GenerateAccessLogsFromEnvoy(entry *accesslogv3.HTTPAccessLogEntry) *protobuf.APILog {
+	srcInform := entry.GetCommonProperties().GetDownstreamRemoteAddress().GetSocketAddress()
+	srcIP := srcInform.GetAddress()
+	srcPort := strconv.Itoa(int(srcInform.GetPortValue()))
+	src := LookupNetworkedResource(srcIP)
+
+	dstInform := entry.GetCommonProperties().GetUpstreamRemoteAddress().GetSocketAddress()
+	dstIP := dstInform.GetAddress()
+	dstPort := strconv.Itoa(int(dstInform.GetPortValue()))
+	dst := LookupNetworkedResource(dstIP)
+
+	req := entry.GetRequest()
+	res := entry.GetResponse()
+	comm := entry.GetCommonProperties()
+	proto := entry.GetProtocolVersion()
+
+	timeStamp := comm.GetStartTime().Seconds
+	path := req.GetPath()
+	method := req.GetRequestMethod().String()
+	protocolName := proto.String()
+	resCode := res.GetResponseCode().GetValue()
+
+	envoyAccessLog := &protobuf.APILog{
+		TimeStamp:    strconv.FormatInt(timeStamp, 10),
+		Id:           0, //  do 0 for now, we are going to write it later
+		SrcNamespace: src.Namespace,
+		SrcName:      src.Name,
+		SrcLabel:     src.Labels,
+		SrcIP:        srcIP,
+		SrcPort:      srcPort,
+		SrcType:      types.K8sResourceTypeToString(src.Type),
+		DstNamespace: dst.Namespace,
+		DstName:      dst.Name,
+		DstLabel:     dst.Labels,
+		DstIP:        dstIP,
+		DstPort:      dstPort,
+		DstType:      types.K8sResourceTypeToString(dst.Type),
+		Protocol:     protocolName,
+		Method:       method,
+		Path:         path,
+		ResponseCode: int32(resCode),
+	}
+
+	return envoyAccessLog
 }

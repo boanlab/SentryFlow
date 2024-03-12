@@ -38,7 +38,19 @@ message APIMetric {
   // @todo: add some more metrics here
 }
 
+message Metric {
+  string type = 1;
+  string key = 2;
+  string value = 3;
+}
+
+message EnvoyMetric {
+  string identifier = 1;
+  repeated Metric metric = 2;
+}
+
 service SentryFlow {
   rpc GetLog(ClientInfo) returns (stream APILog);
   rpc GetAPIMetrics(ClientInfo) returns (APIMetric);
+  rpc GetEnvoyMetrics(ClientInfo) returns (stream EnvoyMetric);
 }

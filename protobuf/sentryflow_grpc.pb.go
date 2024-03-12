@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	SentryFlow_GetLog_FullMethodName        = "/protobuf.SentryFlow/GetLog"
-	SentryFlow_GetAPIMetrics_FullMethodName = "/protobuf.SentryFlow/GetAPIMetrics"
+	SentryFlow_GetLog_FullMethodName          = "/protobuf.SentryFlow/GetLog"
+	SentryFlow_GetAPIMetrics_FullMethodName   = "/protobuf.SentryFlow/GetAPIMetrics"
+	SentryFlow_GetEnvoyMetrics_FullMethodName = "/protobuf.SentryFlow/GetEnvoyMetrics"
 )
 
 // SentryFlowClient is the client API for SentryFlow service.
@@ -29,6 +30,7 @@ const (
 type SentryFlowClient interface {
 	GetLog(ctx context.Context, in *ClientInfo, opts ...grpc.CallOption) (SentryFlow_GetLogClient, error)
 	GetAPIMetrics(ctx context.Context, in *ClientInfo, opts ...grpc.CallOption) (*APIMetric, error)
+	GetEnvoyMetrics(ctx context.Context, in *ClientInfo, opts ...grpc.CallOption) (SentryFlow_GetEnvoyMetricsClient, error)
 }
 
 type sentryFlowClient struct {
@@ -80,12 +82,45 @@ func (c *sentryFlowClient) GetAPIMetrics(ctx context.Context, in *ClientInfo, op
 	return out, nil
 }
 
+func (c *sentryFlowClient) GetEnvoyMetrics(ctx context.Context, in *ClientInfo, opts ...grpc.CallOption) (SentryFlow_GetEnvoyMetricsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &SentryFlow_ServiceDesc.Streams[1], SentryFlow_GetEnvoyMetrics_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &sentryFlowGetEnvoyMetricsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type SentryFlow_GetEnvoyMetricsClient interface {
+	Recv() (*EnvoyMetric, error)
+	grpc.ClientStream
+}
+
+type sentryFlowGetEnvoyMetricsClient struct {
+	grpc.ClientStream
+}
+
+func (x *sentryFlowGetEnvoyMetricsClient) Recv() (*EnvoyMetric, error) {
+	m := new(EnvoyMetric)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // SentryFlowServer is the server API for SentryFlow service.
 // All implementations should embed UnimplementedSentryFlowServer
 // for forward compatibility
 type SentryFlowServer interface {
 	GetLog(*ClientInfo, SentryFlow_GetLogServer) error
 	GetAPIMetrics(context.Context, *ClientInfo) (*APIMetric, error)
+	GetEnvoyMetrics(*ClientInfo, SentryFlow_GetEnvoyMetricsServer) error
 }
 
 // UnimplementedSentryFlowServer should be embedded to have forward compatible implementations.
@@ -97,6 +132,9 @@ func (UnimplementedSentryFlowServer) GetLog(*ClientInfo, SentryFlow_GetLogServer
 }
 func (UnimplementedSentryFlowServer) GetAPIMetrics(context.Context, *ClientInfo) (*APIMetric, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAPIMetrics not implemented")
+}
+func (UnimplementedSentryFlowServer) GetEnvoyMetrics(*ClientInfo, SentryFlow_GetEnvoyMetricsServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetEnvoyMetrics not implemented")
 }
 
 // UnsafeSentryFlowServer may be embedded to opt out of forward compatibility for this service.
@@ -149,6 +187,27 @@ func _SentryFlow_GetAPIMetrics_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SentryFlow_GetEnvoyMetrics_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ClientInfo)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SentryFlowServer).GetEnvoyMetrics(m, &sentryFlowGetEnvoyMetricsServer{stream})
+}
+
+type SentryFlow_GetEnvoyMetricsServer interface {
+	Send(*EnvoyMetric) error
+	grpc.ServerStream
+}
+
+type sentryFlowGetEnvoyMetricsServer struct {
+	grpc.ServerStream
+}
+
+func (x *sentryFlowGetEnvoyMetricsServer) Send(m *EnvoyMetric) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // SentryFlow_ServiceDesc is the grpc.ServiceDesc for SentryFlow service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -165,6 +224,11 @@ var SentryFlow_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetLog",
 			Handler:       _SentryFlow_GetLog_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetEnvoyMetrics",
+			Handler:       _SentryFlow_GetEnvoyMetrics_Handler,
 			ServerStreams: true,
 		},
 	},
