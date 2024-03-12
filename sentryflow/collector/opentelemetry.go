@@ -29,7 +29,7 @@ func (ols *OtelLogServer) registerService(server *grpc.Server) {
 // Export Function
 func (ols *OtelLogServer) Export(_ context.Context, req *otelLogs.ExportLogsServiceRequest) (*otelLogs.ExportLogsServiceResponse, error) {
 	// This is for Log.Export in OpenTelemetry format
-	als := core.GenerateAccessLogs(req.String())
+	als := core.GenerateAccessLogsFromOtel(req.String())
 
 	for _, al := range als {
 		core.Lh.InsertLog(al)
