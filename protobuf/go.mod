@@ -1,4 +1,4 @@
-module github.com/5GSEC/sentryflow/protobuf
+module github.com/5GSEC/SentryFlow/protobuf
 
 go 1.19
 

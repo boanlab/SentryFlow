@@ -13,7 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"sentryflow/protobuf"
+	"SentryFlow/protobuf"
 )
 
 func main() {

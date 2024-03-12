@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protobuf;
 
-option go_package = "sentryflow/protobuf";
+option go_package = "SentryFlow/protobuf";
 
 message ClientInfo {
   string hostName = 1;
