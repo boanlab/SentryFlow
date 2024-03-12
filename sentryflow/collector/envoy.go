@@ -116,10 +116,8 @@ func (eas *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAls.AccessLogServ
 		// Check HTTP logs
 		if event.GetHttpLogs() != nil {
 			for _, entry := range event.GetHttpLogs().LogEntry {
-				if event.GetIdentifier() != nil {
-					envoyAccessLog := core.GenerateAccessLogsFromEnvoy(entry)
-					core.Lh.InsertLog(envoyAccessLog)
-				}
+				envoyAccessLog := core.GenerateAccessLogsFromEnvoy(entry)
+				core.Lh.InsertLog(envoyAccessLog)
 			}
 		}
 	}
