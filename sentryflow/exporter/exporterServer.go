@@ -28,7 +28,7 @@ func NewExporterServer() *Server {
 
 // GetLog Function
 func (exs *Server) GetLog(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetLogServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected", info.HostName, info.IPAddress)
+	log.Printf("[Exporter] Client %s(%s) connected (GetEnvoyMetrics)", info.HostName, info.IPAddress)
 
 	curExporter := &Inform{
 		stream:    stream,
@@ -47,7 +47,7 @@ func (exs *Server) GetLog(info *protobuf.ClientInfo, stream protobuf.SentryFlow_
 }
 
 func (exs *Server) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetEnvoyMetricsServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected", info.HostName, info.IPAddress)
+	log.Printf("[Exporter] Client %s(%s) connected (GetEnvoyMetrics)", info.HostName, info.IPAddress)
 
 	curExporter := &metricStreamInform{
 		metricStream:    stream,
