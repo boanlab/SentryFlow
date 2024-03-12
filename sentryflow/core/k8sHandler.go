@@ -331,25 +331,25 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 	_, eeaExist := meshConfig["enableEnvoyAccessLogService"]
 
 	if eeaExist {
-		log.Printf("Overwrite the contents of \"enableEnvoyAccessLogService\"")		
+		log.Printf("Overwrite the contents of \"enableEnvoyAccessLogService\"")
 	}
 	meshConfig["enableEnvoyAccessLogService"] = true
 
 	_, ealExist := meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyAccessLogService"]
 	if ealExist {
-		log.Printf("Overwrite the contents of \"defaultConfig.envoyAccessLogService\"")		
+		log.Printf("Overwrite the contents of \"defaultConfig.envoyAccessLogService\"")
 	}
 	meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyAccessLogService"] = map[string]string{
-        "address": "sentryflow.sentryflow.svc.cluster.local:8080",
-    }
+		"address": "sentryflow.sentryflow.svc.cluster.local:4317",
+	}
 
-	_, emExist := meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyMetricsService"]	
+	_, emExist := meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyMetricsService"]
 	if emExist {
-		log.Printf("Overwrite the contents of \"defaultConfig.envoyMetricsService\"")		
+		log.Printf("Overwrite the contents of \"defaultConfig.envoyMetricsService\"")
 	}
 	meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyMetricsService"] = map[string]string{
-        "address": "sentryflow.sentryflow.svc.cluster.local:8080",
-    }
+		"address": "sentryflow.sentryflow.svc.cluster.local:4317",
+	}
 
 	// Work with defaultProviders.accessLogs
 	dp, exists := meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"]

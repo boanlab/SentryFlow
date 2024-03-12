@@ -8,7 +8,6 @@ require (
 	github.com/5GSEC/sentryflow/protobuf v0.0.0-00010101000000-000000000000
 	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/envoyproxy/go-control-plane v0.11.1
-	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/spf13/viper v1.18.2
 	go.opentelemetry.io/proto/otlp v1.0.0
 	google.golang.org/grpc v1.61.1
@@ -65,7 +64,6 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240108191215-35c7eff3a6b1 // indirect
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
