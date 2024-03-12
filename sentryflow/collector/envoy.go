@@ -3,16 +3,16 @@
 package collector
 
 import (
-	envoyAls "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
-	envoyMetrics "github.com/envoyproxy/go-control-plane/envoy/service/metrics/v3"
+	"fmt"
 	"github.com/5GSEC/sentryflow/core"
 	"github.com/5GSEC/sentryflow/protobuf"
 	"github.com/5GSEC/sentryflow/types"
+	envoyAls "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
+	envoyMetrics "github.com/envoyproxy/go-control-plane/envoy/service/metrics/v3"
 	"google.golang.org/grpc"
-	"strconv"
 	"io"
 	"log"
-	"fmt"
+	"strconv"
 )
 
 // EnvoyMetricsServer Structure
@@ -57,27 +57,26 @@ func (ems *EnvoyMetricsServer) StreamMetrics(stream envoyMetrics.MetricsService_
 			log.Printf("[Envoy] Received EnvoyMetric - ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
 
 			nodeID := identifier.GetNode().GetId()
-    		cluster := identifier.GetNode().GetCluster()
-    
-    		curIdentifier := fmt.Sprintf("%s, %s", nodeID, cluster)
+			cluster := identifier.GetNode().GetCluster()
+
+			curIdentifier := fmt.Sprintf("%s, %s", nodeID, cluster)
 			envoyMetric := &protobuf.EnvoyMetric{
 				Identifier: curIdentifier,
 				Metric:     []*protobuf.Metric{},
 			}
-			
-			
+
 			for _, metric := range event.GetEnvoyMetrics() {
 				metricType := metric.GetType().String()
 				metricName := metric.GetName()
 				tempMetrics := metric.GetMetric()
 				metrics := fmt.Sprintf("%s", tempMetrics)
-				
+
 				curMetric := &protobuf.Metric{
 					Type:  metricType,
 					Key:   metricName,
 					Value: metrics,
 				}
-				
+
 				envoyMetric.Metric = append(envoyMetric.Metric, curMetric)
 			}
 
@@ -106,9 +105,7 @@ func (eas *EnvoyAccessLogsServer) registerService(server *grpc.Server) {
 // StreamAccessLogs Function
 func (eas *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAls.AccessLogService_StreamAccessLogsServer) error {
 	for {
-		log.Printf("Start Recv waiting")
 		event, err := stream.Recv()
-		log.Printf("Received!!!!!")
 		if err == io.EOF {
 			return nil
 		}
@@ -120,7 +117,8 @@ func (eas *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAls.AccessLogServ
 
 		err = event.ValidateAll()
 		if err != nil {
-			log.Printf("[Envoy] Failed to validate stream: %v", err)
+			log.Printf("[Envoy] Failed to validate event: %v", err)
+			continue
 		}
 
 		// Check HTTP logs
@@ -151,7 +149,7 @@ func (eas *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAls.AccessLogServ
 					method := req.GetRequestMethod().String()
 					protocolName := proto.String()
 					resCode := res.GetResponseCode().GetValue()
-	
+
 					envoyAccessLog := &protobuf.APILog{
 						TimeStamp:    strconv.FormatInt(timeStamp, 10),
 						Id:           0, //  do 0 for now, we are going to write it later
@@ -172,7 +170,7 @@ func (eas *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAls.AccessLogServ
 						Path:         path,
 						ResponseCode: int32(resCode),
 					}
-					
+
 					core.Lh.InsertLog(envoyAccessLog)
 				}
 			}
