@@ -3,10 +3,10 @@
 package core
 
 import (
-	"github.com/5GSEC/sentryflow/exporter"
-	"github.com/5GSEC/sentryflow/metrics"
-	"github.com/5GSEC/sentryflow/protobuf"
-	"github.com/5GSEC/sentryflow/types"
+	"github.com/5GSEC/SentryFlow/exporter"
+	"github.com/5GSEC/SentryFlow/metrics"
+	"github.com/5GSEC/SentryFlow/protobuf"
+	"github.com/5GSEC/SentryFlow/types"
 	accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
 	"log"
 	"strconv"

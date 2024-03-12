@@ -4,8 +4,8 @@ package exporter
 
 import (
 	"context"
-	metricAPI "github.com/5GSEC/sentryflow/metrics/api"
-	"github.com/5GSEC/sentryflow/protobuf"
+	metricAPI "github.com/5GSEC/SentryFlow/metrics/api"
+	"github.com/5GSEC/SentryFlow/protobuf"
 	"log"
 )
 

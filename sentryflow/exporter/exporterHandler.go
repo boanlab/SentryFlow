@@ -5,8 +5,8 @@ package exporter
 import (
 	"errors"
 	"fmt"
-	cfg "github.com/5GSEC/sentryflow/config"
-	"github.com/5GSEC/sentryflow/protobuf"
+	cfg "github.com/5GSEC/SentryFlow/config"
+	"github.com/5GSEC/SentryFlow/protobuf"
 	"net"
 	"sync"
 	"time"
@@ -28,11 +28,11 @@ type Handler struct {
 	baseExecutionID uint64
 	currentLogCount uint64
 	stopChan        chan struct{}
-	lock		 sync.Mutex	
-	exporters    []*Inform
+	lock            sync.Mutex
+	exporters       []*Inform
 	metricExporters []*metricStreamInform
-	exporterLock sync.Mutex
-	exporterLogs chan *protobuf.APILog
+	exporterLock    sync.Mutex
+	exporterLogs    chan *protobuf.APILog
 	exporterMetrics chan *protobuf.EnvoyMetric
 
 	listener   net.Listener

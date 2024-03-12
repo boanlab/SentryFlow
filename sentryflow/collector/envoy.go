@@ -4,8 +4,8 @@ package collector
 
 import (
 	"fmt"
-	"github.com/5GSEC/sentryflow/core"
-	"github.com/5GSEC/sentryflow/protobuf"
+	"github.com/5GSEC/SentryFlow/core"
+	"github.com/5GSEC/SentryFlow/protobuf"
 	envoyAls "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
 	envoyMetrics "github.com/envoyproxy/go-control-plane/envoy/service/metrics/v3"
 	"google.golang.org/grpc"

@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/5GSEC/sentryflow/collector"
-	"github.com/5GSEC/sentryflow/core"
+	"github.com/5GSEC/SentryFlow/collector"
+	"github.com/5GSEC/SentryFlow/core"
 	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 	"log"
 )
