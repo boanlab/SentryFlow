@@ -15,11 +15,12 @@ import (
 )
 
 type Handler struct {
-	client     *mongo.Client
-	database   *mongo.Database
-	collection *mongo.Collection
-	cancel     context.CancelFunc
-	dbURL      string
+	client            *mongo.Client
+	database          *mongo.Database
+	alCollection      *mongo.Collection
+	metricsCollection *mongo.Collection
+	cancel            context.CancelFunc
+	dbURL             string
 }
 
 var Manager *Handler
@@ -55,7 +56,8 @@ func New() (*Handler, error) {
 
 	// Create 'sentryflow' database and 'api-logs' collection
 	h.database = h.client.Database("sentryflow")
-	h.collection = h.database.Collection("api-logs")
+	h.alCollection = h.database.Collection("api-logs")
+	h.metricsCollection = h.database.Collection("metrics")
 
 	Manager = &h
 	return &h, nil
@@ -70,8 +72,17 @@ func (h *Handler) Disconnect() {
 	return
 }
 
-func (h *Handler) InsertData(data *protobuf.APILog) error {
-	_, err := h.collection.InsertOne(context.Background(), data)
+func (h *Handler) InsertAl(data *protobuf.APILog) error {
+	_, err := h.alCollection.InsertOne(context.Background(), data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Handler) InsertMetrics(data *protobuf.EnvoyMetric) error {
+	_, err := h.metricsCollection.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
 	}

@@ -11,8 +11,54 @@ import (
 	"mongo-client/common"
 	"mongo-client/db"
 	"os"
+	"os/signal"
 	protobuf "sentryflow/protobuf"
+	"syscall"
 )
+
+func accessLogRoutine(stream protobuf.SentryFlow_GetLogClient, done chan struct{}) {
+	for {
+		select {
+		default:
+			data, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("failed to receive log: %v", err)
+			}
+			log.Printf("[Client] Inserting log")
+			err = db.Manager.InsertAl(data)
+			if err != nil {
+				log.Printf("[Client] Failed to insert log: %v", err)
+			}
+		case <-done:
+			return
+		}
+	}
+}
+
+func metricRoutine(stream protobuf.SentryFlow_GetEnvoyMetricsClient, done chan struct{}) {
+	for {
+		select {
+		default:
+			data, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("failed to receive metric: %v", err)
+			}
+			log.Printf("[Client] Inserting metric")
+			err = db.Manager.InsertMetrics(data)
+			if err != nil {
+				log.Printf("[Client] Failed to insert metric: %v", err)
+			}
+		case <-done:
+			return
+		}
+	}
+}
 
 func main() {
 	// Init DB
@@ -53,24 +99,22 @@ func main() {
 		HostName: hostname,
 	}
 
-	// Contact the server and print out its response.
-	stream, err := client.GetLog(context.Background(), clientInfo)
+	// Contact the server and print out its response
+	accessLogStream, err := client.GetLog(context.Background(), clientInfo)
+	metricStream, err := client.GetEnvoyMetrics(context.Background(), clientInfo)
 	if err != nil {
 		log.Fatalf("could not get log: %v", err)
 	}
 
-	for {
-		data, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatalf("failed to receive log: %v", err)
-		}
+	done := make(chan struct{})
 
-		err = db.Manager.InsertData(data)
-		if err != nil {
-			log.Printf("[DB] Failed to store data to DB: %v", err)
-		}
-	}
+	go accessLogRoutine(accessLogStream, done)
+	go metricRoutine(metricStream, done)
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+	<-signalChan
+
+	close(done)
 }
