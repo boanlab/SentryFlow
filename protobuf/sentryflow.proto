@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protobuf;
 
-option go_package = "SentryFlow/protobuf";
+option go_package = "sentryflow/protobuf";
 
 message ClientInfo {
   string hostName = 1;
@@ -38,15 +38,22 @@ message APIMetric {
   // @todo: add some more metrics here
 }
 
+message MetricValue {
+  string name = 1;
+  string value = 2;
+}
+
 message Metric {
-  string type = 1;
-  string key = 2;
-  string value = 3;
+  repeated MetricValue metricValue = 2;
 }
 
 message EnvoyMetric {
-  string identifier = 1;
-  repeated Metric metric = 2;
+  string podNamespace = 1;
+  string podName = 2;
+  string podIP = 3;
+  string podContainer = 4;
+  string timeStamp = 5;
+  map<string, Metric> metric = 6;
 }
 
 service SentryFlow {

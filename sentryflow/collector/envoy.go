@@ -3,14 +3,15 @@
 package collector
 
 import (
-	"fmt"
+	"io"
+	"log"
+	"strconv"
+
 	"github.com/5GSEC/SentryFlow/core"
 	"github.com/5GSEC/SentryFlow/protobuf"
 	envoyAls "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
 	envoyMetrics "github.com/envoyproxy/go-control-plane/envoy/service/metrics/v3"
 	"google.golang.org/grpc"
-	"io"
-	"log"
 )
 
 // EnvoyMetricsServer Structure
@@ -52,29 +53,58 @@ func (ems *EnvoyMetricsServer) StreamMetrics(stream envoyMetrics.MetricsService_
 
 	if identifier != nil {
 		log.Printf("[Envoy] Received EnvoyMetric - ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
+		metaData := identifier.GetNode().GetMetadata().AsMap()
 
-		nodeID := identifier.GetNode().GetId()
-		cluster := identifier.GetNode().GetCluster()
-
-		curIdentifier := fmt.Sprintf("%s, %s", nodeID, cluster)
 		envoyMetric := &protobuf.EnvoyMetric{
-			Identifier: curIdentifier,
-			Metric:     []*protobuf.Metric{},
+			PodContainer: metaData["APP_CONTAINERS"].(string),
+			PodIP:        metaData["INSTANCE_IPS"].(string),
+			PodName:      metaData["NAME"].(string),
+			PodNamespace: metaData["NAMESPACE"].(string),
+			TimeStamp:    "",
+			Metric: map[string]*protobuf.Metric{
+				"GAUGE":     {MetricValue: []*protobuf.MetricValue{}},
+				"COUNTER":   {MetricValue: []*protobuf.MetricValue{}},
+				"HISTOGRAM": {MetricValue: []*protobuf.MetricValue{}},
+				"SUMMARY":   {MetricValue: []*protobuf.MetricValue{}},
+				"UNTYPED":   {MetricValue: []*protobuf.MetricValue{}},
+				"LABEL":     {MetricValue: []*protobuf.MetricValue{}},
+			},
 		}
 
 		for _, metric := range event.GetEnvoyMetrics() {
 			metricType := metric.GetType().String()
 			metricName := metric.GetName()
-			tempMetrics := metric.GetMetric()
-			metrics := fmt.Sprintf("%s", tempMetrics)
 
-			curMetric := &protobuf.Metric{
-				Type:  metricType,
-				Key:   metricName,
-				Value: metrics,
+			if envoyMetric.Metric[metricType].MetricValue == nil {
+				continue
 			}
 
-			envoyMetric.Metric = append(envoyMetric.Metric, curMetric)
+			var metricValue string
+
+			for _, metricDetail := range metric.GetMetric() {
+				if envoyMetric.TimeStamp == "" {
+					envoyMetric.TimeStamp = strconv.FormatInt(metricDetail.GetTimestampMs(), 10)
+				}
+				if metricType == "GAUGE" {
+					metricValue = strconv.FormatFloat(metricDetail.GetGauge().GetValue(), 'f', -1, 64)
+				}
+				if metricType == "COUNTER" {
+					metricValue = strconv.FormatFloat(metricDetail.GetCounter().GetValue(), 'f', -1, 64)
+				}
+				if metricType == "HISTOGRAM" {
+					metricValue = strconv.FormatUint(metricDetail.GetHistogram().GetSampleCount(), 10)
+				}
+				if metricType == "SUMMARY" {
+					metricValue = strconv.FormatUint(metricDetail.GetHistogram().GetSampleCount(), 10)
+				}
+
+				curMetric := &protobuf.MetricValue{
+					Name:  metricName,
+					Value: metricValue,
+				}
+
+				envoyMetric.Metric[metricType].MetricValue = append(envoyMetric.Metric[metricType].MetricValue, curMetric)
+			}
 		}
 
 		core.Lh.InsertLog(envoyMetric)

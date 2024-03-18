@@ -3,17 +3,18 @@
 package main
 
 import (
+	"SentryFlow/protobuf"
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
-	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 	"io"
 	"log"
 	"log-client/common"
 	"os"
 	"os/signal"
 	"syscall"
-	"SentryFlow/protobuf"
+
+	"google.golang.org/grpc"
+	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 )
 
 func main() {
@@ -61,7 +62,6 @@ func main() {
 	go accessLogRoutine(accessLogStream, done)
 	go metricRoutine(metricStream, done)
 
-
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
@@ -89,6 +89,7 @@ func accessLogRoutine(stream protobuf.SentryFlow_GetLogClient, done chan struct{
 }
 
 func metricRoutine(stream protobuf.SentryFlow_GetEnvoyMetricsClient, done chan struct{}) {
+	metricKeys := []string{"GAUGE", "COUNTER", "HISTOGRAM", "SUMMARY", "UNTYPED", "LABEL"}
 	for {
 		select {
 		default:
@@ -99,7 +100,10 @@ func metricRoutine(stream protobuf.SentryFlow_GetEnvoyMetricsClient, done chan s
 			if err != nil {
 				log.Fatalf("failed to receive metric: %v", err)
 			}
-			log.Printf("[Client] Received metric: %v", data)
+			log.Printf("[Client] Received metric: podNamespace:\"%s\" podName:\"%s\" podIP:\"%s\" podContainer:\"%s\" timeStamp:\"%s\"", data.PodNamespace, data.PodName, data.PodIP, data.PodContainer, data.TimeStamp)
+			for _, key := range metricKeys {
+				fmt.Printf("%s: {%v}\n", key, data.Metric[key])
+			}
 		case <-done:
 			return
 		}
