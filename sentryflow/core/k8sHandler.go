@@ -4,6 +4,10 @@ package core
 
 import (
 	"context"
+	"log"
+	"sync"
+	"time"
+
 	"github.com/5GSEC/SentryFlow/config"
 	"github.com/5GSEC/SentryFlow/types"
 	"gopkg.in/yaml.v2"
@@ -13,9 +17,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"log"
-	"sync"
-	"time"
 )
 
 // K8s global reference for Kubernetes Handler
@@ -269,10 +270,11 @@ func (kh *K8sHandler) lookupIPAddress(ipAddr string) interface{} {
 // LookupNetworkedResource Function
 func LookupNetworkedResource(srcIP string) types.K8sNetworkedResource {
 	ret := types.K8sNetworkedResource{
-		Name:      "Unknown",
-		Namespace: "Unknown",
-		Labels:    make(map[string]string),
-		Type:      types.K8sResourceTypeUnknown,
+		Name:        "Unknown",
+		Namespace:   "Unknown",
+		Labels:      make(map[string]string),
+		Annotations: make(map[string]string),
+		Type:        types.K8sResourceTypeUnknown,
 	}
 
 	// Find Kubernetes resource from source IP (service or a pod)
@@ -286,6 +288,7 @@ func LookupNetworkedResource(srcIP string) types.K8sNetworkedResource {
 			ret.Name = pod.Name
 			ret.Namespace = pod.Namespace
 			ret.Labels = pod.Labels
+			ret.Annotations = pod.Annotations
 			ret.Type = types.K8sResourceTypePod
 		}
 	case *corev1.Service:
@@ -294,6 +297,7 @@ func LookupNetworkedResource(srcIP string) types.K8sNetworkedResource {
 			ret.Name = svc.Name
 			ret.Namespace = svc.Namespace
 			ret.Labels = svc.Labels
+			ret.Annotations = svc.Annotations
 			ret.Type = types.K8sResourceTypeService
 		}
 	default:
