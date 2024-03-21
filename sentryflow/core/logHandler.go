@@ -232,27 +232,35 @@ func GenerateAccessLogsFromEnvoy(entry *accesslogv3.HTTPAccessLogEntry) *protobu
 }
 
 func GenerateMetricFromEnvoy(event *metricv3.StreamMetricsMessage, metaData map[string]interface{}) *protobuf.EnvoyMetric {
+	pod := LookupNetworkedResource(metaData["INSTANCE_IPS"].(string))
 	envoyMetric := &protobuf.EnvoyMetric{
-		PodContainer: metaData["APP_CONTAINERS"].(string),
-		PodIP:        metaData["INSTANCE_IPS"].(string),
-		PodName:      metaData["NAME"].(string),
-		PodNamespace: metaData["NAMESPACE"].(string),
-		TimeStamp:    "",
-		Metric: map[string]*protobuf.Metric{
-			"GAUGE":     {MetricValue: []*protobuf.MetricValue{}},
-			"COUNTER":   {MetricValue: []*protobuf.MetricValue{}},
-			"HISTOGRAM": {MetricValue: []*protobuf.MetricValue{}},
-			"SUMMARY":   {MetricValue: []*protobuf.MetricValue{}},
-			"UNTYPED":   {MetricValue: []*protobuf.MetricValue{}},
-			"LABEL":     {MetricValue: []*protobuf.MetricValue{}},
-		},
+		Containers: metaData["APP_CONTAINERS"].(string),
+		PodIP:      metaData["INSTANCE_IPS"].(string),
+		Name:       metaData["NAME"].(string),
+		Namespace:  metaData["NAMESPACE"].(string),
+		Labels:     pod.Labels,
+		TimeStamp:  "",
+		Metric:     make(map[string]*protobuf.MetricValue),
+	}
+
+	envoyMetric.Metric["GAUGE"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
+	}
+	envoyMetric.Metric["COUNTER"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
+	}
+	envoyMetric.Metric["HISTOGRAM"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
+	}
+	envoyMetric.Metric["SUMMARY"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
 	}
 
 	for _, metric := range event.GetEnvoyMetrics() {
 		metricType := metric.GetType().String()
 		metricName := metric.GetName()
 
-		if envoyMetric.Metric[metricType].MetricValue == nil {
+		if envoyMetric.Metric[metricType].Value == nil {
 			continue
 		}
 
@@ -275,12 +283,7 @@ func GenerateMetricFromEnvoy(event *metricv3.StreamMetricsMessage, metaData map[
 				metricValue = strconv.FormatUint(metricDetail.GetHistogram().GetSampleCount(), 10)
 			}
 
-			curMetric := &protobuf.MetricValue{
-				Name:  metricName,
-				Value: metricValue,
-			}
-
-			envoyMetric.Metric[metricType].MetricValue = append(envoyMetric.Metric[metricType].MetricValue, curMetric)
+			envoyMetric.Metric[metricType].Value[metricName] = metricValue
 		}
 	}
 
