@@ -3,11 +3,12 @@
 package core
 
 import (
+	"log"
+	"sync"
+
 	cfg "github.com/5GSEC/SentryFlow/config"
 	"github.com/5GSEC/SentryFlow/exporter"
 	"github.com/5GSEC/SentryFlow/metrics"
-	"log"
-	"sync"
 )
 
 // StopChan Channel
@@ -115,6 +116,11 @@ func SentryFlow() {
 		log.Printf("[SentryFlow] Failed to patch Kubernetes")
 	}
 	log.Printf("[SentryFlow] Patched Kubernetes and Istio configuration")
+
+	if !exporter.MDB.InitMetricsDBHandler() {
+		log.Printf("[Error] Failed to initialize Metrics DB")
+	}
+	log.Printf("[SentryFlow] Successfuly initialized metrics DB")
 
 	// Start log processor
 	dm.logProcessor()

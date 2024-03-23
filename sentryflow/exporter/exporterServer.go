@@ -4,9 +4,10 @@ package exporter
 
 import (
 	"context"
+	"log"
+
 	metricAPI "github.com/5GSEC/SentryFlow/metrics/api"
 	"github.com/5GSEC/SentryFlow/protobuf"
-	"log"
 )
 
 var exs *Server
@@ -50,9 +51,9 @@ func (exs *Server) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobuf.Se
 	log.Printf("[Exporter] Client %s(%s) connected (GetEnvoyMetrics)", info.HostName, info.IPAddress)
 
 	curExporter := &metricStreamInform{
-		metricStream:    stream,
-		Hostname:  info.HostName,
-		IPAddress: info.IPAddress,
+		metricStream: stream,
+		Hostname:     info.HostName,
+		IPAddress:    info.IPAddress,
 	}
 
 	// Append new exporter client for future use

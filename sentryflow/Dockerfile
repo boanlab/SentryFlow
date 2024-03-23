@@ -13,8 +13,8 @@ RUN mkdir /protobuf
 
 WORKDIR /protobuf
 COPY /protobuf .
-RUN go mod tidy
-RUN make build
+# RUN go mod tidy
+# RUN make build
 
 WORKDIR /app
 COPY /sentryflow .

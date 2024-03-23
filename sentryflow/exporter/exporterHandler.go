@@ -3,16 +3,21 @@
 package exporter
 
 import (
+	"bytes"
+	"encoding/gob"
 	"errors"
 	"fmt"
-	cfg "github.com/5GSEC/SentryFlow/config"
-	"github.com/5GSEC/SentryFlow/protobuf"
 	"net"
 	"sync"
 	"time"
 
+	cfg "github.com/5GSEC/SentryFlow/config"
+	"github.com/5GSEC/SentryFlow/protobuf"
+	"github.com/5GSEC/SentryFlow/types"
+
 	"github.com/emicklei/go-restful/v3/log"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 // Exp global reference for Exporter Handler
@@ -41,17 +46,17 @@ type Handler struct {
 
 // Inform structure
 type Inform struct {
-	stream    protobuf.SentryFlow_GetLogServer	
+	stream    protobuf.SentryFlow_GetLogServer
 	error     chan error
 	Hostname  string
 	IPAddress string
 }
 
 type metricStreamInform struct {
-	metricStream	  protobuf.SentryFlow_GetEnvoyMetricsServer
-	error chan error
-	Hostname  string
-	IPAddress string
+	metricStream protobuf.SentryFlow_GetEnvoyMetricsServer
+	error        chan error
+	Hostname     string
+	IPAddress    string
 }
 
 // NewExporterHandler Function
@@ -78,10 +83,58 @@ func InsertAccessLog(al *protobuf.APILog) {
 	Exp.currentLogCount++
 	Exp.lock.Unlock()
 
+	savaAccessLog(al) // go routine??
+	als, _ := MDB.AggregatedAccessLogSelect()
+
+	for key, val := range als {
+		for _, byte := range val {
+			var eal protobuf.APILog
+			if err := proto.Unmarshal(byte, &eal); err != nil {
+				log.Printf("error unmarshaling AccessLog: %w", err)
+			}
+			log.Printf("[TESTCODE] wow this is real?: %v, %v", key, eal)
+		}
+	}
+
 	Exp.exporterLogs <- al
 }
 
-//InsertEnvoyMetric Function
+func savaAccessLog(al *protobuf.APILog) {
+	curLabels := al.SrcLabel
+	curAnnotations := al.SrcAnnotation
+
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(curLabels)
+	if err != nil {
+		fmt.Println("Error encoding first map:", err)
+		return
+	}
+	lbByteData := buf.Bytes()
+
+	buf.Reset()
+	err = encoder.Encode(curAnnotations)
+	if err != nil {
+		fmt.Println("Error encoding second map:", err)
+		return
+	}
+	anByteData := buf.Bytes()
+
+	alByteData, err := proto.Marshal(al)
+	if err != nil {
+		log.Printf("[Exporter]AccessLog marshaling error: ", err)
+	}
+
+	curData := types.DbAccessLogType{
+		Labels:      lbByteData,
+		Annotations: anByteData,
+		AccesLog:    alByteData,
+	}
+
+	MDB.AccessLogInsert(curData)
+}
+
+// InsertEnvoyMetric Function
 func InsertEnvoyMetric(em *protobuf.EnvoyMetric) {
 	Exp.exporterMetrics <- em
 }

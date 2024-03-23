@@ -30,6 +30,40 @@ type LogHandler struct {
 	logChan  chan interface{}
 }
 
+type aggregationLog struct {
+	Logs        []*protobuf.APILog
+	Labels      map[string]string
+	Annotations map[string]string
+}
+
+func mapsAreEqual(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for key, val := range a {
+		if bVal, ok := b[key]; !ok || bVal != val {
+			return false
+		}
+	}
+
+	return true
+}
+
+func arraysAreEqual(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
 // NewLogHandler Structure
 func NewLogHandler() *LogHandler {
 	lh := &LogHandler{
@@ -158,24 +192,26 @@ func GenerateAccessLogsFromOtel(logText string) []*protobuf.APILog {
 
 		// Create AccessLog in our gRPC format
 		cur := protobuf.APILog{
-			TimeStamp:    timeStamp,
-			Id:           0, //  do 0 for now, we are going to write it later
-			SrcNamespace: src.Namespace,
-			SrcName:      src.Name,
-			SrcLabel:     src.Labels,
-			SrcIP:        srcIP,
-			SrcPort:      srcPort,
-			SrcType:      types.K8sResourceTypeToString(src.Type),
-			DstNamespace: dst.Namespace,
-			DstName:      dst.Name,
-			DstLabel:     dst.Labels,
-			DstIP:        dstIP,
-			DstPort:      dstPort,
-			DstType:      types.K8sResourceTypeToString(dst.Type),
-			Protocol:     protocolName,
-			Method:       method,
-			Path:         path,
-			ResponseCode: int32(resCode),
+			TimeStamp:     timeStamp,
+			Id:            0, //  do 0 for now, we are going to write it later
+			SrcNamespace:  src.Namespace,
+			SrcName:       src.Name,
+			SrcLabel:      src.Labels,
+			SrcAnnotation: src.Annotations,
+			SrcIP:         srcIP,
+			SrcPort:       srcPort,
+			SrcType:       types.K8sResourceTypeToString(src.Type),
+			DstNamespace:  dst.Namespace,
+			DstName:       dst.Name,
+			DstLabel:      dst.Labels,
+			DstAnnotation: dst.Annotations,
+			DstIP:         dstIP,
+			DstPort:       dstPort,
+			DstType:       types.K8sResourceTypeToString(dst.Type),
+			Protocol:      protocolName,
+			Method:        method,
+			Path:          path,
+			ResponseCode:  int32(resCode),
 		}
 
 		ret = append(ret, &cur)
@@ -234,13 +270,12 @@ func GenerateAccessLogsFromEnvoy(entry *accesslogv3.HTTPAccessLogEntry) *protobu
 func GenerateMetricFromEnvoy(event *metricv3.StreamMetricsMessage, metaData map[string]interface{}) *protobuf.EnvoyMetric {
 	pod := LookupNetworkedResource(metaData["INSTANCE_IPS"].(string))
 	envoyMetric := &protobuf.EnvoyMetric{
-		Containers: metaData["APP_CONTAINERS"].(string),
-		PodIP:      metaData["INSTANCE_IPS"].(string),
-		Name:       metaData["NAME"].(string),
-		Namespace:  metaData["NAMESPACE"].(string),
-		Labels:     pod.Labels,
-		TimeStamp:  "",
-		Metric:     make(map[string]*protobuf.MetricValue),
+		PodIP:     metaData["INSTANCE_IPS"].(string),
+		Name:      metaData["NAME"].(string),
+		Namespace: metaData["NAMESPACE"].(string),
+		Labels:    pod.Labels,
+		TimeStamp: "",
+		Metric:    make(map[string]*protobuf.MetricValue),
 	}
 
 	envoyMetric.Metric["GAUGE"] = &protobuf.MetricValue{
@@ -289,3 +324,33 @@ func GenerateMetricFromEnvoy(event *metricv3.StreamMetricsMessage, metaData map[
 
 	return envoyMetric
 }
+
+// func AggregationAccessLogFromEnvoy() {
+// 	aggregationMap := make(map[string]*aggregationLog)
+// 	var curAccessLog *protobuf.APILog
+// 	var flag bool = false
+
+// 	curPod := LookupNetworkedResource(curAccessLog.srcIP)
+// 	curLabels := curPod.Labels
+// 	curAnnotations := curPod.Annotations
+// 	curCotainers := curPod.
+
+// 	for key, value := range aggregationMap {
+// 		if mapsAreEqual(value.Labels, curLabels) && mapsAreEqual(value.Annotations, curAnnotations) && arraysAreEqual(value.Containers, curCotainers) {
+// 			aggregationMap[key].Logs = append(aggregationMap[key].Logs, curAccessLog)
+// 			flag = true
+// 		}
+// 	}
+
+// 	if !flag {
+// 		aggregationMap["any key"] = &aggregationLog{
+// 			Logs:        make([]*protobuf.APILog, 0),
+// 			Labels:      curLabels,
+// 			Annotations: curAnnotations,
+// 			Containers:  curCotainers,
+// 		}
+
+// 		aggregationMap["any key"].Logs = append(aggregationMap["any key"].Logs, curAccessLog)
+// 	}
+
+// }

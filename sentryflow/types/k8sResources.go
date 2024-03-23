@@ -15,7 +15,14 @@ type K8sNetworkedResource struct {
 	Namespace   string
 	Labels      map[string]string
 	Annotations map[string]string
+	Containers  []string
 	Type        uint8
+}
+
+type DbAccessLogType struct {
+	Labels      []byte
+	Annotations []byte
+	AccesLog    []byte
 }
 
 // K8sResourceTypeToString Function
