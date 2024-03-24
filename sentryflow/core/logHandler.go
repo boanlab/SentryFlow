@@ -244,24 +244,26 @@ func GenerateAccessLogsFromEnvoy(entry *accesslogv3.HTTPAccessLogEntry) *protobu
 	resCode := res.GetResponseCode().GetValue()
 
 	envoyAccessLog := &protobuf.APILog{
-		TimeStamp:    strconv.FormatInt(timeStamp, 10),
-		Id:           0, //  do 0 for now, we are going to write it later
-		SrcNamespace: src.Namespace,
-		SrcName:      src.Name,
-		SrcLabel:     src.Labels,
-		SrcIP:        srcIP,
-		SrcPort:      srcPort,
-		SrcType:      types.K8sResourceTypeToString(src.Type),
-		DstNamespace: dst.Namespace,
-		DstName:      dst.Name,
-		DstLabel:     dst.Labels,
-		DstIP:        dstIP,
-		DstPort:      dstPort,
-		DstType:      types.K8sResourceTypeToString(dst.Type),
-		Protocol:     protocolName,
-		Method:       method,
-		Path:         path,
-		ResponseCode: int32(resCode),
+		TimeStamp:     strconv.FormatInt(timeStamp, 10),
+		Id:            0, //  do 0 for now, we are going to write it later
+		SrcNamespace:  src.Namespace,
+		SrcName:       src.Name,
+		SrcLabel:      src.Labels,
+		SrcAnnotation: src.Annotations,
+		SrcIP:         srcIP,
+		SrcPort:       srcPort,
+		SrcType:       types.K8sResourceTypeToString(src.Type),
+		DstNamespace:  dst.Namespace,
+		DstName:       dst.Name,
+		DstLabel:      dst.Labels,
+		DstAnnotation: dst.Annotations,
+		DstIP:         dstIP,
+		DstPort:       dstPort,
+		DstType:       types.K8sResourceTypeToString(dst.Type),
+		Protocol:      protocolName,
+		Method:        method,
+		Path:          path,
+		ResponseCode:  int32(resCode),
 	}
 
 	return envoyAccessLog

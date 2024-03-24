@@ -19,12 +19,6 @@ type K8sNetworkedResource struct {
 	Type        uint8
 }
 
-type DbAccessLogType struct {
-	Labels      []byte
-	Annotations []byte
-	AccesLog    []byte
-}
-
 // K8sResourceTypeToString Function
 func K8sResourceTypeToString(t uint8) string {
 	switch t {

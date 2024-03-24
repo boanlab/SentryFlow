@@ -99,7 +99,6 @@ func (md *MetricsDBHandler) initDBTables() error {
 // PerAPICountInsert Function
 func (md *MetricsDBHandler) AccessLogInsert(data types.DbAccessLogType) error {
 	var id int64
-	//var logData [][]byte
 	exist := md.db.QueryRow("SELECT id FROM access_log WHERE labels = ? AND annotations = ?", data.Labels, data.Annotations).Scan(&id)
 
 	if exist != nil {
@@ -118,7 +117,7 @@ func (md *MetricsDBHandler) AccessLogInsert(data types.DbAccessLogType) error {
 		id = lastId
 	}
 
-	_, err := md.db.Exec("INSERT INTO aggregated_access_logs (log_id, log_data) VALUES (?, ?)", id, data.AccesLog)
+	_, err := md.db.Exec("INSERT INTO aggregated_access_logs (log_id, log_data) VALUES (?, ?)", id, data.AccessLog)
 	if err != nil {
 		log.Printf("INSERT accesslog error: %v", err)
 	}
@@ -137,7 +136,6 @@ func (md *MetricsDBHandler) AggregatedAccessLogSelect() (map[int64][][]byte, err
 
 	for rows.Next() {
 		var accessLogID int64
-		log.Printf("!!!!@#!@#!@#!@#!d;klfasdk;fasdkf %d", accessLogID)
 		if err := rows.Scan(&accessLogID); err != nil {
 			log.Fatal(err)
 		}
@@ -154,12 +152,11 @@ func (md *MetricsDBHandler) AggregatedAccessLogSelect() (map[int64][][]byte, err
 			if err := aggregatedRows.Scan(&logData); err != nil {
 				log.Fatal(err)
 			}
-			log.Printf("wowowowow!!!!@#!@#!@#!@#!d;klfasdk;fasdkf %v", logData)
 			logDataList = append(logDataList, logData)
 		}
 		als[accessLogID] = logDataList
 	}
-	log.Printf("adfjasdkfasd;klfasdk;fasdkf %d", len(als))
+
 	return als, err
 }
 

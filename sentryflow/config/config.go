@@ -23,8 +23,9 @@ type SentryFlowConfig struct {
 	PatchNamespace          bool // Enable/Disable patching namespace for Istio injection
 	PatchRestartDeployments bool // Enable/Disable restarting deployments after patching
 
-	AIEngineService   string
-	AIEngineBatchSize int
+	AIEngineService     string
+	AIEngineServicePort string
+	AIEngineBatchSize   int
 
 	MetricsDBFileName string // String value of MetricsDB file (sqlite3 db file)
 
@@ -49,6 +50,7 @@ const (
 	PatchNamespace               string = "patchNamespace"
 	PatchRestartDeployments      string = "patchRestartDeployments"
 	AIEngineService              string = "aiEngineService"
+	AIEngineServicePort          string = "aiEngineServicePort"
 	AIEngineBatchSize            string = "aiEngineBatchSize"
 	MetricsDBFileName            string = "metricsDBFileName"
 	CollectorEnableOpenTelemetry string = "collectorEnableOpenTelemetry"
@@ -63,6 +65,7 @@ func readCmdLineParams() {
 	patchNamespaceB := flag.Bool(PatchNamespace, false, "Enable/Disable patching Istio injection to all namespaces")
 	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
 	aiEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
+	aiEngineServicePort := flag.String(AIEngineServicePort, "5000", "Service Port for SentryFlow AI Engine")
 	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size fo SentryFlow AI Engine")
 	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/metrics.db", "File name for local metrics DB")
 	collectorEnableOpenTelemetryB := flag.Bool(CollectorEnableOpenTelemetry, true, "Enable/Disable OpenTelemetry Collector")
@@ -84,6 +87,7 @@ func readCmdLineParams() {
 	viper.SetDefault(PatchNamespace, *patchNamespaceB)
 	viper.SetDefault(PatchRestartDeployments, *patchRestartDeploymentsB)
 	viper.SetDefault(AIEngineService, *aiEngineServiceStr)
+	viper.SetDefault(AIEngineServicePort, *aiEngineServicePort)
 	viper.SetDefault(AIEngineBatchSize, *aiEngineBatchSizeInt)
 	viper.SetDefault(MetricsDBFileName, *metricsDBFileNameStr)
 	viper.SetDefault(CollectorEnableOpenTelemetry, *collectorEnableOpenTelemetryB)
@@ -108,6 +112,7 @@ func LoadConfig() error {
 	GlobalCfg.PatchNamespace = viper.GetBool(PatchNamespace)
 	GlobalCfg.PatchRestartDeployments = viper.GetBool(PatchRestartDeployments)
 	GlobalCfg.AIEngineService = viper.GetString(AIEngineService)
+	GlobalCfg.AIEngineServicePort = viper.GetString(AIEngineServicePort)
 	GlobalCfg.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
 	GlobalCfg.MetricsDBFileName = viper.GetString(MetricsDBFileName)
 	GlobalCfg.CollectorEnableOpenTelemetry = viper.GetBool(CollectorEnableOpenTelemetry)

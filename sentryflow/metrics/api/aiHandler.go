@@ -2,11 +2,47 @@
 
 package api
 
+import (
+	"fmt"
+	"log"
+	"os"
+
+	cfg "github.com/5GSEC/SentryFlow/config"
+	"github.com/5GSEC/SentryFlow/protobuf"
+	"google.golang.org/grpc"
+)
+
 // ah Local reference for AI handler server
-var ah *aiHandler
+var Ah *aiHandler
 
 // init Function
 func init() {
+	Ah := newAIHandler(cfg.AIEngineService, cfg.AIEngineServicePort)
+
+	// Construct address and start listening
+	addr := fmt.Sprintf("%s:%d", Ah.aiHost, Ah.aiPort)
+
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("could not connect: %v", err)
+	}
+	defer conn.Close()
+
+	// Start serving gRPC server
+	log.Printf("[gRPC] Successfully connected to %s for APIMetric", addr)
+
+	client := protobuf.NewSentryFlowMetricsClient(conn)
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("could not find hostname: %v", err)
+	}
+
+	// Define the client information
+	clientInfo := &protobuf.ClientInfo{
+		HostName: hostname,
+	}
 
 }
 
@@ -30,6 +66,7 @@ func newAIHandler(host string, port string) *aiHandler {
 
 // initHandler Function
 func (ah *aiHandler) initHandler() error {
+
 	return nil
 }
 

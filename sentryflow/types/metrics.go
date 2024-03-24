@@ -7,3 +7,9 @@ type PerAPICount struct {
 	Api   string
 	Count int
 }
+
+type DbAccessLogType struct {
+	Labels      []byte
+	Annotations []byte
+	AccessLog   []byte
+}

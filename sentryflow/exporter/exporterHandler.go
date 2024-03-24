@@ -3,8 +3,7 @@
 package exporter
 
 import (
-	"bytes"
-	"encoding/gob"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -83,7 +82,7 @@ func InsertAccessLog(al *protobuf.APILog) {
 	Exp.currentLogCount++
 	Exp.lock.Unlock()
 
-	savaAccessLog(al) // go routine??
+	saveAccessLog(al) // go routine??
 	als, _ := MDB.AggregatedAccessLogSelect()
 
 	for key, val := range als {
@@ -92,33 +91,27 @@ func InsertAccessLog(al *protobuf.APILog) {
 			if err := proto.Unmarshal(byte, &eal); err != nil {
 				log.Printf("error unmarshaling AccessLog: %w", err)
 			}
-			log.Printf("[TESTCODE] wow this is real?: %v, %v", key, eal)
 		}
 	}
 
 	Exp.exporterLogs <- al
 }
 
-func savaAccessLog(al *protobuf.APILog) {
+func saveAccessLog(al *protobuf.APILog) {
 	curLabels := al.SrcLabel
 	curAnnotations := al.SrcAnnotation
 
-	var buf bytes.Buffer
-	encoder := gob.NewEncoder(&buf)
-	err := encoder.Encode(curLabels)
+	lbByteData, err := json.Marshal(curLabels)
 	if err != nil {
 		fmt.Println("Error encoding first map:", err)
 		return
 	}
-	lbByteData := buf.Bytes()
 
-	buf.Reset()
-	err = encoder.Encode(curAnnotations)
+	anByteData, err := json.Marshal(curAnnotations)
 	if err != nil {
 		fmt.Println("Error encoding second map:", err)
 		return
 	}
-	anByteData := buf.Bytes()
 
 	alByteData, err := proto.Marshal(al)
 	if err != nil {
@@ -128,7 +121,7 @@ func savaAccessLog(al *protobuf.APILog) {
 	curData := types.DbAccessLogType{
 		Labels:      lbByteData,
 		Annotations: anByteData,
-		AccesLog:    alByteData,
+		AccessLog:   alByteData,
 	}
 
 	MDB.AccessLogInsert(curData)
