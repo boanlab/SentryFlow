@@ -89,7 +89,7 @@ func accessLogRoutine(stream protobuf.SentryFlow_GetLogClient, done chan struct{
 }
 
 func metricRoutine(stream protobuf.SentryFlow_GetEnvoyMetricsClient, done chan struct{}) {
-	metricKeys := []string{"GAUGE", "COUNTER", "HISTOGRAM", "SUMMARY", "UNTYPED", "LABEL"}
+	metricKeys := []string{"GAUGE", "COUNTER", "HISTOGRAM", "SUMMARY"}
 	for {
 		select {
 		default:
@@ -100,7 +100,7 @@ func metricRoutine(stream protobuf.SentryFlow_GetEnvoyMetricsClient, done chan s
 			if err != nil {
 				log.Fatalf("failed to receive metric: %v", err)
 			}
-			log.Printf("[Client] Received metric: podNamespace:\"%s\" podName:\"%s\" podIP:\"%s\" podContainer:\"%s\" timeStamp:\"%s\"", data.PodNamespace, data.PodName, data.PodIP, data.PodContainer, data.TimeStamp)
+			log.Printf("[Client] Received metric: Namespace:\"%s\" Name:\"%s\" podIP:\"%s\" label:\"%v\" timeStamp:\"%s\"", data.Namespace, data.Name, data.PodIP, data.Labels, data.TimeStamp)
 			for _, key := range metricKeys {
 				fmt.Printf("%s: {%v}\n", key, data.Metric[key])
 			}

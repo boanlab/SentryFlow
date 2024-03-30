@@ -16,7 +16,6 @@ message APILog {
   string srcNamespace = 11;
   string srcName = 12;
   map<string, string> srcLabel = 13;
-  map<string, string> srcAnnotation = 14;
   string srcType = 16;
   string srcIP = 17;
   string srcPort = 18;
@@ -24,7 +23,6 @@ message APILog {
   string dstNamespace = 21;
   string dstName = 22;
   map<string, string> dstLabel = 23;
-  map<string, string> dstAnnotation = 35;
   string dstType = 26;
   string dstIP = 27;
   string dstPort = 28;

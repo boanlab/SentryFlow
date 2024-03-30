@@ -4,8 +4,8 @@ import grpc
 from stringlifier.api import Stringlifier
 from concurrent import futures
 
-from protobuf import sentryflow_metrics_pb_grpc
-from protobuf import sentryflow_metrics_pb
+from protobuf import sentryflow_metrics_pb2_grpc
+from protobuf import sentryflow_metrics_pb2
 
 
 class HandlerServer:
@@ -18,6 +18,7 @@ class HandlerServer:
         except KeyError:
             self.listen_addr = "0.0.0.0:5000"
 
+        
         self.server = None
         self.grpc_servers = list()
 
@@ -79,13 +80,15 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServi
         """
 
         for req in request_iterator:
-            paths = req.paths
-            ml_results = self.stringlifier(paths)
-            print("{} -> {}".format(paths, ml_results))
+            all_paths = req.paths
+            
+            for paths in all_paths:
+                ml_results = self.stringlifier(paths)
+                print("{} -> {}".format(paths, ml_results))
 
-            results = [sentryflow_metrics_pb2.APIClassificationSingleResponse(merged=ml_result, fields=[]) for ml_result
+                results = [sentryflow_metrics_pb2.APIClassificationSingleResponse(merged=ml_result, fields=[]) for ml_result
                        in ml_results]
-            yield sentryflow_metrics_pb2.APIClassificationResponse(response=results)
+                yield sentryflow_metrics_pb2.APIClassificationResponse(response=results)
 
 
 if __name__ == '__main__':

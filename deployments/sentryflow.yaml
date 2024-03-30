@@ -62,6 +62,9 @@ spec:
         - containerPort: 8080
           protocol: TCP
           name: grpc-export
+        env:
+        - name: AI_ENGINE_SERVICE
+          value: "10.10.0.116"
 ---
 apiVersion: v1
 kind: Service

@@ -3,20 +3,21 @@
 package exporter
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
 	cfg "github.com/5GSEC/SentryFlow/config"
+	"github.com/5GSEC/SentryFlow/metrics/api"
 	"github.com/5GSEC/SentryFlow/protobuf"
 	"github.com/5GSEC/SentryFlow/types"
 
 	"github.com/emicklei/go-restful/v3/log"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 )
 
 // Exp global reference for Exporter Handler
@@ -83,45 +84,38 @@ func InsertAccessLog(al *protobuf.APILog) {
 	Exp.lock.Unlock()
 
 	saveAccessLog(al) // go routine??
+	exportAggregatedAccessLog()
+	Exp.exporterLogs <- al
+}
+
+func exportAggregatedAccessLog() {
 	als, _ := MDB.AggregatedAccessLogSelect()
 
-	for key, val := range als {
-		for _, byte := range val {
-			var eal protobuf.APILog
-			if err := proto.Unmarshal(byte, &eal); err != nil {
-				log.Printf("error unmarshaling AccessLog: %w", err)
-			}
+	for _, val := range als {
+		// export part
+		curAPIs := []string{}
+		for _, APILog := range val {
+			curAPIs = append(curAPIs, APILog.Path)
+			api.InsertAccessLog(curAPIs)
 		}
 	}
-
-	Exp.exporterLogs <- al
 }
 
 func saveAccessLog(al *protobuf.APILog) {
 	curLabels := al.SrcLabel
-	curAnnotations := al.SrcAnnotation
 
-	lbByteData, err := json.Marshal(curLabels)
-	if err != nil {
-		fmt.Println("Error encoding first map:", err)
-		return
+	var labelString []string
+
+	for key, value := range curLabels {
+		labelString = append(labelString, fmt.Sprintf("%s:%s", key, value))
 	}
 
-	anByteData, err := json.Marshal(curAnnotations)
-	if err != nil {
-		fmt.Println("Error encoding second map:", err)
-		return
-	}
-
-	alByteData, err := proto.Marshal(al)
-	if err != nil {
-		log.Printf("[Exporter]AccessLog marshaling error: ", err)
-	}
+	sort.Strings(labelString)
 
 	curData := types.DbAccessLogType{
-		Labels:      lbByteData,
-		Annotations: anByteData,
-		AccessLog:   alByteData,
+		Labels:    strings.Join(labelString, " "),
+		Namespace: al.SrcNamespace,
+		AccessLog: al,
 	}
 
 	MDB.AccessLogInsert(curData)

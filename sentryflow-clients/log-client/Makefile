@@ -9,7 +9,7 @@ build:
 	go build -o sentryflow-log-client
 
 .PHONY: image
-build:
+image:
 	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../../
 
 .PHONY: clean-build

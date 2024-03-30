@@ -5,7 +5,7 @@ package protobuf;
 option go_package = "SentryFlow/protobuf";
 
 message APIClassificationRequest {
-  string path = 1;
+  repeated string path = 1;
 }
 
 message APIClassificationResponse {

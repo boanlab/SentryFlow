@@ -9,7 +9,7 @@ build:
 	go build -o sentryflow-mongo-client
 
 .PHONY: image
-build:
+image:
 	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../../
 
 .PHONY: clean-build

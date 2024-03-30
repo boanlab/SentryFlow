@@ -9,7 +9,9 @@ import (
 	"path/filepath"
 
 	cfg "github.com/5GSEC/SentryFlow/config"
+	"github.com/5GSEC/SentryFlow/protobuf"
 	"github.com/5GSEC/SentryFlow/types"
+	"google.golang.org/protobuf/proto"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -21,6 +23,12 @@ var MDB *MetricsDBHandler
 type MetricsDBHandler struct {
 	db     *sql.DB
 	dbFile string
+}
+
+type AggregationData struct {
+	Labels     string
+	Namespace  string
+	AccessLogs []string
 }
 
 // init Function
@@ -73,17 +81,18 @@ func (md *MetricsDBHandler) StopMetricsDBHandler() {
 // initDBTables Function
 func (md *MetricsDBHandler) initDBTables() error {
 	_, err := md.db.Exec(`
-		CREATE TABLE IF NOT EXISTS access_log (
+		CREATE TABLE IF NOT EXISTS aggregation_table (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			labels BLOB,
-			annotations BLOB
+			labels TEXT,
+			namespace TEXT,
+			accesslog BLOB
 		);
 
 		CREATE TABLE IF NOT EXISTS aggregated_access_logs (
 			id INTEGER PRIMARY KEY,
 			log_id INTEGER,
 			log_data BLOB,
-			FOREIGN KEY (log_id) REFERENCES access_log(id)
+			FOREIGN KEY (log_id) REFERENCES aggregation_table(id)
 		);
 	
 		CREATE TABLE IF NOT EXISTS per_api_metrics (
@@ -98,63 +107,84 @@ func (md *MetricsDBHandler) initDBTables() error {
 
 // PerAPICountInsert Function
 func (md *MetricsDBHandler) AccessLogInsert(data types.DbAccessLogType) error {
-	var id int64
-	exist := md.db.QueryRow("SELECT id FROM access_log WHERE labels = ? AND annotations = ?", data.Labels, data.Annotations).Scan(&id)
-
-	if exist != nil {
-		result, err := md.db.Exec("INSERT INTO access_log (labels, annotations) VALUES (?, ?)", data.Labels, data.Annotations)
-		if err != nil {
-			log.Printf("INSERT accesslog error: %v", err)
-			return err
-		}
-
-		lastId, err := result.LastInsertId()
-		if err != nil {
-			log.Printf("INSERT accesslog error: %v", err)
-			return err
-		}
-
-		id = lastId
+	alData, err := proto.Marshal(data.AccessLog)
+	if err != nil {
+		return err
 	}
 
-	_, err := md.db.Exec("INSERT INTO aggregated_access_logs (log_id, log_data) VALUES (?, ?)", id, data.AccessLog)
+	_, err = md.db.Exec("INSERT INTO aggregation_table (labels, namespace, accesslog) VALUES (?, ?, ?)", data.Labels, data.Namespace, alData)
 	if err != nil {
 		log.Printf("INSERT accesslog error: %v", err)
+		return err
 	}
 
 	return err
 }
 
-func (md *MetricsDBHandler) AggregatedAccessLogSelect() (map[int64][][]byte, error) {
-	als := make(map[int64][][]byte)
+func (md *MetricsDBHandler) GetLabelNamespacePairs() ([]AggregationData, error) {
+	query := `
+		SELECT labels, namespace
+		FROM aggregation_table
+		GROUP BY labels, namespace
+	`
 
-	rows, err := md.db.Query("SELECT id FROM access_log")
+	rows, err := md.db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer rows.Close()
 
+	var pairs []AggregationData
 	for rows.Next() {
-		var accessLogID int64
-		if err := rows.Scan(&accessLogID); err != nil {
-			log.Fatal(err)
-		}
-
-		aggregatedRows, err := md.db.Query("SELECT log_data FROM aggregated_access_logs WHERE log_id = ?", accessLogID)
+		var labels, namespace string
+		err := rows.Scan(&labels, &namespace)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
-		defer aggregatedRows.Close()
+		pair := AggregationData{
+			Labels:    labels,
+			Namespace: namespace,
+		}
 
-		var logDataList [][]byte
-		for aggregatedRows.Next() {
-			var logData []byte
-			if err := aggregatedRows.Scan(&logData); err != nil {
-				log.Fatal(err)
-			}
-			logDataList = append(logDataList, logData)
+		pairs = append(pairs, pair)
+	}
+	return pairs, nil
+}
+
+func (md *MetricsDBHandler) AggregatedAccessLogSelect() (map[string][]*protobuf.APILog, error) {
+	als := make(map[string][]*protobuf.APILog)
+	pairs, err := md.GetLabelNamespacePairs()
+	if err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT accesslog
+		FROM aggregation_table
+		WHERE labels = ? AND namespace = ?
+	`
+	for _, pair := range pairs {
+		curKey := pair.Labels + pair.Namespace
+		rows, err := md.db.Query(query, pair.Labels, pair.Namespace)
+		if err != nil {
+			return nil, err
 		}
-		als[accessLogID] = logDataList
+		defer rows.Close()
+
+		var accessLogs []*protobuf.APILog
+		for rows.Next() {
+			var accessLog []byte
+			err := rows.Scan(&accessLog)
+			if err != nil {
+				return nil, err
+			}
+
+			al := &protobuf.APILog{}
+			err = proto.Unmarshal(accessLog, al)
+
+			accessLogs = append(accessLogs, al)
+		}
+		als[curKey] = accessLogs
 	}
 
 	return als, err
