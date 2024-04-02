@@ -12,7 +12,6 @@ import (
 	"time"
 
 	cfg "github.com/5GSEC/SentryFlow/config"
-	"github.com/5GSEC/SentryFlow/metrics/api"
 	"github.com/5GSEC/SentryFlow/protobuf"
 	"github.com/5GSEC/SentryFlow/types"
 
@@ -30,15 +29,19 @@ func init() {
 
 // Handler structure
 type Handler struct {
-	baseExecutionID uint64
-	currentLogCount uint64
-	stopChan        chan struct{}
-	lock            sync.Mutex
-	exporters       []*Inform
-	metricExporters []*metricStreamInform
-	exporterLock    sync.Mutex
-	exporterLogs    chan *protobuf.APILog
-	exporterMetrics chan *protobuf.EnvoyMetric
+	baseExecutionID    uint64
+	currentLogCount    uint64
+	agTime             int
+	exTime             int
+	stopChan           chan struct{}
+	lock               sync.Mutex
+	exporters          []*Inform
+	apiMetricExporters []*apiMetricStreamInform
+	metricExporters    []*metricStreamInform
+	exporterLock       sync.Mutex
+	exporterLogs       chan *protobuf.APILog
+	exporterAPIMetrics chan *protobuf.APIMetric
+	exporterMetrics    chan *protobuf.EnvoyMetric
 
 	listener   net.Listener
 	gRPCServer *grpc.Server
@@ -50,6 +53,13 @@ type Inform struct {
 	error     chan error
 	Hostname  string
 	IPAddress string
+}
+
+type apiMetricStreamInform struct {
+	apiMetricStream protobuf.SentryFlow_GetAPIMetricsServer
+	error           chan error
+	Hostname        string
+	IPAddress       string
 }
 
 type metricStreamInform struct {
@@ -64,6 +74,7 @@ func NewExporterHandler() *Handler {
 	exp := &Handler{
 		baseExecutionID: uint64(time.Now().UnixMicro()),
 		currentLogCount: 0,
+		agTime:          cfg.GlobalCfg.MetricsDBAggregationTime,
 		exporters:       make([]*Inform, 0),
 		stopChan:        make(chan struct{}),
 		lock:            sync.Mutex{},
@@ -83,22 +94,8 @@ func InsertAccessLog(al *protobuf.APILog) {
 	Exp.currentLogCount++
 	Exp.lock.Unlock()
 
-	saveAccessLog(al) // go routine??
-	exportAggregatedAccessLog()
+	go saveAccessLog(al) // go routine??
 	Exp.exporterLogs <- al
-}
-
-func exportAggregatedAccessLog() {
-	als, _ := MDB.AggregatedAccessLogSelect()
-
-	for _, val := range als {
-		// export part
-		curAPIs := []string{}
-		for _, APILog := range val {
-			curAPIs = append(curAPIs, APILog.Path)
-			api.InsertAccessLog(curAPIs)
-		}
-	}
 }
 
 func saveAccessLog(al *protobuf.APILog) {
@@ -202,6 +199,17 @@ routineLoop:
 				log.Printf("[Exporter] Metric exporting failed %v:", err)
 			}
 
+		case am, ok := <-exp.exporterAPIMetrics:
+			if !ok {
+				log.Printf("[Exporter] APIMetric exporter channel closed")
+				break routineLoop
+			}
+
+			err := exp.sendAPIMetrics(am)
+			if err != nil {
+				log.Printf("[Exporter] APIMetric exporting failed %v:", err)
+			}
+
 		case <-exp.stopChan:
 			break routineLoop
 		}
@@ -289,6 +297,85 @@ func (exp *Handler) sendMetrics(l *protobuf.EnvoyMetric) error {
 	}
 
 	return nil
+}
+
+func (exp *Handler) sendAPIMetrics(l *protobuf.APIMetric) error {
+	exp.exporterLock.Lock()
+	defer exp.exporterLock.Unlock()
+
+	// iterate and send logs
+	failed := 0
+	total := len(exp.apiMetricExporters)
+	for _, exporter := range exp.apiMetricExporters {
+		curRetry := 0
+
+		// @todo: make max retry count per logs using config
+		// @todo: make max retry count per single exporter before removing the exporter using config
+		var err error
+		for curRetry < 3 {
+			err = exporter.apiMetricStream.Send(l)
+			if err != nil {
+				log.Printf("[Exporter] Unable to send metric to %s(%s) retry=%d/%d: %v",
+					exporter.Hostname, exporter.IPAddress, curRetry, 3, err)
+				curRetry++
+			} else {
+				break
+			}
+		}
+
+		// Count failed
+		if err != nil {
+			failed++
+		}
+	}
+
+	// notify failed count
+	if failed != 0 {
+		msg := fmt.Sprintf("unable to send metrics properly %d/%d failed", failed, total)
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+// APIMetricsExportRoutine
+func (exp *Handler) APIMetricsExportRoutine() {
+
+}
+
+func TimeTickerRoutine() error {
+	aggregationTicker := time.NewTicker(time.Duration(Exp.agTime) * time.Second)
+	apiMetricTicker := time.NewTicker(time.Duration(Exp.exTime) * time.Second)
+
+	defer aggregationTicker.Stop()
+	defer apiMetricTicker.Stop()
+
+	for {
+		select {
+		case <-aggregationTicker.C:
+			als, _ := MDB.AggregatedAccessLogSelect()
+
+			for _, val := range als {
+				// export part
+				curAPIs := []string{}
+				for _, APILog := range val {
+					curAPIs = append(curAPIs, APILog.Path)
+				}
+				InsertAPILog(curAPIs)
+			}
+		case <-apiMetricTicker.C:
+			curAPIMetrics, err := MDB.GetAllMetrics()
+
+			if err != nil {
+				log.Printf("[Exporter] APIMetric TimeTicker channel closed")
+				break
+			}
+			curAPIMetric := &protobuf.APIMetric{
+				PerAPICounts: curAPIMetrics,
+			}
+			Exp.exporterAPIMetrics <- curAPIMetric
+		}
+	}
 }
 
 // StopExporterServer Function

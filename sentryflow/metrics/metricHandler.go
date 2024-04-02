@@ -28,10 +28,6 @@ func NewMetricHandler() *MetricHandler {
 	return mh
 }
 
-func StratAIEngine() {
-	//api.Ah.initHandler()
-}
-
 // StartMetricsAnalyzer Function
 func StartMetricsAnalyzer(wg *sync.WaitGroup) {
 	api.StartAPIAnalyzer(wg)

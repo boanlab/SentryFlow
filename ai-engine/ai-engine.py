@@ -3,6 +3,7 @@ import grpc
 
 from stringlifier.api import Stringlifier
 from concurrent import futures
+from collections import Counter
 
 from protobuf import sentryflow_metrics_pb2_grpc
 from protobuf import sentryflow_metrics_pb2
@@ -78,17 +79,22 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServi
         :param context: The context
         :return: The results
         """
-
+        
+        print(request_iterator)
         for req in request_iterator:
-            all_paths = req.paths
-            
-            for paths in all_paths:
-                ml_results = self.stringlifier(paths)
-                print("{} -> {}".format(paths, ml_results))
+            all_paths = req.path
+            # for paths in all_paths:
+            ml_results = self.stringlifier(all_paths)
 
-                results = [sentryflow_metrics_pb2.APIClassificationSingleResponse(merged=ml_result, fields=[]) for ml_result
-                       in ml_results]
-                yield sentryflow_metrics_pb2.APIClassificationResponse(response=results)
+            # results = [sentryflow_metrics_pb2.APIClassificationSingleResponse(merged=ml_result, fields=[]) for ml_result
+            #         in ml_results]
+            # yield sentryflow_metrics_pb2.APIClassificationResponse(response=results)
+            
+            ml_result_counts = Counter(ml_results)
+
+            print("{} -> {}".format(all_paths, ml_result_counts))
+
+            yield sentryflow_metrics_pb2.APIClassificationResponse(fields=ml_result_counts) 
 
 
 if __name__ == '__main__':

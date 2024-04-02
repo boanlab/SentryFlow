@@ -53,7 +53,7 @@ message EnvoyMetric {
 
 service SentryFlow {
   rpc GetLog(ClientInfo) returns (stream APILog);
-  rpc GetAPIMetrics(ClientInfo) returns (APIMetric);
+  rpc GetAPIMetrics(ClientInfo) returns (stream APIMetric);
   rpc GetEnvoyMetrics(ClientInfo) returns (stream EnvoyMetric);
 }
 

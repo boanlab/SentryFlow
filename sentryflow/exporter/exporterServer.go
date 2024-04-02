@@ -3,10 +3,8 @@
 package exporter
 
 import (
-	"context"
 	"log"
 
-	metricAPI "github.com/5GSEC/SentryFlow/metrics/api"
 	"github.com/5GSEC/SentryFlow/protobuf"
 )
 
@@ -47,6 +45,7 @@ func (exs *Server) GetLog(info *protobuf.ClientInfo, stream protobuf.SentryFlow_
 	return <-curExporter.error
 }
 
+// GetEnvoyMetrics Function
 func (exs *Server) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetEnvoyMetricsServer) error {
 	log.Printf("[Exporter] Client %s(%s) connected (GetEnvoyMetrics)", info.HostName, info.IPAddress)
 
@@ -67,13 +66,18 @@ func (exs *Server) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobuf.Se
 }
 
 // GetAPIMetrics Function
-func (exs *Server) GetAPIMetrics(_ context.Context, info *protobuf.ClientInfo) (*protobuf.APIMetric, error) {
+func (exs *Server) GetAPIMetrics(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetAPIMetricsServer) error {
 	log.Printf("[Exporter] Client %s(%s) connected (GetAPIMetrics)", info.HostName, info.IPAddress)
 
-	// Construct protobuf return value
-	ret := protobuf.APIMetric{
-		PerAPICounts: metricAPI.GetPerAPICount(),
+	curExporter := &apiMetricStreamInform{
+		apiMetricStream: stream,
+		Hostname:        info.HostName,
+		IPAddress:       info.IPAddress,
 	}
 
-	return &ret, nil
+	Exp.exporterLock.Lock()
+	Exp.apiMetricExporters = append(Exp.apiMetricExporters, curExporter)
+	Exp.exporterLock.Unlock()
+
+	return <-curExporter.error
 }

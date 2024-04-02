@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
-package api
+package exporter
 
 import (
 	"context"
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	cfg "github.com/5GSEC/SentryFlow/config"
 	"github.com/5GSEC/SentryFlow/protobuf"
+	"github.com/5GSEC/SentryFlow/types"
 	"google.golang.org/grpc"
 )
 
@@ -24,13 +22,19 @@ type aiHandler struct {
 	aiHost string
 	aiPort string
 
+	error          chan error
 	stopChan       chan struct{}
 	aggregatedLogs chan []*protobuf.APILog
 	apis           chan []string
 
-	aiStream protobuf.SentryFlowMetrics_GetAPIClassificationClient
+	aiStream *streamInform
 
 	// @todo: add gRPC stream here for bidirectional connection
+}
+
+// streamInform Structure
+type streamInform struct {
+	aiStream protobuf.SentryFlowMetrics_GetAPIClassificationClient
 }
 
 // init Function
@@ -55,7 +59,7 @@ func NewAIHandler(host string, port string) *aiHandler {
 
 // initHandler Function
 func (ah *aiHandler) InitAIHandler() bool {
-	addr := fmt.Sprintf("%s:%s", cfg.AIEngineService, cfg.AIEngineServicePort)
+	addr := fmt.Sprintf("%s:%s", "10.10.0.116", cfg.GlobalCfg.AIEngineServicePort)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
@@ -63,34 +67,27 @@ func (ah *aiHandler) InitAIHandler() bool {
 		log.Fatalf("could not connect: %v | %v", err, addr)
 		return false
 	}
-	defer conn.Close()
 
 	// Start serving gRPC server
 	log.Printf("[gRPC] Successfully connected to %s for APIMetric", addr)
 
 	client := protobuf.NewSentryFlowMetricsClient(conn)
 
-	log.Printf("[whywhywhy]%v", client)
 	aiStream, err := client.GetAPIClassification(context.Background())
-	log.Printf("[why2why2why2]%v", aiStream)
-	AH.aiStream = aiStream
 
+	AH.aiStream = &streamInform{
+		aiStream: aiStream,
+	}
 	done := make(chan struct{})
 
 	go sendAPIRoutine()
 	go recvAPIRoutine(done)
 
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-
-	<-signalChan
-
-	close(done)
-
 	return true
 }
 
-func InsertAccessLog(APIs []string) {
+// InsertAccessLog
+func InsertAPILog(APIs []string) {
 	AH.apis <- APIs
 }
 
@@ -119,25 +116,26 @@ func (ah *aiHandler) disconnect() {
 	return
 }
 
+// sendAPIRoutine Function
 func sendAPIRoutine() {
 routineLoop:
 	for {
 		select {
-		case aal, ok := <-AH.aggregatedLogs:
+		case aal, ok := <-AH.apis:
 			if !ok {
 				log.Printf("[Exporter] EnvoyMetric exporter channel closed")
 				break routineLoop
 			}
-			for _, al := range aal {
-				curAPIRequest := &protobuf.APIClassificationRequest{
-					Path: al.Path,
-				}
-				err := AH.aiStream.Send(curAPIRequest)
-				if err != nil {
-					log.Printf("[Exporter] Metric exporting failed %v:", err)
-				}
+
+			curAPIRequest := &protobuf.APIClassificationRequest{
+				Path: aal,
 			}
 
+			// err := AH.aiStream.Send(curAPIRequest)
+			err := AH.aiStream.aiStream.Send(curAPIRequest)
+			if err != nil {
+				log.Printf("[Exporter] AI Engine APIs exporting failed %v:", err)
+			}
 		case <-AH.stopChan:
 			break routineLoop
 		}
@@ -146,11 +144,12 @@ routineLoop:
 	return
 }
 
+// recvAPIRoutine Function
 func recvAPIRoutine(done chan struct{}) error {
 	for {
 		select {
 		default:
-			event, err := AH.aiStream.Recv()
+			event, err := AH.aiStream.aiStream.Recv()
 			if err == io.EOF {
 				return nil
 			}
@@ -160,7 +159,14 @@ func recvAPIRoutine(done chan struct{}) error {
 				return err
 			}
 
-			log.Printf("[AIHANDLER] Receive API: %v", event)
+			for key, value := range event.Fields {
+				APICount := &types.PerAPICount{
+					Api:   key,
+					Count: value,
+				}
+				MDB.PerAPICountInsert(APICount)
+				log.Printf("[AIHANDLER] Receive API: %v", APICount)
+			}
 
 		case <-done:
 			return nil

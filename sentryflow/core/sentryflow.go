@@ -9,7 +9,6 @@ import (
 	cfg "github.com/5GSEC/SentryFlow/config"
 	"github.com/5GSEC/SentryFlow/exporter"
 	"github.com/5GSEC/SentryFlow/metrics"
-	"github.com/5GSEC/SentryFlow/metrics/api"
 )
 
 // StopChan Channel
@@ -128,11 +127,6 @@ func SentryFlow() {
 	}
 	log.Printf("[SentryFlow] Successfuly initialized metrics DB")
 
-	if !api.AH.InitAIHandler() {
-		log.Printf("[Error] Failed to initialize AI Engine")
-	}
-	log.Printf("[SentryFlow] Successfuly initialized AI Engine")
-
 	// Start log processor
 	dm.logProcessor()
 
@@ -141,6 +135,11 @@ func SentryFlow() {
 
 	// Start exporter server
 	dm.exporterServer()
+
+	if !exporter.AH.InitAIHandler() {
+		log.Printf("[Error] Failed to initialize AI Engine")
+	}
+	log.Printf("[SentryFlow] Successfuly initialized AI Engine")
 
 	log.Printf("[SentryFlow] Successfully started SentryFlow")
 	dm.WgDaemon.Wait()

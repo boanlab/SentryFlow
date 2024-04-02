@@ -9,7 +9,7 @@ import (
 // PerAPICount Structure
 type PerAPICount struct {
 	Api   string
-	Count int
+	Count uint64
 }
 
 type DbAccessLogType struct {

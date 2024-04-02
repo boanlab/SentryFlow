@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	cfg "github.com/5GSEC/SentryFlow/config"
 	"github.com/5GSEC/SentryFlow/protobuf"
@@ -21,8 +22,9 @@ var MDB *MetricsDBHandler
 
 // MetricsDBHandler Structure
 type MetricsDBHandler struct {
-	db     *sql.DB
-	dbFile string
+	db          *sql.DB
+	dbFile      string
+	dbClearTime int
 }
 
 type AggregationData struct {
@@ -39,7 +41,8 @@ func init() {
 // NewMetricsDBHandler Function
 func NewMetricsDBHandler() *MetricsDBHandler {
 	ret := &MetricsDBHandler{
-		dbFile: cfg.GlobalCfg.MetricsDBFileName,
+		dbFile:      cfg.GlobalCfg.MetricsDBFileName,
+		dbClearTime: cfg.GlobalCfg.MetricsDBClearTime,
 	}
 	return ret
 }
@@ -70,6 +73,9 @@ func (md *MetricsDBHandler) InitMetricsDBHandler() bool {
 		return false
 	}
 
+	// go TimeTickerRoutine()
+	go DBClearRoutine()
+
 	return true
 }
 
@@ -87,13 +93,6 @@ func (md *MetricsDBHandler) initDBTables() error {
 			namespace TEXT,
 			accesslog BLOB
 		);
-
-		CREATE TABLE IF NOT EXISTS aggregated_access_logs (
-			id INTEGER PRIMARY KEY,
-			log_id INTEGER,
-			log_data BLOB,
-			FOREIGN KEY (log_id) REFERENCES aggregation_table(id)
-		);
 	
 		CREATE TABLE IF NOT EXISTS per_api_metrics (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,7 +104,7 @@ func (md *MetricsDBHandler) initDBTables() error {
 	return err
 }
 
-// PerAPICountInsert Function
+// AccessLogInsert Function
 func (md *MetricsDBHandler) AccessLogInsert(data types.DbAccessLogType) error {
 	alData, err := proto.Marshal(data.AccessLog)
 	if err != nil {
@@ -191,7 +190,7 @@ func (md *MetricsDBHandler) AggregatedAccessLogSelect() (map[string][]*protobuf.
 }
 
 // PerAPICountInsert Function
-func (md *MetricsDBHandler) PerAPICountInsert(data types.PerAPICount) error {
+func (md *MetricsDBHandler) PerAPICountInsert(data *types.PerAPICount) error {
 	var existAPI int
 	err := md.db.QueryRow("SELECT COUNT(*) FROM per_api_metrics WHERE api = ?", data.Api).Scan(&existAPI)
 	if err != nil {
@@ -232,11 +231,11 @@ func (md *MetricsDBHandler) PerAPICountDelete(api string) error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // PerAPICountUpdate Function
-func (md *MetricsDBHandler) PerAPICountUpdate(data types.PerAPICount) error {
+func (md *MetricsDBHandler) PerAPICountUpdate(data *types.PerAPICount) error {
 	var existAPI int
 	err := md.db.QueryRow("SELECT COUNT(*) FROM per_api_metrics WHERE api = ?", data.Api).Scan(&existAPI)
 	if err != nil {
@@ -247,6 +246,68 @@ func (md *MetricsDBHandler) PerAPICountUpdate(data types.PerAPICount) error {
 		_, err = md.db.Exec("UPDATE per_api_metrics SET count = ? WHERE api = ?", data.Count, data.Api)
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func (md *MetricsDBHandler) GetAllMetrics() (map[string]uint64, error) {
+	metrics := make(map[string]uint64)
+
+	rows, err := md.db.Query("SELECT api, count FROM per_api_metrics")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var metric types.PerAPICount
+		err := rows.Scan(&metric.Api, &metric.Count)
+		if err != nil {
+			return nil, err
+		}
+		metrics[metric.Api] = metric.Count
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return metrics, nil
+}
+
+func (md *MetricsDBHandler) ClearAllTable() error {
+	_, err := md.db.Exec("DELETE FROM aggregation_table")
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	log.Println("Data in 'aggregation_table' deleted successfully.")
+
+	_, err = md.db.Exec("DELETE FROM per_api_metrics")
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	log.Println("Data in 'per_api_metrics' deleted successfully.")
+
+	return nil
+}
+
+func DBClearRoutine() error {
+	ticker := time.NewTicker(time.Duration(MDB.dbClearTime) * time.Second)
+
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			err := MDB.ClearAllTable()
+			if err != nil {
+				log.Printf("[Error] Unable to Clear DB tables: %v", err)
+				return err
+			}
 		}
 	}
 
