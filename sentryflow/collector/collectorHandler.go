@@ -5,7 +5,7 @@ package collector
 import (
 	"errors"
 	"fmt"
-	cfg "github.com/5GSEC/sentryflow/config"
+	cfg "github.com/5GSEC/SentryFlow/config"
 	"google.golang.org/grpc"
 	"log"
 	"net"

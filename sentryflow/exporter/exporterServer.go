@@ -3,10 +3,9 @@
 package exporter
 
 import (
-	"context"
-	metricAPI "github.com/5GSEC/sentryflow/metrics/api"
-	"github.com/5GSEC/sentryflow/protobuf"
 	"log"
+
+	"github.com/5GSEC/SentryFlow/protobuf"
 )
 
 var exs *Server
@@ -28,7 +27,7 @@ func NewExporterServer() *Server {
 
 // GetLog Function
 func (exs *Server) GetLog(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetLogServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected", info.HostName, info.IPAddress)
+	log.Printf("[Exporter] Client %s(%s) connected (GetLog)", info.HostName, info.IPAddress)
 
 	curExporter := &Inform{
 		stream:    stream,
@@ -46,13 +45,14 @@ func (exs *Server) GetLog(info *protobuf.ClientInfo, stream protobuf.SentryFlow_
 	return <-curExporter.error
 }
 
+// GetEnvoyMetrics Function
 func (exs *Server) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetEnvoyMetricsServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected", info.HostName, info.IPAddress)
+	log.Printf("[Exporter] Client %s(%s) connected (GetEnvoyMetrics)", info.HostName, info.IPAddress)
 
 	curExporter := &metricStreamInform{
-		metricStream:    stream,
-		Hostname:  info.HostName,
-		IPAddress: info.IPAddress,
+		metricStream: stream,
+		Hostname:     info.HostName,
+		IPAddress:    info.IPAddress,
 	}
 
 	// Append new exporter client for future use
@@ -66,13 +66,18 @@ func (exs *Server) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobuf.Se
 }
 
 // GetAPIMetrics Function
-func (exs *Server) GetAPIMetrics(_ context.Context, info *protobuf.ClientInfo) (*protobuf.APIMetric, error) {
-	log.Printf("[Exporter] Client %s(%s) connected", info.HostName, info.IPAddress)
+func (exs *Server) GetAPIMetrics(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetAPIMetricsServer) error {
+	log.Printf("[Exporter] Client %s(%s) connected (GetAPIMetrics)", info.HostName, info.IPAddress)
 
-	// Construct protobuf return value
-	ret := protobuf.APIMetric{
-		PerAPICounts: metricAPI.GetPerAPICount(),
+	curExporter := &apiMetricStreamInform{
+		apiMetricStream: stream,
+		Hostname:        info.HostName,
+		IPAddress:       info.IPAddress,
 	}
 
-	return &ret, nil
+	Exp.exporterLock.Lock()
+	Exp.apiMetricExporters = append(Exp.apiMetricExporters, curExporter)
+	Exp.exporterLock.Unlock()
+
+	return <-curExporter.error
 }

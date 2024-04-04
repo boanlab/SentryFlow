@@ -10,8 +10,11 @@ import (
 )
 
 type Config struct {
-	ServerAddr string
-	ServerPort int
+	ServerAddr   string
+	ServerPort   int
+	LogCfg       string
+	MetricCfg    string
+	MetricFilter string
 }
 
 // Cfg is for global reference
@@ -30,6 +33,10 @@ func LoadEnvVars() (Config, error) {
 		msg := fmt.Sprintf("invalid server port %s: %v", os.Getenv("SERVER_PORT"), err)
 		return Cfg, errors.New(msg)
 	}
+
+	Cfg.LogCfg = os.Getenv("LOG_CFG")
+	Cfg.MetricCfg = os.Getenv("METRIC_CFG")
+	Cfg.MetricFilter = os.Getenv("METRIC_FILTER")
 
 	return Cfg, nil
 }

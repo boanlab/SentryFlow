@@ -2,15 +2,14 @@ syntax = "proto3";
 
 package protobuf;
 
-option go_package = "sentryflow/protobuf";
+option go_package = "SentryFlow/protobuf";
 
 message APIClassificationRequest {
-  string path = 1;
+  repeated string path = 1;
 }
 
 message APIClassificationResponse {
-  string merged = 1;
-  repeated string fields = 2;
+  map<string, uint64> fields = 2;
 }
 
 service SentryFlowMetrics {

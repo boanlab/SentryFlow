@@ -1,11 +1,11 @@
-module github.com/5GSEC/sentryflow
+module github.com/5GSEC/SentryFlow
 
 go 1.19
 
-replace github.com/5GSEC/sentryflow/protobuf => ../protobuf
+replace github.com/5GSEC/SentryFlow/protobuf => ../protobuf
 
 require (
-	github.com/5GSEC/sentryflow/protobuf v0.0.0-00010101000000-000000000000
+	github.com/5GSEC/SentryFlow/protobuf v0.0.0-00010101000000-000000000000
 	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/envoyproxy/go-control-plane v0.11.1
 	github.com/spf13/viper v1.18.2

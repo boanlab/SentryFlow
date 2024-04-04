@@ -3,15 +3,17 @@
 package core
 
 import (
-	"github.com/5GSEC/sentryflow/exporter"
-	"github.com/5GSEC/sentryflow/metrics"
-	"github.com/5GSEC/sentryflow/protobuf"
-	"github.com/5GSEC/sentryflow/types"
-	accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
 	"log"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/5GSEC/SentryFlow/exporter"
+	"github.com/5GSEC/SentryFlow/metrics"
+	"github.com/5GSEC/SentryFlow/protobuf"
+	"github.com/5GSEC/SentryFlow/types"
+	accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
+	metricv3 "github.com/envoyproxy/go-control-plane/envoy/service/metrics/v3"
 )
 
 // Lh global reference for LogHandler
@@ -26,6 +28,13 @@ func init() {
 type LogHandler struct {
 	stopChan chan struct{}
 	logChan  chan interface{}
+}
+
+// aggregationLog Structure
+type aggregationLog struct {
+	Logs        []*protobuf.APILog
+	Labels      map[string]string
+	Annotations map[string]string
 }
 
 // NewLogHandler Structure
@@ -87,6 +96,7 @@ func processAccessLog(al *protobuf.APILog) {
 	metrics.InsertAccessLog(al)
 }
 
+// processEnvoyMetric Function
 func processEnvoyMetric(em *protobuf.EnvoyMetric) {
 	exporter.InsertEnvoyMetric(em)
 }
@@ -227,4 +237,63 @@ func GenerateAccessLogsFromEnvoy(entry *accesslogv3.HTTPAccessLogEntry) *protobu
 	}
 
 	return envoyAccessLog
+}
+
+// GenerateMetricFromEnvoy Function
+func GenerateMetricFromEnvoy(event *metricv3.StreamMetricsMessage, metaData map[string]interface{}) *protobuf.EnvoyMetric {
+	pod := LookupNetworkedResource(metaData["INSTANCE_IPS"].(string))
+	envoyMetric := &protobuf.EnvoyMetric{
+		PodIP:     metaData["INSTANCE_IPS"].(string),
+		Name:      metaData["NAME"].(string),
+		Namespace: metaData["NAMESPACE"].(string),
+		Labels:    pod.Labels,
+		TimeStamp: "",
+		Metric:    make(map[string]*protobuf.MetricValue),
+	}
+
+	envoyMetric.Metric["GAUGE"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
+	}
+	envoyMetric.Metric["COUNTER"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
+	}
+	envoyMetric.Metric["HISTOGRAM"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
+	}
+	envoyMetric.Metric["SUMMARY"] = &protobuf.MetricValue{
+		Value: make(map[string]string),
+	}
+
+	for _, metric := range event.GetEnvoyMetrics() {
+		metricType := metric.GetType().String()
+		metricName := metric.GetName()
+
+		if envoyMetric.Metric[metricType].Value == nil {
+			continue
+		}
+
+		var metricValue string
+
+		for _, metricDetail := range metric.GetMetric() {
+			if envoyMetric.TimeStamp == "" {
+				envoyMetric.TimeStamp = strconv.FormatInt(metricDetail.GetTimestampMs(), 10)
+			}
+			if metricType == "GAUGE" {
+				metricValue = strconv.FormatFloat(metricDetail.GetGauge().GetValue(), 'f', -1, 64)
+			}
+			if metricType == "COUNTER" {
+				metricValue = strconv.FormatFloat(metricDetail.GetCounter().GetValue(), 'f', -1, 64)
+			}
+			if metricType == "HISTOGRAM" {
+				metricValue = strconv.FormatUint(metricDetail.GetHistogram().GetSampleCount(), 10)
+			}
+			if metricType == "SUMMARY" {
+				metricValue = strconv.FormatUint(metricDetail.GetHistogram().GetSampleCount(), 10)
+			}
+
+			envoyMetric.Metric[metricType].Value[metricName] = metricValue
+		}
+	}
+
+	return envoyMetric
 }

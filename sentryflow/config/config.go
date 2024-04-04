@@ -23,10 +23,14 @@ type SentryFlowConfig struct {
 	PatchNamespace          bool // Enable/Disable patching namespace for Istio injection
 	PatchRestartDeployments bool // Enable/Disable restarting deployments after patching
 
-	AIEngineService   string
-	AIEngineBatchSize int
+	AIEngineService     string
+	AIEngineServicePort string
+	AIEngineBatchSize   int
 
-	MetricsDBFileName string // String value of MetricsDB file (sqlite3 db file)
+	MetricsDBFileName        string // String value of MetricsDB file (sqlite3 db file)
+	MetricsDBAggregationTime int    // Value of APILog Aggregation Time
+	MetricsDBClearTime       int    // Value of APIMetric DB Clear time
+	APIMetricsSendTime       int    // Value of APIMetric send time
 
 	CollectorEnableOpenTelemetry bool // Enable/Disable OpenTelemetry Collector
 	Debug                        bool // Enable/Disable SentryFlow debug mode
@@ -49,8 +53,12 @@ const (
 	PatchNamespace               string = "patchNamespace"
 	PatchRestartDeployments      string = "patchRestartDeployments"
 	AIEngineService              string = "aiEngineService"
+	AIEngineServicePort          string = "aiEngineServicePort"
 	AIEngineBatchSize            string = "aiEngineBatchSize"
 	MetricsDBFileName            string = "metricsDBFileName"
+	MetricsDBAggregationTime     string = "metricsDBAggregationTime"
+	MetricsDBClearTime           string = "metricsDBClearTime"
+	APIMetricsSendTime           string = "apiMetricsSendTime"
 	CollectorEnableOpenTelemetry string = "collectorEnableOpenTelemetry"
 	Debug                        string = "debug"
 )
@@ -63,8 +71,12 @@ func readCmdLineParams() {
 	patchNamespaceB := flag.Bool(PatchNamespace, false, "Enable/Disable patching Istio injection to all namespaces")
 	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
 	aiEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
-	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size fo SentryFlow AI Engine")
+	aiEngineServicePortStr := flag.String(AIEngineServicePort, "5000", "Service Port for SentryFlow AI Engine")
+	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size for SentryFlow AI Engine")
 	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/metrics.db", "File name for local metrics DB")
+	metricsDBAggregationTimeInt := flag.Int(MetricsDBAggregationTime, 10, "Term time between aggregations")
+	metricsDBClearTimeInt := flag.Int(MetricsDBClearTime, 600, "Metrics DB Clear Time")
+	APIMetricsSendTimeInt := flag.Int(APIMetricsSendTime, 10, "APIMetric send term")
 	collectorEnableOpenTelemetryB := flag.Bool(CollectorEnableOpenTelemetry, true, "Enable/Disable OpenTelemetry Collector")
 	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
 
@@ -84,8 +96,12 @@ func readCmdLineParams() {
 	viper.SetDefault(PatchNamespace, *patchNamespaceB)
 	viper.SetDefault(PatchRestartDeployments, *patchRestartDeploymentsB)
 	viper.SetDefault(AIEngineService, *aiEngineServiceStr)
+	viper.SetDefault(AIEngineServicePort, *aiEngineServicePortStr)
 	viper.SetDefault(AIEngineBatchSize, *aiEngineBatchSizeInt)
 	viper.SetDefault(MetricsDBFileName, *metricsDBFileNameStr)
+	viper.SetDefault(MetricsDBAggregationTime, *metricsDBAggregationTimeInt)
+	viper.SetDefault(MetricsDBClearTime, *metricsDBClearTimeInt)
+	viper.SetDefault(APIMetricsSendTime, *APIMetricsSendTimeInt)
 	viper.SetDefault(CollectorEnableOpenTelemetry, *collectorEnableOpenTelemetryB)
 	viper.SetDefault(Debug, *configDebugB)
 }
@@ -108,8 +124,12 @@ func LoadConfig() error {
 	GlobalCfg.PatchNamespace = viper.GetBool(PatchNamespace)
 	GlobalCfg.PatchRestartDeployments = viper.GetBool(PatchRestartDeployments)
 	GlobalCfg.AIEngineService = viper.GetString(AIEngineService)
+	GlobalCfg.AIEngineServicePort = viper.GetString(AIEngineServicePort)
 	GlobalCfg.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
 	GlobalCfg.MetricsDBFileName = viper.GetString(MetricsDBFileName)
+	GlobalCfg.MetricsDBAggregationTime = viper.GetInt(MetricsDBAggregationTime)
+	GlobalCfg.MetricsDBClearTime = viper.GetInt(MetricsDBClearTime)
+	GlobalCfg.APIMetricsSendTime = viper.GetInt(APIMetricsSendTime)
 	GlobalCfg.CollectorEnableOpenTelemetry = viper.GetBool(CollectorEnableOpenTelemetry)
 	GlobalCfg.Debug = viper.GetBool(Debug)
 
