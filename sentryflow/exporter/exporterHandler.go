@@ -55,6 +55,7 @@ type Inform struct {
 	IPAddress string
 }
 
+// apiMetricStreamInform structure
 type apiMetricStreamInform struct {
 	apiMetricStream protobuf.SentryFlow_GetAPIMetricsServer
 	error           chan error
@@ -62,6 +63,7 @@ type apiMetricStreamInform struct {
 	IPAddress       string
 }
 
+// metricStreamInform structure
 type metricStreamInform struct {
 	metricStream protobuf.SentryFlow_GetEnvoyMetricsServer
 	error        chan error
@@ -72,15 +74,17 @@ type metricStreamInform struct {
 // NewExporterHandler Function
 func NewExporterHandler() *Handler {
 	exp := &Handler{
-		baseExecutionID: uint64(time.Now().UnixMicro()),
-		currentLogCount: 0,
-		agTime:          cfg.GlobalCfg.MetricsDBAggregationTime,
-		exporters:       make([]*Inform, 0),
-		stopChan:        make(chan struct{}),
-		lock:            sync.Mutex{},
-		exporterLock:    sync.Mutex{},
-		exporterLogs:    make(chan *protobuf.APILog),
-		exporterMetrics: make(chan *protobuf.EnvoyMetric),
+		baseExecutionID:    uint64(time.Now().UnixMicro()),
+		currentLogCount:    0,
+		agTime:             cfg.GlobalCfg.MetricsDBAggregationTime,
+		exTime:             cfg.GlobalCfg.APIMetricsSendTime,
+		exporters:          make([]*Inform, 0),
+		stopChan:           make(chan struct{}),
+		lock:               sync.Mutex{},
+		exporterLock:       sync.Mutex{},
+		exporterLogs:       make(chan *protobuf.APILog),
+		exporterAPIMetrics: make(chan *protobuf.APIMetric),
+		exporterMetrics:    make(chan *protobuf.EnvoyMetric),
 	}
 
 	return exp
@@ -204,7 +208,6 @@ routineLoop:
 				log.Printf("[Exporter] APIMetric exporter channel closed")
 				break routineLoop
 			}
-
 			err := exp.sendAPIMetrics(am)
 			if err != nil {
 				log.Printf("[Exporter] APIMetric exporting failed %v:", err)
@@ -299,6 +302,7 @@ func (exp *Handler) sendMetrics(l *protobuf.EnvoyMetric) error {
 	return nil
 }
 
+// sendAPIMetrics Function
 func (exp *Handler) sendAPIMetrics(l *protobuf.APIMetric) error {
 	exp.exporterLock.Lock()
 	defer exp.exporterLock.Unlock()
@@ -343,17 +347,20 @@ func (exp *Handler) APIMetricsExportRoutine() {
 
 }
 
-func TimeTickerRoutine() error {
+// aggregationTimeTickerRoutine Function
+func aggregationTimeTickerRoutine() error {
 	aggregationTicker := time.NewTicker(time.Duration(Exp.agTime) * time.Second)
-	apiMetricTicker := time.NewTicker(time.Duration(Exp.exTime) * time.Second)
 
 	defer aggregationTicker.Stop()
-	defer apiMetricTicker.Stop()
 
 	for {
 		select {
 		case <-aggregationTicker.C:
-			als, _ := MDB.AggregatedAccessLogSelect()
+			als, err := MDB.AggregatedAccessLogSelect()
+			if err != nil {
+				log.Printf("[Exporter] AccessLog Aggregation %v", err)
+				return err
+			}
 
 			for _, val := range als {
 				// export part
@@ -363,17 +370,33 @@ func TimeTickerRoutine() error {
 				}
 				InsertAPILog(curAPIs)
 			}
+		}
+	}
+}
+
+// exportTimeTickerRoutine Function
+func exportTimeTickerRoutine() error {
+	apiMetricTicker := time.NewTicker(time.Duration(Exp.exTime) * time.Second)
+
+	defer apiMetricTicker.Stop()
+
+	for {
+		select {
 		case <-apiMetricTicker.C:
 			curAPIMetrics, err := MDB.GetAllMetrics()
 
 			if err != nil {
 				log.Printf("[Exporter] APIMetric TimeTicker channel closed")
-				break
+				return err
 			}
-			curAPIMetric := &protobuf.APIMetric{
-				PerAPICounts: curAPIMetrics,
+			log.Printf("!@#!@#!@#!@#!@#!@# %v", curAPIMetrics)
+
+			if len(curAPIMetrics) > 0 {
+				curAPIMetric := &protobuf.APIMetric{
+					PerAPICounts: curAPIMetrics,
+				}
+				Exp.exporterAPIMetrics <- curAPIMetric
 			}
-			Exp.exporterAPIMetrics <- curAPIMetric
 		}
 	}
 }

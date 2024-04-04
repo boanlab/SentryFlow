@@ -30,38 +30,11 @@ type LogHandler struct {
 	logChan  chan interface{}
 }
 
+// aggregationLog Structure
 type aggregationLog struct {
 	Logs        []*protobuf.APILog
 	Labels      map[string]string
 	Annotations map[string]string
-}
-
-func mapsAreEqual(a, b map[string]string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for key, val := range a {
-		if bVal, ok := b[key]; !ok || bVal != val {
-			return false
-		}
-	}
-
-	return true
-}
-
-func arraysAreEqual(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := 0; i < len(a); i++ {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
 }
 
 // NewLogHandler Structure
@@ -123,6 +96,7 @@ func processAccessLog(al *protobuf.APILog) {
 	metrics.InsertAccessLog(al)
 }
 
+// processEnvoyMetric Function
 func processEnvoyMetric(em *protobuf.EnvoyMetric) {
 	exporter.InsertEnvoyMetric(em)
 }
@@ -265,6 +239,7 @@ func GenerateAccessLogsFromEnvoy(entry *accesslogv3.HTTPAccessLogEntry) *protobu
 	return envoyAccessLog
 }
 
+// GenerateMetricFromEnvoy Function
 func GenerateMetricFromEnvoy(event *metricv3.StreamMetricsMessage, metaData map[string]interface{}) *protobuf.EnvoyMetric {
 	pod := LookupNetworkedResource(metaData["INSTANCE_IPS"].(string))
 	envoyMetric := &protobuf.EnvoyMetric{
@@ -322,33 +297,3 @@ func GenerateMetricFromEnvoy(event *metricv3.StreamMetricsMessage, metaData map[
 
 	return envoyMetric
 }
-
-// func AggregationAccessLogFromEnvoy() {
-// 	aggregationMap := make(map[string]*aggregationLog)
-// 	var curAccessLog *protobuf.APILog
-// 	var flag bool = false
-
-// 	curPod := LookupNetworkedResource(curAccessLog.srcIP)
-// 	curLabels := curPod.Labels
-// 	curAnnotations := curPod.Annotations
-// 	curCotainers := curPod.
-
-// 	for key, value := range aggregationMap {
-// 		if mapsAreEqual(value.Labels, curLabels) && mapsAreEqual(value.Annotations, curAnnotations) && arraysAreEqual(value.Containers, curCotainers) {
-// 			aggregationMap[key].Logs = append(aggregationMap[key].Logs, curAccessLog)
-// 			flag = true
-// 		}
-// 	}
-
-// 	if !flag {
-// 		aggregationMap["any key"] = &aggregationLog{
-// 			Logs:        make([]*protobuf.APILog, 0),
-// 			Labels:      curLabels,
-// 			Annotations: curAnnotations,
-// 			Containers:  curCotainers,
-// 		}
-
-// 		aggregationMap["any key"].Logs = append(aggregationMap["any key"].Logs, curAccessLog)
-// 	}
-
-// }

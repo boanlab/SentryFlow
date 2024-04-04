@@ -27,6 +27,7 @@ type MetricsDBHandler struct {
 	dbClearTime int
 }
 
+// AggregationData Structure
 type AggregationData struct {
 	Labels     string
 	Namespace  string
@@ -73,7 +74,8 @@ func (md *MetricsDBHandler) InitMetricsDBHandler() bool {
 		return false
 	}
 
-	// go TimeTickerRoutine()
+	go aggregationTimeTickerRoutine()
+	go exportTimeTickerRoutine()
 	go DBClearRoutine()
 
 	return true
@@ -120,6 +122,7 @@ func (md *MetricsDBHandler) AccessLogInsert(data types.DbAccessLogType) error {
 	return err
 }
 
+// GetLabelNamespacePairs Function
 func (md *MetricsDBHandler) GetLabelNamespacePairs() ([]AggregationData, error) {
 	query := `
 		SELECT labels, namespace
@@ -150,6 +153,7 @@ func (md *MetricsDBHandler) GetLabelNamespacePairs() ([]AggregationData, error) 
 	return pairs, nil
 }
 
+// AggregatedAccessLogSelect Function
 func (md *MetricsDBHandler) AggregatedAccessLogSelect() (map[string][]*protobuf.APILog, error) {
 	als := make(map[string][]*protobuf.APILog)
 	pairs, err := md.GetLabelNamespacePairs()
@@ -252,6 +256,7 @@ func (md *MetricsDBHandler) PerAPICountUpdate(data *types.PerAPICount) error {
 	return nil
 }
 
+// GetAllMetrics Function
 func (md *MetricsDBHandler) GetAllMetrics() (map[string]uint64, error) {
 	metrics := make(map[string]uint64)
 
@@ -277,6 +282,7 @@ func (md *MetricsDBHandler) GetAllMetrics() (map[string]uint64, error) {
 	return metrics, nil
 }
 
+// ClearAllTable Function
 func (md *MetricsDBHandler) ClearAllTable() error {
 	_, err := md.db.Exec("DELETE FROM aggregation_table")
 	if err != nil {
@@ -295,6 +301,7 @@ func (md *MetricsDBHandler) ClearAllTable() error {
 	return nil
 }
 
+// DBClearRoutine Function
 func DBClearRoutine() error {
 	ticker := time.NewTicker(time.Duration(MDB.dbClearTime) * time.Second)
 

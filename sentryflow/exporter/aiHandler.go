@@ -64,7 +64,7 @@ func (ah *aiHandler) InitAIHandler() bool {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("could not connect: %v | %v", err, addr)
+		log.Fatalf("could not connect: %v", err)
 		return false
 	}
 
@@ -165,9 +165,7 @@ func recvAPIRoutine(done chan struct{}) error {
 					Count: value,
 				}
 				MDB.PerAPICountInsert(APICount)
-				log.Printf("[AIHANDLER] Receive API: %v", APICount)
 			}
-
 		case <-done:
 			return nil
 		}

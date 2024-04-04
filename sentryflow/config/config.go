@@ -76,7 +76,7 @@ func readCmdLineParams() {
 	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/metrics.db", "File name for local metrics DB")
 	metricsDBAggregationTimeInt := flag.Int(MetricsDBAggregationTime, 10, "Term time between aggregations")
 	metricsDBClearTimeInt := flag.Int(MetricsDBClearTime, 600, "Metrics DB Clear Time")
-	APIMetricsSendTimeInt := flag.Int(APIMetricsSendTime, 30, "APIMetric send term")
+	APIMetricsSendTimeInt := flag.Int(APIMetricsSendTime, 10, "APIMetric send term")
 	collectorEnableOpenTelemetryB := flag.Bool(CollectorEnableOpenTelemetry, true, "Enable/Disable OpenTelemetry Collector")
 	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
 

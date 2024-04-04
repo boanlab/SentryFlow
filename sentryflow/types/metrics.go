@@ -12,6 +12,7 @@ type PerAPICount struct {
 	Count uint64
 }
 
+// DbAccessLogType Structure
 type DbAccessLogType struct {
 	Namespace string
 	Labels    string
