@@ -2,14 +2,19 @@
 
 package types
 
+import (
+	"github.com/5GSEC/SentryFlow/protobuf"
+)
+
 // PerAPICount Structure
 type PerAPICount struct {
 	Api   string
-	Count int
+	Count uint64
 }
 
+// DbAccessLogType Structure
 type DbAccessLogType struct {
-	Labels      []byte
-	Annotations []byte
-	AccessLog   []byte
+	Namespace string
+	Labels    string
+	AccessLog *protobuf.APILog
 }
