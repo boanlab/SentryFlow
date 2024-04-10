@@ -119,7 +119,11 @@ func saveAccessLog(al *protobuf.APILog) {
 		AccessLog: al,
 	}
 
-	MDB.AccessLogInsert(curData)
+	err := MDB.AccessLogInsert(curData)
+	if err != nil {
+		log.Printf("unable to insert AccessLog")
+		return
+	}
 }
 
 // InsertEnvoyMetric Function
@@ -389,7 +393,6 @@ func exportTimeTickerRoutine() error {
 				log.Printf("[Exporter] APIMetric TimeTicker channel closed")
 				return err
 			}
-			log.Printf("!@#!@#!@#!@#!@#!@# %v", curAPIMetrics)
 
 			if len(curAPIMetrics) > 0 {
 				curAPIMetric := &protobuf.APIMetric{
