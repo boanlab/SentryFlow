@@ -90,6 +90,7 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServi
 
             yield sentryflow_metrics_pb2.APIClassificationResponse(fields=ml_counts)
 
+
 if __name__ == '__main__':
     hs = HandlerServer()
     hs.init_grpc_servers()
