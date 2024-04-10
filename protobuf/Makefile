@@ -8,7 +8,6 @@ go.sum: go.mod
 	go get .
 
 %.pb.go: %.proto
-	export PATH="$PATH:$(go env GOPATH)/bin"
 	go mod tidy
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative,require_unimplemented_servers=false $<
 
