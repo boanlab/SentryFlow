@@ -164,7 +164,11 @@ func recvAPIRoutine(done chan struct{}) error {
 					Api:   key,
 					Count: value,
 				}
-				MDB.PerAPICountInsert(APICount)
+				err := MDB.PerAPICountInsert(APICount)
+				if err != nil {
+					log.Printf("unable to insert Classified API")
+					return err
+				}
 			}
 		case <-done:
 			return nil
