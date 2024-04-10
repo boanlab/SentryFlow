@@ -3,11 +3,12 @@
 package core
 
 import (
-	cfg "github.com/5GSEC/sentryflow/config"
-	"github.com/5GSEC/sentryflow/exporter"
-	"github.com/5GSEC/sentryflow/metrics"
 	"log"
 	"sync"
+
+	cfg "github.com/5GSEC/SentryFlow/config"
+	"github.com/5GSEC/SentryFlow/exporter"
+	"github.com/5GSEC/SentryFlow/metrics"
 )
 
 // StopChan Channel
@@ -34,7 +35,8 @@ func NewSentryFlowDaemon() *SentryFlowDaemon {
 
 // DestroySentryFlowDaemon Function
 func (dm *SentryFlowDaemon) DestroySentryFlowDaemon() {
-
+	//metrics.StartAIEngine()
+	log.Printf("[SentryFlow] Started AI Engine connection")
 }
 
 // watchK8s Function
@@ -68,6 +70,10 @@ func (dm *SentryFlowDaemon) exporterServer() {
 		log.Fatalf("[SentryFlow] Unable to start Exporter Server: %v", err)
 	}
 	log.Printf("[SentryFlow] Initialized exporter")
+}
+
+func (dm *SentryFlowDaemon) aiEngine() {
+
 }
 
 // patchK8s Function
@@ -116,6 +122,11 @@ func SentryFlow() {
 	}
 	log.Printf("[SentryFlow] Patched Kubernetes and Istio configuration")
 
+	if !exporter.MDB.InitMetricsDBHandler() {
+		log.Printf("[Error] Failed to initialize Metrics DB")
+	}
+	log.Printf("[SentryFlow] Successfuly initialized metrics DB")
+
 	// Start log processor
 	dm.logProcessor()
 
@@ -124,6 +135,11 @@ func SentryFlow() {
 
 	// Start exporter server
 	dm.exporterServer()
+
+	if !exporter.AH.InitAIHandler() {
+		log.Printf("[Error] Failed to initialize AI Engine")
+	}
+	log.Printf("[SentryFlow] Successfuly initialized AI Engine")
 
 	log.Printf("[SentryFlow] Successfully started SentryFlow")
 	dm.WgDaemon.Wait()

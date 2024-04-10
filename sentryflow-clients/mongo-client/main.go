@@ -12,7 +12,7 @@ import (
 	"mongo-client/db"
 	"os"
 	"os/signal"
-	protobuf "sentryflow/protobuf"
+	protobuf "SentryFlow/protobuf"
 	"syscall"
 )
 

@@ -3,14 +3,13 @@
 package collector
 
 import (
-	"fmt"
-	"github.com/5GSEC/sentryflow/core"
-	"github.com/5GSEC/sentryflow/protobuf"
+	"io"
+	"log"
+
+	"github.com/5GSEC/SentryFlow/core"
 	envoyAls "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
 	envoyMetrics "github.com/envoyproxy/go-control-plane/envoy/service/metrics/v3"
 	"google.golang.org/grpc"
-	"io"
-	"log"
 )
 
 // EnvoyMetricsServer Structure
@@ -52,30 +51,9 @@ func (ems *EnvoyMetricsServer) StreamMetrics(stream envoyMetrics.MetricsService_
 
 	if identifier != nil {
 		log.Printf("[Envoy] Received EnvoyMetric - ID: %s, %s", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
+		metaData := identifier.GetNode().GetMetadata().AsMap()
 
-		nodeID := identifier.GetNode().GetId()
-		cluster := identifier.GetNode().GetCluster()
-
-		curIdentifier := fmt.Sprintf("%s, %s", nodeID, cluster)
-		envoyMetric := &protobuf.EnvoyMetric{
-			Identifier: curIdentifier,
-			Metric:     []*protobuf.Metric{},
-		}
-
-		for _, metric := range event.GetEnvoyMetrics() {
-			metricType := metric.GetType().String()
-			metricName := metric.GetName()
-			tempMetrics := metric.GetMetric()
-			metrics := fmt.Sprintf("%s", tempMetrics)
-
-			curMetric := &protobuf.Metric{
-				Type:  metricType,
-				Key:   metricName,
-				Value: metrics,
-			}
-
-			envoyMetric.Metric = append(envoyMetric.Metric, curMetric)
-		}
+		envoyMetric := core.GenerateMetricFromEnvoy(event, metaData)
 
 		core.Lh.InsertLog(envoyMetric)
 	}

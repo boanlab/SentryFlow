@@ -49,3 +49,7 @@ export PATH=$PATH:/usr/local/go/bin
 # Setup bashrc
 echo export GOPATH="/home/vagrant/go" >> /home/vagrant/.bashrc
 echo export PATH="$PATH:/usr/local/go/bin:/home/vagrant/istio-1.20.3/bin:/home/vagrant/go/bin/" >> /home/vagrant/.bashrc
+
+# Install protoc-gen-go and protoc-gen-go-grpc
+RUN go install github.com/golang/protobuf/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest

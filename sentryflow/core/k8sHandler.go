@@ -4,8 +4,12 @@ package core
 
 import (
 	"context"
-	"github.com/5GSEC/sentryflow/config"
-	"github.com/5GSEC/sentryflow/types"
+	"log"
+	"sync"
+	"time"
+
+	"github.com/5GSEC/SentryFlow/config"
+	"github.com/5GSEC/SentryFlow/types"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,9 +17,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
-	"log"
-	"sync"
-	"time"
 )
 
 // K8s global reference for Kubernetes Handler
@@ -329,7 +330,6 @@ func (kh *K8sHandler) PatchIstioConfigMap() error {
 	}
 
 	_, eeaExist := meshConfig["enableEnvoyAccessLogService"]
-
 	if eeaExist {
 		log.Printf("Overwrite the contents of \"enableEnvoyAccessLogService\"")
 	}

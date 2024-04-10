@@ -11,10 +11,11 @@ const (
 
 // K8sNetworkedResource Structure
 type K8sNetworkedResource struct {
-	Name      string
-	Namespace string
-	Labels    map[string]string
-	Type      uint8
+	Name       string
+	Namespace  string
+	Labels     map[string]string
+	Containers []string
+	Type       uint8
 }
 
 // K8sResourceTypeToString Function

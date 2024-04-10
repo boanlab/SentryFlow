@@ -3,17 +3,18 @@
 package main
 
 import (
-	"context"
+	"SentryFlow/protobuf"
+	"flag"
 	"fmt"
-	"google.golang.org/grpc"
-	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
-	"io"
 	"log"
+	"log-client/client"
 	"log-client/common"
 	"os"
 	"os/signal"
 	"syscall"
-	"sentryflow/protobuf"
+
+	"google.golang.org/grpc"
+	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
 )
 
 func main() {
@@ -21,6 +22,32 @@ func main() {
 	cfg, err := common.LoadEnvVars()
 	if err != nil {
 		log.Fatalf("Could not load environment variables: %v", err)
+	}
+
+	// get arguments
+	logCfgPtr := flag.String("logCfg", "stdout", "Output location for logs, {path|stdout|none}")
+	metricCfgPtr := flag.String("metricCfg", "stdout", "Output location for envoy metrics and api metrics, {path|stdout|none}")
+	metricFilterPtr := flag.String("metricFilter", "envoy", "Filter for what kinds of envoy and api metric to receive, {policy|envoy|api}")
+	flag.Parse()
+
+	if *logCfgPtr == "none" && *metricCfgPtr == "none" {
+		flag.PrintDefaults()
+		return
+	}
+
+	if cfg.LogCfg != "" {
+		*logCfgPtr = cfg.LogCfg
+	}
+	if cfg.MetricCfg != "" {
+		*metricCfgPtr = cfg.MetricCfg
+	}
+	if cfg.MetricFilter != "" {
+		*metricFilterPtr = cfg.MetricFilter
+	}
+
+	if *metricFilterPtr != "all" && *metricFilterPtr != "envoy" && *metricFilterPtr != "api" {
+		flag.PrintDefaults()
+		return
 	}
 
 	// Construct address and start listening
@@ -37,7 +64,7 @@ func main() {
 	log.Printf("[gRPC] Successfully connected to %s for AccessLog", addr)
 
 	// Create a client for the SentryFlow service
-	client := protobuf.NewSentryFlowClient(conn)
+	sfClient := protobuf.NewSentryFlowClient(conn)
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -49,59 +76,29 @@ func main() {
 		HostName: hostname,
 	}
 
-	// Contact the server and print out its response
-	accessLogStream, err := client.GetLog(context.Background(), clientInfo)
-	metricStream, err := client.GetEnvoyMetrics(context.Background(), clientInfo)
-	if err != nil {
-		log.Fatalf("could not get log: %v", err)
+	logClient := client.NewClient(sfClient, *logCfgPtr, *metricCfgPtr, *metricFilterPtr, clientInfo)
+
+	if *logCfgPtr != "none" {
+		go logClient.LogRoutine(*logCfgPtr)
+		fmt.Printf("Started to watch logs\n")
 	}
 
-	done := make(chan struct{})
+	if *metricCfgPtr != "none" {
+		if *metricFilterPtr == "all" || *metricFilterPtr == "envoy" {
+			go logClient.EnvoyMetricRoutine(*metricCfgPtr)
+			fmt.Printf("Started to watch envoy metrics\n")
+		}
 
-	go accessLogRoutine(accessLogStream, done)
-	go metricRoutine(metricStream, done)
-
+		if *metricFilterPtr == "all" || *metricFilterPtr == "api" {
+			go logClient.APIMetricRoutine(*metricCfgPtr)
+			fmt.Printf("Started to watch api metrics\n")
+		}
+	}
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
 	<-signalChan
 
-	close(done)
-}
-
-func accessLogRoutine(stream protobuf.SentryFlow_GetLogClient, done chan struct{}) {
-	for {
-		select {
-		default:
-			data, err := stream.Recv()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Fatalf("failed to receive log: %v", err)
-			}
-			log.Printf("[Client] Received log: %v", data)
-		case <-done:
-			return
-		}
-	}
-}
-
-func metricRoutine(stream protobuf.SentryFlow_GetEnvoyMetricsClient, done chan struct{}) {
-	for {
-		select {
-		default:
-			data, err := stream.Recv()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Fatalf("failed to receive metric: %v", err)
-			}
-			log.Printf("[Client] Received metric: %v", data)
-		case <-done:
-			return
-		}
-	}
+	close(logClient.Done)
 }

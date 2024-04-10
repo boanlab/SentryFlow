@@ -3,9 +3,10 @@
 package metrics
 
 import (
-	"github.com/5GSEC/sentryflow/metrics/api"
-	"github.com/5GSEC/sentryflow/protobuf"
 	"sync"
+
+	"github.com/5GSEC/SentryFlow/metrics/api"
+	"github.com/5GSEC/SentryFlow/protobuf"
 )
 
 // Mh Global reference for metric handler

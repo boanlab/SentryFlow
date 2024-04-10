@@ -4,7 +4,7 @@ package collector
 
 import (
 	"context"
-	"github.com/5GSEC/sentryflow/core"
+	"github.com/5GSEC/SentryFlow/core"
 	otelLogs "go.opentelemetry.io/proto/otlp/collector/logs/v1"
 	"google.golang.org/grpc"
 )

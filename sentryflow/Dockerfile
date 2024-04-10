@@ -7,8 +7,6 @@ FROM golang:1.19-alpine3.17 as builder
 RUN apk --no-cache update
 RUN apk add --no-cache git clang llvm make gcc protobuf make
 RUN apk add --update alpine-sdk
-RUN go install github.com/golang/protobuf/protoc-gen-go@latest
-RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 RUN mkdir /app
 RUN mkdir /protobuf

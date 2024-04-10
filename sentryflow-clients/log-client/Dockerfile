@@ -18,8 +18,6 @@ WORKDIR /app
 
 COPY /sentryflow-clients/log-client .
 
-RUN go install github.com/golang/protobuf/protoc-gen-go@latest
-RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 RUN go build -o log-client
 
 ### Make executable image
