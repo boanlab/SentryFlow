@@ -14,7 +14,7 @@ import (
 	"github.com/5GSEC/SentryFlow/types"
 	"google.golang.org/protobuf/proto"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mattn/go-sqlite3"
 )
 
 // MDB global reference for Sqlite3 Handler
@@ -50,6 +50,8 @@ func NewMetricsDBHandler() *MetricsDBHandler {
 
 // InitMetricsDBHandler Function
 func (md *MetricsDBHandler) InitMetricsDBHandler() bool {
+	libVersion, libVersionNumber, sourceId := sqlite3.Version()
+	log.Printf("[DB] Using Sqlite Version is %v %v %v", libVersion, libVersionNumber, sourceId)
 	log.Printf("[DB] Using DB File as %s", md.dbFile)
 	targetDir := filepath.Dir(md.dbFile)
 	_, err := os.Stat(targetDir)
