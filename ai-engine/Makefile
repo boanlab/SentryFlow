@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-IMAGE_NAME = 5gsec/sentryflow-ai-engine
+ENGINE_NAME = sentryflow-ai-engine
+IMAGE_NAME = 5gsec/$(ENGINE_NAME)
 TAG = v0.1
 
 .PHONY: build
