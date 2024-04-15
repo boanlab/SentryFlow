@@ -30,16 +30,20 @@ jobs:
           echo "tag=tmp" >> $GITHUB_OUTPUT
         fi
 
-    - name: Build SentryFlow Docker Image
+    - name: Build SentryFlow Image
       working-directory: ./sentryflow
       run: |
-         make TAG=${{ steps.tag.outputs.tag }} image
+         make TAG=${{ steps.tag.outputs.tag }} build-image
 
-    - name: Build SentryFlow AI Engine Docker Image
+    # - name: Push SentryFlow Image
+    #   run: |
+    #      docker push 5gsec/sentryflow:${{ steps.tag.outputs.tag }}
+
+    - name: Build SentryFlow AI Engine Image
       working-directory: ./ai-engine
       run: |
-         make TAG=${{ steps.tag.outputs.tag }} build
+         make TAG=${{ steps.tag.outputs.tag }} build-image
 
-    # - name: Push Docker Image
+    # - name: Push SentryFlow AI Engine Image
     #   run: |
-    #      docker push boanlab/sentryflow:${{ steps.tag.outputs.tag }}
+    #      docker push 5gsec/sentryflow-ai-engine:${{ steps.tag.outputs.tag }}
