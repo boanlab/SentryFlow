@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+// Config structure
 type Config struct {
 	ServerAddr string
 	ServerPort int

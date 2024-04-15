@@ -5,8 +5,8 @@ go 1.19
 replace SentryFlow/protobuf => ../../protobuf
 
 require (
-	google.golang.org/grpc v1.61.1
 	SentryFlow/protobuf v0.0.0-00010101000000-000000000000
+	google.golang.org/grpc v1.61.1
 )
 
 require (

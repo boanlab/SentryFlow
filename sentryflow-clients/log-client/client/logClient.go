@@ -41,7 +41,7 @@ func StrToFile(str, targetFile string) {
 		}
 	}
 
-	file, err := os.OpenFile(targetFile, os.O_WRONLY|os.O_APPEND, 0644)
+	file, err := os.OpenFile(targetFile, os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		fmt.Printf("Failed to open a file (%s, %s)\n", targetFile, err.Error())
 	}

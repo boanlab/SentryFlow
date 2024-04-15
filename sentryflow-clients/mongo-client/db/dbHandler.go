@@ -3,6 +3,7 @@
 package db
 
 import (
+	protobuf "SentryFlow/protobuf"
 	"context"
 	"errors"
 	"fmt"
@@ -10,10 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
-	protobuf "SentryFlow/protobuf"
 	"time"
 )
 
+// Handler structure
 type Handler struct {
 	client            *mongo.Client
 	database          *mongo.Database
@@ -23,6 +24,7 @@ type Handler struct {
 	dbURL             string
 }
 
+// Manager structure
 var Manager *Handler
 
 // New creates a new mongoDB handler
@@ -63,6 +65,7 @@ func New() (*Handler, error) {
 	return &h, nil
 }
 
+// Disconnect function
 func (h *Handler) Disconnect() {
 	err := h.client.Disconnect(context.Background())
 	if err != nil {
@@ -72,6 +75,7 @@ func (h *Handler) Disconnect() {
 	return
 }
 
+// InsertAl function
 func (h *Handler) InsertAl(data *protobuf.APILog) error {
 	_, err := h.alCollection.InsertOne(context.Background(), data)
 	if err != nil {
@@ -81,6 +85,7 @@ func (h *Handler) InsertAl(data *protobuf.APILog) error {
 	return nil
 }
 
+// InsertMetrics function
 func (h *Handler) InsertMetrics(data *protobuf.EnvoyMetric) error {
 	_, err := h.metricsCollection.InsertOne(context.Background(), data)
 	if err != nil {

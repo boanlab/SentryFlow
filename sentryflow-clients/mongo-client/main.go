@@ -3,6 +3,7 @@
 package main
 
 import (
+	protobuf "SentryFlow/protobuf"
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
@@ -12,7 +13,6 @@ import (
 	"mongo-client/db"
 	"os"
 	"os/signal"
-	protobuf "SentryFlow/protobuf"
 	"syscall"
 )
 

@@ -1,28 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
-IMAGE_NAME = 5gsec/sentryflow-mongo-client
+CLIENT_NAME = sentryflow-mongo-client
+IMAGE_NAME = 5gsec/$(CLIENT_NAME)
 TAG = v0.1
-
-.PHONY: build
-build:
-	go mod tidy
-	go build -o sentryflow-mongo-client
-
-.PHONY: image
-image:
-	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../../
-
-.PHONY: clean-build
-clean-build:
-	rm -f sentryflow-mongo-client
-
-.PHONY: clean-image
-clean-image:
-	docker rmi $(IMAGE_NAME):$(TAG)
-
-.PHONY: run
-run:
-	docker run -it --rm $(IMAGE_NAME):$(TAG)
 
 .PHONY: gofmt
 gofmt:
@@ -57,3 +37,24 @@ ifeq (, $(shell which gosec))
 	}
 endif
 	cd $(CURDIR); gosec -exclude=G402 ./...
+
+.PHONY: build gofmt golint gosec
+build:
+	go mod tidy
+	go build -o $(CLIENT_NAME)
+
+.PHONY: clean
+clean:
+	rm -f $(CLIENT_NAME)
+
+.PHONY: build-image
+build-image:
+	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../../
+
+.PHONY: clean-image
+clean-image:
+	docker rmi $(IMAGE_NAME):$(TAG)
+
+.PHONY: run-image
+run-image:
+	docker run -it --rm $(IMAGE_NAME):$(TAG)

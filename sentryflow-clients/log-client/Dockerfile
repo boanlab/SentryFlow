@@ -11,11 +11,9 @@ RUN mkdir /app
 RUN mkdir /protobuf
 
 WORKDIR /protobuf
-
 COPY /protobuf .
 
 WORKDIR /app
-
 COPY /sentryflow-clients/log-client .
 
 RUN go build -o log-client
