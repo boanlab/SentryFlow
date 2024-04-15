@@ -1,4 +1,3 @@
-# Setup deployment for mongodb
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,7 +19,6 @@ spec:
           ports:
             - containerPort: 27017
 ---
-# Setup service for mongodb
 apiVersion: v1
 kind: Service
 metadata:
@@ -34,7 +32,6 @@ spec:
       port: 27017
       targetPort: 27017
 ---
-# Setup deployment for mongo-client
 apiVersion: apps/v1
 kind: Deployment
 metadata:
