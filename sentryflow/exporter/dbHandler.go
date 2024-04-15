@@ -50,8 +50,8 @@ func NewMetricsDBHandler() *MetricsDBHandler {
 
 // InitMetricsDBHandler Function
 func (md *MetricsDBHandler) InitMetricsDBHandler() bool {
-	libVersion, libVersionNumber, sourceId := sqlite3.Version()
-	log.Printf("[DB] Using Sqlite Version is %v %v %v", libVersion, libVersionNumber, sourceId)
+	libVersion, libVersionNumber, sourceID := sqlite3.Version()
+	log.Printf("[DB] Using Sqlite Version is %v %v %v", libVersion, libVersionNumber, sourceID)
 	log.Printf("[DB] Using DB File as %s", md.dbFile)
 	targetDir := filepath.Dir(md.dbFile)
 	_, err := os.Stat(targetDir)
@@ -198,13 +198,13 @@ func (md *MetricsDBHandler) AggregatedAccessLogSelect() (map[string][]*protobuf.
 // PerAPICountInsert Function
 func (md *MetricsDBHandler) PerAPICountInsert(data *types.PerAPICount) error {
 	var existAPI int
-	err := md.db.QueryRow("SELECT COUNT(*) FROM per_api_metrics WHERE api = ?", data.Api).Scan(&existAPI)
+	err := md.db.QueryRow("SELECT COUNT(*) FROM per_api_metrics WHERE api = ?", data.API).Scan(&existAPI)
 	if err != nil {
 		return err
 	}
 
 	if existAPI == 0 {
-		_, err := md.db.Exec("INSERT INTO per_api_metrics (api, count) VALUES (?, ?)", data.Api, data.Count)
+		_, err := md.db.Exec("INSERT INTO per_api_metrics (api, count) VALUES (?, ?)", data.API, data.Count)
 		if err != nil {
 			return err
 		}
@@ -222,7 +222,7 @@ func (md *MetricsDBHandler) PerAPICountInsert(data *types.PerAPICount) error {
 func (md *MetricsDBHandler) PerAPICountSelect(api string) (types.PerAPICount, error) {
 	var tm types.PerAPICount
 
-	err := md.db.QueryRow("SELECT api, count FROM per_api_metrics WHERE api = ?", api).Scan(&tm.Api, &tm.Count)
+	err := md.db.QueryRow("SELECT api, count FROM per_api_metrics WHERE api = ?", api).Scan(&tm.API, &tm.Count)
 	if err != nil {
 		return tm, err
 	}
@@ -243,13 +243,13 @@ func (md *MetricsDBHandler) PerAPICountDelete(api string) error {
 // PerAPICountUpdate Function
 func (md *MetricsDBHandler) PerAPICountUpdate(data *types.PerAPICount) error {
 	var existAPI int
-	err := md.db.QueryRow("SELECT COUNT(*) FROM per_api_metrics WHERE api = ?", data.Api).Scan(&existAPI)
+	err := md.db.QueryRow("SELECT COUNT(*) FROM per_api_metrics WHERE api = ?", data.API).Scan(&existAPI)
 	if err != nil {
 		return err
 	}
 
 	if existAPI > 0 {
-		_, err = md.db.Exec("UPDATE per_api_metrics SET count = ? WHERE api = ?", data.Count, data.Api)
+		_, err = md.db.Exec("UPDATE per_api_metrics SET count = ? WHERE api = ?", data.Count, data.API)
 		if err != nil {
 			return err
 		}
@@ -270,11 +270,11 @@ func (md *MetricsDBHandler) GetAllMetrics() (map[string]uint64, error) {
 
 	for rows.Next() {
 		var metric types.PerAPICount
-		err := rows.Scan(&metric.Api, &metric.Count)
+		err := rows.Scan(&metric.API, &metric.Count)
 		if err != nil {
 			return nil, err
 		}
-		metrics[metric.Api] = metric.Count
+		metrics[metric.API] = metric.Count
 	}
 
 	if err := rows.Err(); err != nil {

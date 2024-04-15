@@ -346,7 +346,7 @@ func (exp *Handler) sendAPIMetrics(l *protobuf.APIMetric) error {
 	return nil
 }
 
-// APIMetricsExportRoutine
+// APIMetricsExportRoutine function
 func (exp *Handler) APIMetricsExportRoutine() {
 
 }

@@ -8,7 +8,7 @@ import (
 
 // PerAPICount Structure
 type PerAPICount struct {
-	Api   string
+	API   string
 	Count uint64
 }
 

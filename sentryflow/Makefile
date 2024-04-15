@@ -1,29 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
-IMAGE_NAME = 5gsec/sentryflow
+PROG_NAME = sentryflow
+IMAGE_NAME = 5gsec/$(PROG_NAME)
 TAG = v0.1
-
-
-.PHONY: build
-build:
-	go mod tidy
-	go build -o sentryflow
-
-.PHONY: image
-image:
-	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../
-
-.PHONY: clean-build
-clean-build:
-	rm -f sentryflow
-
-.PHONY: clean-image
-clean-image:
-	docker rmi $(IMAGE_NAME):$(TAG)
-
-.PHONY: run
-run:
-	docker run -it --rm $(IMAGE_NAME):$(TAG)
 
 .PHONY: gofmt
 gofmt:
@@ -58,3 +37,24 @@ ifeq (, $(shell which gosec))
 	}
 endif
 	cd $(CURDIR); gosec -exclude=G402 ./...
+
+.PHONY: build
+build:
+	go mod tidy
+	go build -o $(PROG_NAME)
+
+.PHONY: clean
+clean:
+	rm -f $(PROG_NAME)
+
+.PHONY: build-image
+build-image:
+	docker build -t $(IMAGE_NAME):$(TAG) -f ./Dockerfile ../
+
+.PHONY: clean-image
+clean-image:
+	docker rmi $(IMAGE_NAME):$(TAG)
+
+.PHONY: run-image
+run-image:
+	docker run -it --rm $(IMAGE_NAME):$(TAG)

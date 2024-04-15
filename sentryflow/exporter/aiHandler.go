@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// ah Local reference for AI handler server
+// AH Local reference for AI handler server
 var AH *aiHandler
 
 // aiHandler Structure
@@ -43,7 +43,7 @@ func init() {
 	AH = NewAIHandler(cfg.AIEngineService, cfg.AIEngineServicePort)
 }
 
-// newAIHandler Function
+// NewAIHandler Function
 func NewAIHandler(host string, port string) *aiHandler {
 	ah := &aiHandler{
 		aiHost: host,
@@ -86,7 +86,7 @@ func (ah *aiHandler) InitAIHandler() bool {
 	return true
 }
 
-// InsertAccessLog
+// InsertAPILog function
 func InsertAPILog(APIs []string) {
 	AH.apis <- APIs
 }
@@ -99,7 +99,7 @@ func (ah *aiHandler) callAI(api string) error {
 
 // processBatch Function
 func processBatch(batch []string, update bool) error {
-	for _, _ = range batch {
+	for range batch {
 
 	}
 
@@ -161,7 +161,7 @@ func recvAPIRoutine(done chan struct{}) error {
 
 			for key, value := range event.Fields {
 				APICount := &types.PerAPICount{
-					Api:   key,
+					API:   key,
 					Count: value,
 				}
 				err := MDB.PerAPICountInsert(APICount)
