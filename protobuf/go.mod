@@ -1,6 +1,6 @@
 module github.com/5GSEC/SentryFlow/protobuf
 
-go 1.19
+go 1.21
 
 require (
 	google.golang.org/grpc v1.63.2
