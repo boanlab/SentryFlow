@@ -4,6 +4,15 @@ PROG_NAME = sentryflow
 IMAGE_NAME = 5gsec/$(PROG_NAME)
 TAG = v0.1
 
+.PHONY: build
+build:
+	go mod tidy
+	go build -o $(PROG_NAME)
+
+.PHONY: clean
+clean:
+	rm -f $(PROG_NAME)
+
 .PHONY: gofmt
 gofmt:
 	cd $(CURDIR); gofmt -w -s -d $(shell find . -type f -name '*.go' -print)
@@ -37,15 +46,6 @@ ifeq (, $(shell which gosec))
 	}
 endif
 	cd $(CURDIR); gosec -exclude=G402 ./...
-
-.PHONY: build
-build:
-	go mod tidy
-	go build -o $(PROG_NAME)
-
-.PHONY: clean
-clean:
-	rm -f $(PROG_NAME)
 
 .PHONY: build-image
 build-image:
