@@ -19,48 +19,48 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	SentryFlowMetrics_GetAPIClassification_FullMethodName = "/protobuf.SentryFlowMetrics/GetAPIClassification"
+	APIClassification_ClassifyAPIs_FullMethodName = "/protobuf.APIClassification/ClassifyAPIs"
 )
 
-// SentryFlowMetricsClient is the client API for SentryFlowMetrics service.
+// APIClassificationClient is the client API for APIClassification service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type SentryFlowMetricsClient interface {
-	GetAPIClassification(ctx context.Context, opts ...grpc.CallOption) (SentryFlowMetrics_GetAPIClassificationClient, error)
+type APIClassificationClient interface {
+	ClassifyAPIs(ctx context.Context, opts ...grpc.CallOption) (APIClassification_ClassifyAPIsClient, error)
 }
 
-type sentryFlowMetricsClient struct {
+type aPIClassificationClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewSentryFlowMetricsClient(cc grpc.ClientConnInterface) SentryFlowMetricsClient {
-	return &sentryFlowMetricsClient{cc}
+func NewAPIClassificationClient(cc grpc.ClientConnInterface) APIClassificationClient {
+	return &aPIClassificationClient{cc}
 }
 
-func (c *sentryFlowMetricsClient) GetAPIClassification(ctx context.Context, opts ...grpc.CallOption) (SentryFlowMetrics_GetAPIClassificationClient, error) {
-	stream, err := c.cc.NewStream(ctx, &SentryFlowMetrics_ServiceDesc.Streams[0], SentryFlowMetrics_GetAPIClassification_FullMethodName, opts...)
+func (c *aPIClassificationClient) ClassifyAPIs(ctx context.Context, opts ...grpc.CallOption) (APIClassification_ClassifyAPIsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &APIClassification_ServiceDesc.Streams[0], APIClassification_ClassifyAPIs_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &sentryFlowMetricsGetAPIClassificationClient{stream}
+	x := &aPIClassificationClassifyAPIsClient{stream}
 	return x, nil
 }
 
-type SentryFlowMetrics_GetAPIClassificationClient interface {
+type APIClassification_ClassifyAPIsClient interface {
 	Send(*APIClassificationRequest) error
 	Recv() (*APIClassificationResponse, error)
 	grpc.ClientStream
 }
 
-type sentryFlowMetricsGetAPIClassificationClient struct {
+type aPIClassificationClassifyAPIsClient struct {
 	grpc.ClientStream
 }
 
-func (x *sentryFlowMetricsGetAPIClassificationClient) Send(m *APIClassificationRequest) error {
+func (x *aPIClassificationClassifyAPIsClient) Send(m *APIClassificationRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *sentryFlowMetricsGetAPIClassificationClient) Recv() (*APIClassificationResponse, error) {
+func (x *aPIClassificationClassifyAPIsClient) Recv() (*APIClassificationResponse, error) {
 	m := new(APIClassificationResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -68,51 +68,51 @@ func (x *sentryFlowMetricsGetAPIClassificationClient) Recv() (*APIClassification
 	return m, nil
 }
 
-// SentryFlowMetricsServer is the server API for SentryFlowMetrics service.
-// All implementations should embed UnimplementedSentryFlowMetricsServer
+// APIClassificationServer is the server API for APIClassification service.
+// All implementations should embed UnimplementedAPIClassificationServer
 // for forward compatibility
-type SentryFlowMetricsServer interface {
-	GetAPIClassification(SentryFlowMetrics_GetAPIClassificationServer) error
+type APIClassificationServer interface {
+	ClassifyAPIs(APIClassification_ClassifyAPIsServer) error
 }
 
-// UnimplementedSentryFlowMetricsServer should be embedded to have forward compatible implementations.
-type UnimplementedSentryFlowMetricsServer struct {
+// UnimplementedAPIClassificationServer should be embedded to have forward compatible implementations.
+type UnimplementedAPIClassificationServer struct {
 }
 
-func (UnimplementedSentryFlowMetricsServer) GetAPIClassification(SentryFlowMetrics_GetAPIClassificationServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetAPIClassification not implemented")
+func (UnimplementedAPIClassificationServer) ClassifyAPIs(APIClassification_ClassifyAPIsServer) error {
+	return status.Errorf(codes.Unimplemented, "method ClassifyAPIs not implemented")
 }
 
-// UnsafeSentryFlowMetricsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to SentryFlowMetricsServer will
+// UnsafeAPIClassificationServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to APIClassificationServer will
 // result in compilation errors.
-type UnsafeSentryFlowMetricsServer interface {
-	mustEmbedUnimplementedSentryFlowMetricsServer()
+type UnsafeAPIClassificationServer interface {
+	mustEmbedUnimplementedAPIClassificationServer()
 }
 
-func RegisterSentryFlowMetricsServer(s grpc.ServiceRegistrar, srv SentryFlowMetricsServer) {
-	s.RegisterService(&SentryFlowMetrics_ServiceDesc, srv)
+func RegisterAPIClassificationServer(s grpc.ServiceRegistrar, srv APIClassificationServer) {
+	s.RegisterService(&APIClassification_ServiceDesc, srv)
 }
 
-func _SentryFlowMetrics_GetAPIClassification_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SentryFlowMetricsServer).GetAPIClassification(&sentryFlowMetricsGetAPIClassificationServer{stream})
+func _APIClassification_ClassifyAPIs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(APIClassificationServer).ClassifyAPIs(&aPIClassificationClassifyAPIsServer{stream})
 }
 
-type SentryFlowMetrics_GetAPIClassificationServer interface {
+type APIClassification_ClassifyAPIsServer interface {
 	Send(*APIClassificationResponse) error
 	Recv() (*APIClassificationRequest, error)
 	grpc.ServerStream
 }
 
-type sentryFlowMetricsGetAPIClassificationServer struct {
+type aPIClassificationClassifyAPIsServer struct {
 	grpc.ServerStream
 }
 
-func (x *sentryFlowMetricsGetAPIClassificationServer) Send(m *APIClassificationResponse) error {
+func (x *aPIClassificationClassifyAPIsServer) Send(m *APIClassificationResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *sentryFlowMetricsGetAPIClassificationServer) Recv() (*APIClassificationRequest, error) {
+func (x *aPIClassificationClassifyAPIsServer) Recv() (*APIClassificationRequest, error) {
 	m := new(APIClassificationRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -120,17 +120,17 @@ func (x *sentryFlowMetricsGetAPIClassificationServer) Recv() (*APIClassification
 	return m, nil
 }
 
-// SentryFlowMetrics_ServiceDesc is the grpc.ServiceDesc for SentryFlowMetrics service.
+// APIClassification_ServiceDesc is the grpc.ServiceDesc for APIClassification service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var SentryFlowMetrics_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "protobuf.SentryFlowMetrics",
-	HandlerType: (*SentryFlowMetricsServer)(nil),
+var APIClassification_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "protobuf.APIClassification",
+	HandlerType: (*APIClassificationServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "GetAPIClassification",
-			Handler:       _SentryFlowMetrics_GetAPIClassification_Handler,
+			StreamName:    "ClassifyAPIs",
+			Handler:       _APIClassification_ClassifyAPIs_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

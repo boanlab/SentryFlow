@@ -16,21 +16,23 @@ message APILog {
   string srcNamespace = 11;
   string srcName = 12;
   map<string, string> srcLabel = 13;
-  string srcType = 16;
-  string srcIP = 17;
-  string srcPort = 18;
 
-  string dstNamespace = 21;
-  string dstName = 22;
-  map<string, string> dstLabel = 23;
-  string dstType = 26;
-  string dstIP = 27;
-  string dstPort = 28;
+  string srcType = 21;
+  string srcIP = 22;
+  string srcPort = 23;
 
-  string protocol = 31;
-  string method = 32;
-  string path = 33;
-  int32 responseCode = 34;
+  string dstNamespace = 31;
+  string dstName = 32;
+  map<string, string> dstLabel = 33;
+
+  string dstType = 41;
+  string dstIP = 42;
+  string dstPort = 43;
+
+  string protocol = 51;
+  string method = 52;
+  string path = 53;
+  int32 responseCode = 54;
 }
 
 message APIMetric {
@@ -43,16 +45,18 @@ message MetricValue {
 }
 
 message EnvoyMetric {
-  string Namespace = 1;
-  string Name = 2;
-  map<string, string> Labels = 7;
-  string podIP = 3;
-  string timeStamp = 5;
-  map<string, MetricValue> metric = 6;
+  string timeStamp = 1;
+  
+  string namespace = 11;
+  string name = 12;
+  string IPAddress = 13;
+  map<string, string> labels = 14;
+
+  map<string, MetricValue> metrics = 21;
 }
 
 service SentryFlow {
-  rpc GetLog(ClientInfo) returns (stream APILog);
+  rpc GetAPILog(ClientInfo) returns (stream APILog);
   rpc GetAPIMetrics(ClientInfo) returns (stream APIMetric);
   rpc GetEnvoyMetrics(ClientInfo) returns (stream EnvoyMetric);
 }
