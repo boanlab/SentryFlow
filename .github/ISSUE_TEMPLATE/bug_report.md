@@ -25,9 +25,9 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - OS: [e.g. Ubuntu 22.04]
- - Numbat Versions: [e.g. v0.1]
  - Kubernetes Environment: [tip: Please include CRI and CNI as well as their versions]
  - Istio Environment: [tip: Please include Istio version as well as the install profiles]
+ - SentryFlow Versions: [e.g. v0.1]
 
 **Additional context**
 Add any other context about the problem here.

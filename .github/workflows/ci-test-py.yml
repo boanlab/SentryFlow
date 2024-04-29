@@ -7,7 +7,7 @@ on:
 
 jobs:
   py-pip-ai-sentryflow:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -21,7 +21,7 @@ jobs:
         working-directory: ai-engine
 
   py-lint-ai-sentryflow:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -39,11 +39,10 @@ jobs:
         run: |
           pip install ruff
           ruff --output-format=github .
-        continue-on-error: true
         working-directory: ai-engine
 
   py-pep8-ai-sentryflow:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: 'Run PEP8'
