@@ -1,8 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
-CLIENT_NAME = sentryflow-log-client
+CLIENT_NAME = sentryflow-mongo-client
 IMAGE_NAME = 5gsec/$(CLIENT_NAME)
 TAG = v0.1
+
+.PHONY: build
+build: gofmt golint gosec
+	go mod tidy
+	go build -o $(CLIENT_NAME)
+
+.PHONY: clean
+clean:
+	rm -f $(CLIENT_NAME)
 
 .PHONY: gofmt
 gofmt:
@@ -37,15 +46,6 @@ ifeq (, $(shell which gosec))
 	}
 endif
 	cd $(CURDIR); gosec -exclude=G402 ./...
-
-.PHONY: build gofmt golint gosec
-build:
-	go mod tidy
-	go build -o $(CLIENT_NAME)
-
-.PHONY: clean
-clean:
-	rm -f $(CLIENT_NAME)
 
 .PHONY: build-image
 build-image:
