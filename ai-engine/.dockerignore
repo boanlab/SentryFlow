@@ -1,6 +1,6 @@
-.idea
 .git
 .gitignore
-protobuf
-Dockerfile
 __pycache__/
+Dockerfile
+protobuf/
+.idea/
