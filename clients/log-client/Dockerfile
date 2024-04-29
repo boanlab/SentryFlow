@@ -7,13 +7,13 @@ FROM golang:1.21-alpine3.17 as builder
 RUN apk --no-cache update
 RUN apk add --no-cache git clang llvm make gcc protobuf musl-dev
 
-RUN mkdir /log-client
+RUN mkdir /client
 RUN mkdir /protobuf
 
 WORKDIR /protobuf
 COPY /protobuf .
 
-WORKDIR /log-client
+WORKDIR /client
 COPY /sentryflow-clients/log-client .
 
 RUN go build -o log-client
@@ -26,6 +26,6 @@ FROM alpine:3.17 as client
 # RUN apk --no-cache update
 # RUN apk add bash
 
-COPY --from=builder /app/log-client /
+COPY --from=builder /client/log-client /
 
 CMD ["/log-client"]
