@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: log-client
   namespace: sentryflow
+  name: log-client
 spec:
   replicas: 1
   selector:
@@ -16,18 +16,14 @@ spec:
       containers:
       - name: log-client
         image: 5gsec/sentryflow-log-client:v0.1
-        ports:
-        - containerPort: 8080
-          protocol: TCP
-          name: grpc
         env:
         - name: SERVER_ADDR
           value: "sentryflow.sentryflow.svc.cluster.local"
         - name: SERVER_PORT
           value: "8080"
-        - name: METRIC_FILTER
-          value: "envoy"
         - name: LOG_CFG
           value: "stdout"
         - name: METRIC_CFG
           value: "stdout"
+        - name: METRIC_FILTER
+          value: "envoy"

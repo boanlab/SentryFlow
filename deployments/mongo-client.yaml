@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongodb
   namespace: sentryflow
+  name: mongodb
 spec:
   replicas: 1
   selector:
@@ -22,8 +22,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb
   namespace: sentryflow
+  name: mongodb
 spec:
   selector:
     app: mongodb
@@ -35,8 +35,8 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo-client
   namespace: sentryflow
+  name: mongo-client
 spec:
   replicas: 1
   selector:
@@ -57,5 +57,5 @@ spec:
           value: "sentryflow.sentryflow.svc.cluster.local"
         - name: SERVER_PORT
           value: "8080"
-        - name: MONGODB_HOST
+        - name: MONGODB_ADDR
           value: "mongodb://mongodb:27017"
