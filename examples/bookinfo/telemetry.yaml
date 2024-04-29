@@ -1,8 +1,8 @@
 apiVersion: telemetry.istio.io/v1alpha1
 kind: Telemetry
 metadata:
-  name: bookinfo-logging
   namespace: bookinfo
+  name: bookinfo-logging
 spec:
   accessLogging:
     - providers:

@@ -8,6 +8,6 @@ https://istio.io/latest/docs/examples/bookinfo/
 
 ```kubectl create -f telemetry.yaml```
 
-## Api request Generation
+## API Request Generation
 
 ```curl http://bookinfo_Address:9080/productpage```

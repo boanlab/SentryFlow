@@ -1,8 +1,8 @@
 apiVersion: telemetry.istio.io/v1alpha1
 kind: Telemetry
 metadata:
-  name: robot-shop-logging
   namespace: robot-shop
+  name: robot-shop-logging
 spec:
   accessLogging:
     - providers:
