@@ -46,6 +46,6 @@ Vagrant.configure("2") do |config|
   # copy git config
   config.vm.provision :file, source: "~/.gitconfig", destination: "$HOME/.gitconfig"
 
-  # setup k8s and IStio
-  config.vm.provision "shell", path: "setup.sh"
+  # setup env
+  config.vm.provision "shell", path: "env-setup.sh"
 end
