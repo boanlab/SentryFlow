@@ -2,9 +2,15 @@
 
 package collector
 
-import "google.golang.org/grpc"
+import (
+	"google.golang.org/grpc"
+)
+
+// == //
 
 // collectorInterface Interface
 type collectorInterface interface {
 	registerService(server *grpc.Server)
 }
+
+// == //

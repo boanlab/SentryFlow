@@ -4,12 +4,19 @@ package core
 
 import (
 	"log"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
-	cfg "github.com/5GSEC/SentryFlow/config"
-	"github.com/5GSEC/SentryFlow/exporter"
-	"github.com/5GSEC/SentryFlow/metrics"
+	"github.com/5gsec/SentryFlow/collector"
+	"github.com/5gsec/SentryFlow/config"
+	"github.com/5gsec/SentryFlow/exporter"
+	"github.com/5gsec/SentryFlow/k8s"
+	"github.com/5gsec/SentryFlow/processor"
 )
+
+// == //
 
 // StopChan Channel
 var StopChan chan struct{}
@@ -19,128 +26,147 @@ func init() {
 	StopChan = make(chan struct{})
 }
 
-// SentryFlowDaemon Structure
-type SentryFlowDaemon struct {
-	WgDaemon *sync.WaitGroup
+// SentryFlowService Structure
+type SentryFlowService struct {
+	waitGroup *sync.WaitGroup
 }
 
-// NewSentryFlowDaemon Function
-func NewSentryFlowDaemon() *SentryFlowDaemon {
-	dm := new(SentryFlowDaemon)
-
-	dm.WgDaemon = new(sync.WaitGroup)
-
-	return dm
+// NewSentryFlow Function
+func NewSentryFlow() *SentryFlowService {
+	sf := new(SentryFlowService)
+	sf.waitGroup = new(sync.WaitGroup)
+	return sf
 }
 
-// DestroySentryFlowDaemon Function
-func (dm *SentryFlowDaemon) DestroySentryFlowDaemon() {
-	//metrics.StartAIEngine()
-	log.Printf("[SentryFlow] Started AI Engine connection")
-}
+// DestroySentryFlow Function
+func (sf *SentryFlowService) DestroySentryFlow() {
+	close(StopChan)
 
-// watchK8s Function
-func (dm *SentryFlowDaemon) watchK8s() {
-	K8s.RunInformers(StopChan, dm.WgDaemon)
-}
-
-// logProcessor Function
-func (dm *SentryFlowDaemon) logProcessor() {
-	StartLogProcessor(dm.WgDaemon)
-	log.Printf("[SentryFlow] Started log processor")
-}
-
-// metricAnalyzer Function
-func (dm *SentryFlowDaemon) metricAnalyzer() {
-	metrics.StartMetricsAnalyzer(dm.WgDaemon)
-	log.Printf("[SentryFlow] Started metric analyzer")
-}
-
-// exporterServer Function
-func (dm *SentryFlowDaemon) exporterServer() {
-	// Initialize and start exporter server
-	err := exporter.Exp.InitExporterServer()
-	if err != nil {
-		log.Fatalf("[SentryFlow] Unable to initialize Exporter Server: %v", err)
-		return
+	// Remove SentryFlow collector config from Kubernetes
+	if k8s.UnpatchIstioConfigMap() {
+		log.Print("[SentryFlow] Unpatched Istio ConfigMap")
 	}
 
-	err = exporter.Exp.StartExporterServer(dm.WgDaemon)
-	if err != nil {
-		log.Fatalf("[SentryFlow] Unable to start Exporter Server: %v", err)
+	// Stop collector
+	if collector.StopCollector() {
+		log.Print("[SentryFlow] Stopped Collectors")
 	}
-	log.Printf("[SentryFlow] Initialized exporter")
+
+	// Stop Log Processor
+	if processor.StopLogProcessor() {
+		log.Print("[SentryFlow] Stopped Log Processors")
+	}
+
+	// Stop API Aanalyzer
+	if processor.StopAPIAnalyzer() {
+		log.Print("[SentryFlow] Stopped API Analyzer")
+	}
+
+	// Stop exporter
+	if exporter.StopExporter() {
+		log.Print("[SentryFlow] Stopped Exporters")
+	}
+
+	log.Print("[SentryFlow] Waiting for routine terminations")
+	sf.waitGroup.Wait()
+
+	log.Print("[SentryFlow] Terminated SentryFlow")
 }
 
-func (dm *SentryFlowDaemon) aiEngine() {
+// == //
 
+// GetOSSigChannel Function
+func GetOSSigChannel() chan os.Signal {
+	c := make(chan os.Signal, 1)
+
+	signal.Notify(c,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+		os.Interrupt)
+
+	return c
 }
 
-// patchK8s Function
-func (dm *SentryFlowDaemon) patchK8s() error {
-	err := K8s.PatchIstioConfigMap()
-	if err != nil {
-		return err
-	}
-
-	if cfg.GlobalCfg.PatchNamespace {
-		err = K8s.PatchNamespaces()
-		if err != nil {
-			return err
-		}
-	}
-
-	if cfg.GlobalCfg.PatchRestartDeployments {
-		err = K8s.PatchRestartDeployments()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
+// == //
 
 // SentryFlow Function
 func SentryFlow() {
-	// create a daemon
-	dm := NewSentryFlowDaemon()
+	sf := NewSentryFlow()
+
+	log.Print("[SentryFlow] Initializing SentryFlow")
+
+	// == //
 
 	// Initialize Kubernetes client
-	if !K8s.InitK8sClient() {
-		log.Printf("[Error] Failed to initialize Kubernetes client")
-		dm.DestroySentryFlowDaemon()
+	if !k8s.InitK8sClient() {
+		sf.DestroySentryFlow()
 		return
 	}
 
-	log.Printf("[SentryFlow] Initialized Kubernetes client")
+	// Start Kubernetes informers
+	k8s.RunInformers(StopChan, sf.waitGroup)
 
-	dm.watchK8s()
-	log.Printf("[SentryFlow] Started to monitor Kubernetes resources")
-
-	if dm.patchK8s() != nil {
-		log.Printf("[SentryFlow] Failed to patch Kubernetes")
+	// Patch Istio ConfigMap
+	if !k8s.PatchIstioConfigMap() {
+		sf.DestroySentryFlow()
+		return
 	}
-	log.Printf("[SentryFlow] Patched Kubernetes and Istio configuration")
 
-	if !exporter.MDB.InitMetricsDBHandler() {
-		log.Printf("[Error] Failed to initialize Metrics DB")
+	// Patch Namespaces
+	if config.GlobalConfig.PatchingNamespaces {
+		if !k8s.PatchNamespaces() {
+			sf.DestroySentryFlow()
+			return
+		}
 	}
-	log.Printf("[SentryFlow] Successfuly initialized metrics DB")
+
+	// Patch Deployments
+	if config.GlobalConfig.RestartingPatchedDeployments {
+		if !k8s.RestartDeployments() {
+			sf.DestroySentryFlow()
+			return
+		}
+	}
+
+	// == //
+
+	// Start collector
+	if !collector.StartCollector() {
+		sf.DestroySentryFlow()
+		return
+	}
 
 	// Start log processor
-	dm.logProcessor()
-
-	// Start metric analyzer
-	dm.metricAnalyzer()
-
-	// Start exporter server
-	dm.exporterServer()
-
-	if !exporter.AH.InitAIHandler() {
-		log.Printf("[Error] Failed to initialize AI Engine")
+	if !processor.StartLogProcessor(sf.waitGroup) {
+		sf.DestroySentryFlow()
+		return
 	}
-	log.Printf("[SentryFlow] Successfuly initialized AI Engine")
 
-	log.Printf("[SentryFlow] Successfully started SentryFlow")
-	dm.WgDaemon.Wait()
+	// Start API analyzer
+	if !processor.StartAPIAnalyzer(sf.waitGroup) {
+		sf.DestroySentryFlow()
+		return
+	}
+
+	// Start exporter
+	if !exporter.StartExporter(sf.waitGroup) {
+		sf.DestroySentryFlow()
+		return
+	}
+
+	log.Print("[SentryFlow] Initialization process is completed")
+
+	// == //
+
+	// listen for interrupt signals
+	sigChan := GetOSSigChannel()
+	<-sigChan
+	log.Print("Got a signal to terminate SentryFlow")
+
+	// == //
+
+	// Destroy SentryFlow
+	sf.DestroySentryFlow()
 }

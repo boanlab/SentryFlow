@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -14,30 +13,23 @@ import (
 
 // SentryFlowConfig structure
 type SentryFlowConfig struct {
-	OtelGRPCListenAddr string // IP address to use for OTEL gRPC
-	OtelGRPCListenPort string // Port to use for OTEL gRPC
+	CollectorAddr string // Address for Collector gRPC
+	CollectorPort string // Port for Collector gRPC
 
-	CustomExportListenAddr string // IP address to use for custom exporter gRPC
-	CustomExportListenPort string // Port to use for custom exporter gRPC
+	ExporterAddr string // IP address to use for exporter gRPC
+	ExporterPort string // Port to use for exporter gRPC
 
-	PatchNamespace          bool // Enable/Disable patching namespace for Istio injection
-	PatchRestartDeployments bool // Enable/Disable restarting deployments after patching
+	PatchingNamespaces           bool // Enable/Disable patching namespaces with 'istio-injection'
+	RestartingPatchedDeployments bool // Enable/Disable restarting deployments after patching
 
-	AIEngineService     string
-	AIEngineServicePort string
-	AIEngineBatchSize   int
+	AggregationPeriod int // Period for aggregating metrics
+	CleanUpPeriod     int // Period for cleaning up outdated metrics
 
-	MetricsDBFileName        string // String value of MetricsDB file (sqlite3 db file)
-	MetricsDBAggregationTime int    // Value of APILog Aggregation Time
-	MetricsDBClearTime       int    // Value of APIMetric DB Clear time
-	APIMetricsSendTime       int    // Value of APIMetric send time
-
-	CollectorEnableOpenTelemetry bool // Enable/Disable OpenTelemetry Collector
-	Debug                        bool // Enable/Disable SentryFlow debug mode
+	Debug bool // Enable/Disable SentryFlow debug mode
 }
 
-// GlobalCfg Global configuration for SentryFlow
-var GlobalCfg SentryFlowConfig
+// GlobalConfig Global configuration for SentryFlow
+var GlobalConfig SentryFlowConfig
 
 // init Function
 func init() {
@@ -46,39 +38,35 @@ func init() {
 
 // Config const
 const (
-	OtelGRPCListenAddr           string = "otelGRPCListenAddr"
-	OtelGRPCListenPort           string = "otelGRPCListenPort"
-	CustomExportListenAddr       string = "customExportListenAddr"
-	CustomExportListenPort       string = "customExportListenPort"
-	PatchNamespace               string = "patchNamespace"
-	PatchRestartDeployments      string = "patchRestartDeployments"
-	AIEngineService              string = "aiEngineService"
-	AIEngineServicePort          string = "aiEngineServicePort"
-	AIEngineBatchSize            string = "aiEngineBatchSize"
-	MetricsDBFileName            string = "metricsDBFileName"
-	MetricsDBAggregationTime     string = "metricsDBAggregationTime"
-	MetricsDBClearTime           string = "metricsDBClearTime"
-	APIMetricsSendTime           string = "apiMetricsSendTime"
-	CollectorEnableOpenTelemetry string = "collectorEnableOpenTelemetry"
-	Debug                        string = "debug"
+	CollectorAddr string = "collectorAddr"
+	CollectorPort string = "collectorPort"
+
+	ExporterAddr string = "exporterAddr"
+	ExporterPort string = "exporterPort"
+
+	PatchingNamespaces           string = "patchingNamespaces"
+	RestartingPatchedDeployments string = "restartingPatchedDeployments"
+
+	AggregationPeriod string = "aggregationPeriod"
+	CleanUpPeriod     string = "cleanUpPeriod"
+
+	Debug string = "debug"
 )
 
 func readCmdLineParams() {
-	otelGRPCListenAddrStr := flag.String(OtelGRPCListenAddr, "0.0.0.0", "OTEL gRPC server listen address")
-	otelGRPCListenPortStr := flag.String(OtelGRPCListenPort, "4317", "OTEL gRPC server listen port")
-	customExportListenAddrStr := flag.String(CustomExportListenAddr, "0.0.0.0", "Custom export gRPC server listen address")
-	customExportListenPortStr := flag.String(CustomExportListenPort, "8080", "Custom export gRPC server listen port")
-	patchNamespaceB := flag.Bool(PatchNamespace, false, "Enable/Disable patching Istio injection to all namespaces")
-	patchRestartDeploymentsB := flag.Bool(PatchRestartDeployments, false, "Enable/Disable restarting deployments in all namespaces")
-	aiEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
-	aiEngineServicePortStr := flag.String(AIEngineServicePort, "5000", "Service Port for SentryFlow AI Engine")
-	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size for SentryFlow AI Engine")
-	metricsDBFileNameStr := flag.String(MetricsDBFileName, "/etc/sentryflow/metrics.db", "File name for local metrics DB")
-	metricsDBAggregationTimeInt := flag.Int(MetricsDBAggregationTime, 10, "Term time between aggregations")
-	metricsDBClearTimeInt := flag.Int(MetricsDBClearTime, 600, "Metrics DB Clear Time")
-	APIMetricsSendTimeInt := flag.Int(APIMetricsSendTime, 10, "APIMetric send term")
-	collectorEnableOpenTelemetryB := flag.Bool(CollectorEnableOpenTelemetry, true, "Enable/Disable OpenTelemetry Collector")
-	configDebugB := flag.Bool(Debug, false, "Enable/Disable debugging mode using logs")
+	collectorAddrStr := flag.String(CollectorAddr, "0.0.0.0", "Address for Collector gRPC")
+	collectorPortStr := flag.String(CollectorPort, "4317", "Port for Collector gRPC")
+
+	exporterAddrStr := flag.String(ExporterAddr, "0.0.0.0", "Address for Exporter gRPC")
+	exporterPortStr := flag.String(ExporterPort, "8080", "Port for Exporter gRPC")
+
+	patchingNamespacesB := flag.Bool(PatchingNamespaces, false, "Enable patching 'istio-injection' to all namespaces")
+	restartingPatchedDeploymentsB := flag.Bool(RestartingPatchedDeployments, false, "Enable restarting the deployments in all patched namespaces")
+
+	aggregationPeriodInt := flag.Int(AggregationPeriod, 1, "Period for aggregating metrics")
+	cleanUpPeriodInt := flag.Int(CleanUpPeriod, 5, "Period for cleanning up outdated metrics")
+
+	configDebugB := flag.Bool(Debug, false, "Enable debugging mode")
 
 	var flags []string
 	flag.VisitAll(func(f *flag.Flag) {
@@ -89,20 +77,18 @@ func readCmdLineParams() {
 
 	flag.Parse()
 
-	viper.SetDefault(OtelGRPCListenAddr, *otelGRPCListenAddrStr)
-	viper.SetDefault(OtelGRPCListenPort, *otelGRPCListenPortStr)
-	viper.SetDefault(CustomExportListenAddr, *customExportListenAddrStr)
-	viper.SetDefault(CustomExportListenPort, *customExportListenPortStr)
-	viper.SetDefault(PatchNamespace, *patchNamespaceB)
-	viper.SetDefault(PatchRestartDeployments, *patchRestartDeploymentsB)
-	viper.SetDefault(AIEngineService, *aiEngineServiceStr)
-	viper.SetDefault(AIEngineServicePort, *aiEngineServicePortStr)
-	viper.SetDefault(AIEngineBatchSize, *aiEngineBatchSizeInt)
-	viper.SetDefault(MetricsDBFileName, *metricsDBFileNameStr)
-	viper.SetDefault(MetricsDBAggregationTime, *metricsDBAggregationTimeInt)
-	viper.SetDefault(MetricsDBClearTime, *metricsDBClearTimeInt)
-	viper.SetDefault(APIMetricsSendTime, *APIMetricsSendTimeInt)
-	viper.SetDefault(CollectorEnableOpenTelemetry, *collectorEnableOpenTelemetryB)
+	viper.SetDefault(CollectorAddr, *collectorAddrStr)
+	viper.SetDefault(CollectorPort, *collectorPortStr)
+
+	viper.SetDefault(ExporterAddr, *exporterAddrStr)
+	viper.SetDefault(ExporterPort, *exporterPortStr)
+
+	viper.SetDefault(PatchingNamespaces, *patchingNamespacesB)
+	viper.SetDefault(RestartingPatchedDeployments, *restartingPatchedDeploymentsB)
+
+	viper.SetDefault(AggregationPeriod, *aggregationPeriodInt)
+	viper.SetDefault(CleanUpPeriod, *cleanUpPeriodInt)
+
 	viper.SetDefault(Debug, *configDebugB)
 }
 
@@ -114,26 +100,21 @@ func LoadConfig() error {
 	// Read environment variable, those are upper-cased
 	viper.AutomaticEnv()
 
-	// todo: read configuration from config file
-	_ = os.Getenv("SENTRYFLOW_CFG")
+	GlobalConfig.CollectorAddr = viper.GetString(CollectorAddr)
+	GlobalConfig.CollectorPort = viper.GetString(CollectorPort)
 
-	GlobalCfg.OtelGRPCListenAddr = viper.GetString(OtelGRPCListenAddr)
-	GlobalCfg.OtelGRPCListenPort = viper.GetString(OtelGRPCListenPort)
-	GlobalCfg.CustomExportListenAddr = viper.GetString(CustomExportListenAddr)
-	GlobalCfg.CustomExportListenPort = viper.GetString(CustomExportListenPort)
-	GlobalCfg.PatchNamespace = viper.GetBool(PatchNamespace)
-	GlobalCfg.PatchRestartDeployments = viper.GetBool(PatchRestartDeployments)
-	GlobalCfg.AIEngineService = viper.GetString(AIEngineService)
-	GlobalCfg.AIEngineServicePort = viper.GetString(AIEngineServicePort)
-	GlobalCfg.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
-	GlobalCfg.MetricsDBFileName = viper.GetString(MetricsDBFileName)
-	GlobalCfg.MetricsDBAggregationTime = viper.GetInt(MetricsDBAggregationTime)
-	GlobalCfg.MetricsDBClearTime = viper.GetInt(MetricsDBClearTime)
-	GlobalCfg.APIMetricsSendTime = viper.GetInt(APIMetricsSendTime)
-	GlobalCfg.CollectorEnableOpenTelemetry = viper.GetBool(CollectorEnableOpenTelemetry)
-	GlobalCfg.Debug = viper.GetBool(Debug)
+	GlobalConfig.ExporterAddr = viper.GetString(ExporterAddr)
+	GlobalConfig.ExporterPort = viper.GetString(ExporterPort)
 
-	log.Printf("Configuration [%+v]", GlobalCfg)
+	GlobalConfig.PatchingNamespaces = viper.GetBool(PatchingNamespaces)
+	GlobalConfig.RestartingPatchedDeployments = viper.GetBool(RestartingPatchedDeployments)
+
+	GlobalConfig.AggregationPeriod = viper.GetInt(AggregationPeriod)
+	GlobalConfig.CleanUpPeriod = viper.GetInt(CleanUpPeriod)
+
+	GlobalConfig.Debug = viper.GetBool(Debug)
+
+	log.Printf("Configuration [%+v]", GlobalConfig)
 
 	return nil
 }

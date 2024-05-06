@@ -3,25 +3,13 @@
 package main
 
 import (
-	"github.com/5GSEC/SentryFlow/collector"
-	"github.com/5GSEC/SentryFlow/core"
-	_ "google.golang.org/grpc/encoding/gzip" // If not set, encoding problem occurs https://stackoverflow.com/questions/74062727
-	"log"
+	"github.com/5gsec/SentryFlow/core"
 )
 
-// main is the entrypoint of this program
+// ========== //
+// == Main == //
+// ========== //
+
 func main() {
-	go func() {
-		core.SentryFlow()
-	}()
-
-	err := collector.Ch.InitGRPCServer()
-	if err != nil {
-		log.Fatalf("[Error] Unable to start collector gRPC Server: %v", err)
-	}
-
-	err = collector.Ch.Serve()
-	if err != nil {
-		log.Fatalf("[Error] Unable to serve gRPC Server: %v", err)
-	}
+	core.SentryFlow()
 }
