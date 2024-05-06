@@ -35,7 +35,7 @@ message APILog {
   int32 responseCode = 54;
 }
 
-message APIMetric {
+message APIMetrics {
   map<string, uint64> perAPICounts = 1;
   // @todo: add some more metrics here
 }
@@ -44,7 +44,7 @@ message MetricValue {
   map<string, string> value = 1;
 }
 
-message EnvoyMetric {
+message EnvoyMetrics {
   string timeStamp = 1;
   
   string namespace = 11;
@@ -57,7 +57,7 @@ message EnvoyMetric {
 
 service SentryFlow {
   rpc GetAPILog(ClientInfo) returns (stream APILog);
-  rpc GetAPIMetrics(ClientInfo) returns (stream APIMetric);
-  rpc GetEnvoyMetrics(ClientInfo) returns (stream EnvoyMetric);
+  rpc GetAPIMetrics(ClientInfo) returns (stream APIMetrics);
+  rpc GetEnvoyMetrics(ClientInfo) returns (stream EnvoyMetrics);
 }
 

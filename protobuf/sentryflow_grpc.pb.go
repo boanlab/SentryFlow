@@ -89,7 +89,7 @@ func (c *sentryFlowClient) GetAPIMetrics(ctx context.Context, in *ClientInfo, op
 }
 
 type SentryFlow_GetAPIMetricsClient interface {
-	Recv() (*APIMetric, error)
+	Recv() (*APIMetrics, error)
 	grpc.ClientStream
 }
 
@@ -97,8 +97,8 @@ type sentryFlowGetAPIMetricsClient struct {
 	grpc.ClientStream
 }
 
-func (x *sentryFlowGetAPIMetricsClient) Recv() (*APIMetric, error) {
-	m := new(APIMetric)
+func (x *sentryFlowGetAPIMetricsClient) Recv() (*APIMetrics, error) {
+	m := new(APIMetrics)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (c *sentryFlowClient) GetEnvoyMetrics(ctx context.Context, in *ClientInfo, 
 }
 
 type SentryFlow_GetEnvoyMetricsClient interface {
-	Recv() (*EnvoyMetric, error)
+	Recv() (*EnvoyMetrics, error)
 	grpc.ClientStream
 }
 
@@ -129,8 +129,8 @@ type sentryFlowGetEnvoyMetricsClient struct {
 	grpc.ClientStream
 }
 
-func (x *sentryFlowGetEnvoyMetricsClient) Recv() (*EnvoyMetric, error) {
-	m := new(EnvoyMetric)
+func (x *sentryFlowGetEnvoyMetricsClient) Recv() (*EnvoyMetrics, error) {
+	m := new(EnvoyMetrics)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func _SentryFlow_GetAPIMetrics_Handler(srv interface{}, stream grpc.ServerStream
 }
 
 type SentryFlow_GetAPIMetricsServer interface {
-	Send(*APIMetric) error
+	Send(*APIMetrics) error
 	grpc.ServerStream
 }
 
@@ -209,7 +209,7 @@ type sentryFlowGetAPIMetricsServer struct {
 	grpc.ServerStream
 }
 
-func (x *sentryFlowGetAPIMetricsServer) Send(m *APIMetric) error {
+func (x *sentryFlowGetAPIMetricsServer) Send(m *APIMetrics) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -222,7 +222,7 @@ func _SentryFlow_GetEnvoyMetrics_Handler(srv interface{}, stream grpc.ServerStre
 }
 
 type SentryFlow_GetEnvoyMetricsServer interface {
-	Send(*EnvoyMetric) error
+	Send(*EnvoyMetrics) error
 	grpc.ServerStream
 }
 
@@ -230,7 +230,7 @@ type sentryFlowGetEnvoyMetricsServer struct {
 	grpc.ServerStream
 }
 
-func (x *sentryFlowGetEnvoyMetricsServer) Send(m *EnvoyMetric) error {
+func (x *sentryFlowGetEnvoyMetricsServer) Send(m *EnvoyMetrics) error {
 	return x.ServerStream.SendMsg(m)
 }
 
