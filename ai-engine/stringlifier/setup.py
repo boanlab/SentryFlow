@@ -14,12 +14,13 @@ setuptools.setup(
     name="stringlifier",
     version="0.2",
     author="Multiple authors",
+    author_email="tiberiu44@gmail.com",
     description="Python module for detecting password, api keys hashes and any other string that resembles a "
                 "randomly generated character sequence. Originated from https://github.com/adobe/stringlifier, "
                 "this package updated dependencies for up to date python versions",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/adobe/stringlifier",
+    url="https://github.com/isu-kim/stringlifier",
     packages=setuptools.find_packages(),
     install_requires=parse_requirements('requirements.txt', session=False),
     classifiers=(

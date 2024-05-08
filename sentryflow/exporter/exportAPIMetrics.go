@@ -16,18 +16,13 @@ import (
 
 // Stats Structure
 type Stats struct {
-	Count      int
-	LastUpdate uint64
-}
-
-// StatsPerNamespace structure
-type StatsPerNamespace struct {
-	APIs map[string]Stats
+	Count int
 }
 
 // StatsPerLabel structure
 type StatsPerLabel struct {
-	APIs map[string]Stats
+	APIs        map[string]Stats
+	LastUpdated uint64
 }
 
 // == //
@@ -61,25 +56,12 @@ func (exs *ExpService) GetAPIMetrics(info *protobuf.ClientInfo, stream protobuf.
 
 // SendAPIMetrics Function
 func (exp *ExpHandler) SendAPIMetrics(apiMetrics *protobuf.APIMetrics) error {
-	var err error
-
 	failed := 0
 	total := len(exp.apiMetricsExporters)
 
 	for _, exporter := range exp.apiMetricsExporters {
-		currRetry := 0
-		maxRetry := 3
-
-		for currRetry < maxRetry {
-			if err = exporter.apiMetricsStream.Send(apiMetrics); err != nil {
-				log.Printf("[Exporter] Unable to send API Metrics to %s(%s) retry=%d/%d: %v", exporter.Hostname, exporter.IPAddress, currRetry, maxRetry, err)
-				currRetry++
-			} else {
-				break
-			}
-		}
-
-		if err != nil {
+		if err := exporter.apiMetricsStream.Send(apiMetrics); err != nil {
+			log.Printf("[Exporter] Unable to send API Metrics to %s(%s): %v", exporter.Hostname, exporter.IPAddress, err)
 			failed++
 		}
 	}
@@ -97,71 +79,36 @@ func (exp *ExpHandler) SendAPIMetrics(apiMetrics *protobuf.APIMetrics) error {
 // UpdateStats Function
 func UpdateStats(namespace string, label string, api string) {
 	// == //
-
-	ExpH.statsPerNamespaceLock.Lock()
-
-	// Check if namespace exists
-	if _, ok := ExpH.statsPerNamespace[namespace]; !ok {
-		ExpH.statsPerNamespace[namespace] = StatsPerNamespace{
-			APIs: make(map[string]Stats),
-		}
-	}
-
-	statsPerNamespace := ExpH.statsPerNamespace[namespace]
-
-	// Check if API exists
-	if _, ok := statsPerNamespace.APIs[api]; !ok {
-		init := Stats{
-			Count:      1,
-			LastUpdate: uint64(time.Now().Unix()),
-		}
-		statsPerNamespace.APIs[api] = init
-	} else {
-		stats := statsPerNamespace.APIs[api]
-
-		stats.Count++
-		stats.LastUpdate = uint64(time.Now().Unix())
-
-		statsPerNamespace.APIs[api] = stats
-	}
-
-	ExpH.statsPerNamespace[namespace] = statsPerNamespace
-
-	ExpH.statsPerNamespaceLock.Unlock()
-
-	// == //
-
-	ExpH.statsPerLabelLock.Lock()
+	ExpH.statsPerLabelLock.RLock()
 
 	// Check if namespace+label exists
 	if _, ok := ExpH.statsPerLabel[namespace+label]; !ok {
 		ExpH.statsPerLabel[namespace+label] = StatsPerLabel{
-			APIs: make(map[string]Stats),
+			APIs:        make(map[string]Stats),
+			LastUpdated: uint64(time.Now().Unix()),
 		}
 	}
 
 	statsPerLabel := ExpH.statsPerLabel[namespace+label]
+	statsPerLabel.LastUpdated = uint64(time.Now().Unix())
 
 	// Check if API exists
 	if _, ok := statsPerLabel.APIs[api]; !ok {
 		init := Stats{
-			Count:      1,
-			LastUpdate: uint64(time.Now().Unix()),
+			Count: 1,
 		}
 		statsPerLabel.APIs[api] = init
 	} else {
 		stats := statsPerLabel.APIs[api]
 
 		stats.Count++
-		stats.LastUpdate = uint64(time.Now().Unix())
 
 		statsPerLabel.APIs[api] = stats
 	}
 
 	ExpH.statsPerLabel[namespace+label] = statsPerLabel
 
-	ExpH.statsPerLabelLock.Unlock()
-
+	ExpH.statsPerLabelLock.RUnlock()
 	// == //
 }
 
@@ -172,7 +119,22 @@ func AggregateAPIMetrics() {
 
 	for {
 		select {
-		//
+		case <-ticker.C:
+			ExpH.statsPerLabelLock.RLock()
+
+			APIMetrics := make(map[string]uint64)
+
+			for _, statsPerLabel := range ExpH.statsPerLabel {
+				for api, stats := range statsPerLabel.APIs {
+					APIMetrics[api] = uint64(stats.Count)
+				}
+			}
+
+			ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
+
+			ExpH.statsPerLabelLock.RUnlock()
+		case <-ExpH.stopChan:
+			return
 		}
 	}
 }
@@ -184,7 +146,25 @@ func CleanUpOutdatedStats() {
 
 	for {
 		select {
-		//
+		case <-ticker.C:
+			ExpH.statsPerLabelLock.Lock()
+
+			cleanUpTime := uint64((time.Now().Add(-time.Duration(config.GlobalConfig.CleanUpPeriod) * time.Second)).Unix())
+			labelToDelete := []string{}
+
+			for label, statsPerLabel := range ExpH.statsPerLabel {
+				if statsPerLabel.LastUpdated < cleanUpTime {
+					labelToDelete = append(labelToDelete, label)
+				}
+			}
+
+			for _, label := range labelToDelete {
+				delete(ExpH.statsPerLabel, label)
+			}
+
+			ExpH.statsPerLabelLock.Unlock()
+		case <-ExpH.stopChan:
+			return
 		}
 	}
 }

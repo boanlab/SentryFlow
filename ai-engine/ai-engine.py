@@ -59,7 +59,7 @@ class GRPCServer:
         pass
 
 
-class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServicer, GRPCServer):
+class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServicer, GRPCServer):
     """
     Class for API Classification Server using Stringlifier
     """
@@ -69,7 +69,7 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.SentryFlowMetricsServi
         print("[Init] Successfully initialized APIClassificationServer")
 
     def register(self, server):
-        sentryflow_metrics_pb2_grpc.add_SentryFlowMetricsServicer_to_server(self, server)
+        sentryflow_metrics_pb2_grpc.add_APIClassificationServicer_to_server(self, server)
 
     def GetAPIClassification(self, request_iterator, context):
         """

@@ -14,18 +14,19 @@ WORKDIR /protobuf
 COPY /protobuf .
 
 WORKDIR /client
-COPY /clients/log-client .
+COPY /clients/relay-client .
 
-RUN go build -o log-client
+RUN go build -o relay-client
 
 ### Make executable image
 
-FROM alpine:3.17 as client
+FROM alpine:3.18 as client
 
-# RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee -a /etc/apk/repositories
-# RUN apk --no-cache update
-# RUN apk add bash
+RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" | tee -a /etc/apk/repositories
 
-COPY --from=builder /client/log-client /
+RUN apk --no-cache update
+RUN apk add bash
 
-CMD ["/log-client"]
+COPY --from=builder /client/relay-client /
+
+CMD ["/relay-client"]

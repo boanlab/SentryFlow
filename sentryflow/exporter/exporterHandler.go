@@ -41,9 +41,6 @@ type ExpHandler struct {
 	exporterAPIMetrics chan *protobuf.APIMetrics
 	exporterMetrics    chan *protobuf.EnvoyMetrics
 
-	statsPerNamespace     map[string]StatsPerNamespace
-	statsPerNamespaceLock sync.RWMutex
-
 	statsPerLabel     map[string]StatsPerLabel
 	statsPerLabelLock sync.RWMutex
 
@@ -72,8 +69,8 @@ func NewExporterHandler() *ExpHandler {
 		exporterAPIMetrics: make(chan *protobuf.APIMetrics),
 		exporterMetrics:    make(chan *protobuf.EnvoyMetrics),
 
-		statsPerNamespace: make(map[string]StatsPerNamespace),
 		statsPerLabel:     make(map[string]StatsPerLabel),
+		statsPerLabelLock: sync.RWMutex{},
 
 		stopChan: make(chan struct{}),
 	}
@@ -125,6 +122,10 @@ func StartExporter(wg *sync.WaitGroup) bool {
 	go ExpH.exportEnvoyMetrics(wg)
 
 	log.Printf("[Exporter] Exporting Envoy Metrics through gRPC")
+
+	// Start Export Time Ticker Routine
+	go AggregateAPIMetrics()
+	go CleanUpOutdatedStats()
 
 	return true
 }

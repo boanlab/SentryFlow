@@ -55,9 +55,18 @@ message EnvoyMetrics {
   map<string, MetricValue> metrics = 21;
 }
 
+message RequestMessage {
+  string Filter = 1;
+}
+
+message ReplyMessage {
+  int32 Retval = 1;
+}
+
 service SentryFlow {
   rpc GetAPILog(ClientInfo) returns (stream APILog);
   rpc GetAPIMetrics(ClientInfo) returns (stream APIMetrics);
   rpc GetEnvoyMetrics(ClientInfo) returns (stream EnvoyMetrics);
+  rpc GetRelayLog(stream APILog) returns (ReplyMessage);
 }
 

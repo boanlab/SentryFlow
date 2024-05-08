@@ -22,6 +22,10 @@ type SentryFlowConfig struct {
 	PatchingNamespaces           bool // Enable/Disable patching namespaces with 'istio-injection'
 	RestartingPatchedDeployments bool // Enable/Disable restarting deployments after patching
 
+	AIEngineService     string
+	AIEngineServicePort string
+	AIEngineBatchSize   int
+
 	AggregationPeriod int // Period for aggregating metrics
 	CleanUpPeriod     int // Period for cleaning up outdated metrics
 
@@ -47,6 +51,10 @@ const (
 	PatchingNamespaces           string = "patchingNamespaces"
 	RestartingPatchedDeployments string = "restartingPatchedDeployments"
 
+	AIEngineService     string = "aiEngineService"
+	AIEngineServicePort string = "aiEngineServicePort"
+	AIEngineBatchSize   string = "aiEngineBatchSize"
+
 	AggregationPeriod string = "aggregationPeriod"
 	CleanUpPeriod     string = "cleanUpPeriod"
 
@@ -62,6 +70,10 @@ func readCmdLineParams() {
 
 	patchingNamespacesB := flag.Bool(PatchingNamespaces, false, "Enable patching 'istio-injection' to all namespaces")
 	restartingPatchedDeploymentsB := flag.Bool(RestartingPatchedDeployments, false, "Enable restarting the deployments in all patched namespaces")
+
+	aiEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
+	aiEngineServicePortStr := flag.String(AIEngineServicePort, "5000", "Service Port for SentryFlow AI Engine")
+	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size for SentryFlow AI Engine")
 
 	aggregationPeriodInt := flag.Int(AggregationPeriod, 1, "Period for aggregating metrics")
 	cleanUpPeriodInt := flag.Int(CleanUpPeriod, 5, "Period for cleanning up outdated metrics")
@@ -86,6 +98,10 @@ func readCmdLineParams() {
 	viper.SetDefault(PatchingNamespaces, *patchingNamespacesB)
 	viper.SetDefault(RestartingPatchedDeployments, *restartingPatchedDeploymentsB)
 
+	viper.SetDefault(AIEngineService, *aiEngineServiceStr)
+	viper.SetDefault(AIEngineServicePort, *aiEngineServicePortStr)
+	viper.SetDefault(AIEngineBatchSize, *aiEngineBatchSizeInt)
+
 	viper.SetDefault(AggregationPeriod, *aggregationPeriodInt)
 	viper.SetDefault(CleanUpPeriod, *cleanUpPeriodInt)
 
@@ -108,6 +124,10 @@ func LoadConfig() error {
 
 	GlobalConfig.PatchingNamespaces = viper.GetBool(PatchingNamespaces)
 	GlobalConfig.RestartingPatchedDeployments = viper.GetBool(RestartingPatchedDeployments)
+
+	GlobalConfig.AIEngineService = viper.GetString(AIEngineService)
+	GlobalConfig.AIEngineServicePort = viper.GetString(AIEngineServicePort)
+	GlobalConfig.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
 
 	GlobalConfig.AggregationPeriod = viper.GetInt(AggregationPeriod)
 	GlobalConfig.CleanUpPeriod = viper.GetInt(CleanUpPeriod)

@@ -19,7 +19,7 @@ spec:
         ports:
         - containerPort: 5000
           protocol: TCP
-          name: sentryflow-ai-engine
+          name: ai-engine
 ---
 apiVersion: v1
 kind: Service
