@@ -54,4 +54,4 @@ jobs:
       - name: 'Run PEP8'
         uses: quentinguidee/pep8-action@v1
         with:
-          arguments: '--max-line-length=120' --ignore=ai-engine/stringlifier/*'
+          arguments: '--max-line-length=120 --ignore=ai-engine/stringlifier/*'
