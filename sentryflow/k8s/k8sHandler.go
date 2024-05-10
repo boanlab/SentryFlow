@@ -260,92 +260,23 @@ func RunInformers(stopChan chan struct{}, wg *sync.WaitGroup) {
 func (k8s *KubernetesHandler) getConfigMap(namespace, name string) (string, error) {
 	cm, err := k8s.clientSet.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, v1.GetOptions{})
 	if err != nil {
-		log.Fatalf("[PatchIstioConfigMap] Unable to retrieve ConfigMap istio-system/istio :%v", err)
-		return false
+		log.Printf("Error getting ConfigMap: %v\n", err)
+		return "", err
 	}
 
-	// Unmarshal the YAML string into meshConfig
-	if err = yaml.Unmarshal([]byte(configMap.Data["mesh"]), &meshConfig); err != nil {
-		log.Fatalf("[PatchIstioConfigMap] Unable to unmarshall ConfigMap istio-system/istio :%v", err)
-		return false
+	// convert data to string
+	data, err := json.Marshal(cm.Data)
+	if err != nil {
+		log.Printf("Error marshaling ConfigMap data: %v\n", err)
+		return "", err
 	}
 
-	if _, evyAccLogExist := meshConfig["enableEnvoyAccessLogService"]; evyAccLogExist {
-		log.Printf("[PatchIstioConfigMap] Overwrite the contents of \"enableEnvoyAccessLogService\"")
-	}
-	meshConfig["enableEnvoyAccessLogService"] = true
+	return string(data), nil
+}
 
-	if _, evyAccLogExist := meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyAccessLogService"]; evyAccLogExist {
-		log.Printf("[PatchIstioConfigMap] Overwrite the contents of \"defaultConfig.envoyAccessLogService\"")
-	}
-	meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyAccessLogService"] = map[string]string{
-		"address": "sentryflow.sentryflow.svc.cluster.local:4317",
-	}
-
-	if _, evyMetricsExist := meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyMetricsService"]; evyMetricsExist {
-		log.Printf("[PatchIstioConfigMap] Overwrite the contents of \"defaultConfig.envoyMetricsService\"")
-	}
-	meshConfig["defaultConfig"].(map[interface{}]interface{})["envoyMetricsService"] = map[string]string{
-		"address": "sentryflow.sentryflow.svc.cluster.local:4317",
-	}
-
-	// Update defaultProviders.accessLogs
-	if defProviders, exists := meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"]; exists {
-		newDefProviders := defProviders.([]interface{})
-
-		exists = false
-		for _, entry := range newDefProviders {
-			if entry == "sentryflow" { // If "sentryflow" already exists
-				log.Printf("[PatchIstioConfigMap] istio-system/istio ConfigMap has SentryFlow under defaultProviders.accessLogs, ignoring...")
-				exists = true
-				break
-			}
-		}
-
-		if !exists { // If "sentryflow" does not exist
-			newDefProviders = append(newDefProviders, "sentryflow")
-			meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = newDefProviders
-		}
-	} else { // If it does not exist
-		meshConfig["defaultProviders"].(map[interface{}]interface{})["accessLogs"] = []string{"sentryflow"}
-	}
-
-	// ExtensionProvider for our service
-	extensionProvider := map[interface{}]interface{}{
-		"name": "sentryflow",
-		"envoyOtelAls": map[interface{}]interface{}{
-			"service": "sentryflow.sentryflow.svc.cluster.local",
-			"port":    config.GlobalConfig.CollectorPort,
-		},
-	}
-
-	// Update extensionProviders
-	if extensionProviders, exists := meshConfig["extensionProviders"]; exists {
-		newExtensionProviders, ok := extensionProviders.([]interface{})
-		if !ok {
-			log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
-		}
-
-		exists = false
-		for _, entry := range newExtensionProviders {
-			if entryMap, ok := entry.(map[interface{}]interface{}); !ok {
-				log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
-			} else if entryMap["name"] == "sentryflow" { // If "sentryflow" already exists
-				log.Printf("[PatchIstioConfigMap] istio-system/istio ConfigMap has sentryflow under extensionProviders, ignoring... ")
-				exists = true
-				break
-			}
-		}
-
-		if !exists {
-			meshConfig["extensionProviders"] = append(extensionProviders.([]map[interface{}]interface{}), extensionProvider)
-		}
-	} else { // If it does not exist
-		meshConfig["extensionProviders"] = []map[interface{}]interface{}{extensionProvider}
-	}
-
-	// Update the ConfigMap data with the modified meshConfig
-	updatedMeshConfig, err := yaml.Marshal(meshConfig)
+// updateConfigMap Function
+func (k8s *KubernetesHandler) updateConfigMap(namespace, name, data string) error {
+	cm, err := k8s.clientSet.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, v1.GetOptions{})
 	if err != nil {
 		log.Printf("Error getting ConfigMap: %v\n", err)
 		return err
@@ -371,7 +302,9 @@ func PatchNamespaces() bool {
 		return false
 	}
 
-	for _, namespace := range namespaces.Items {
+	for _, ns := range namespaces.Items {
+		namespace := ns.DeepCopy()
+
 		// Skip the following namespaces
 		if namespace.Name == "sentryflow" {
 			continue
@@ -380,7 +313,7 @@ func PatchNamespaces() bool {
 		namespace.Labels["istio-injection"] = "enabled"
 
 		// Patch the namespace
-		if _, err := K8sH.clientSet.CoreV1().Namespaces().Update(context.TODO(), &namespace, v1.UpdateOptions{FieldManager: "patcher"}); err != nil {
+		if _, err := K8sH.clientSet.CoreV1().Namespaces().Update(context.TODO(), namespace, v1.UpdateOptions{FieldManager: "patcher"}); err != nil {
 			log.Printf("[PatchNamespaces] Unable to update namespace %s: %v", namespace.Name, err)
 			return false
 		}
