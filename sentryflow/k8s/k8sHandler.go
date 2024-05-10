@@ -4,14 +4,14 @@ package k8s
 
 import (
 	"context"
+	"errors"
+	"k8s.io/apimachinery/pkg/util/json"
 	"log"
 	"sync"
 	"time"
 
-	"github.com/5gsec/SentryFlow/config"
 	"github.com/5gsec/SentryFlow/types"
 
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -256,15 +256,9 @@ func RunInformers(stopChan chan struct{}, wg *sync.WaitGroup) {
 	log.Printf("[RunInformers] Started all Kubernetes informers")
 }
 
-// == //
-
-// PatchIstioConfigMap Function that patches the Istio's configmap for meshConfig
-// This will make istio know that there is an exporter with envoyOtelAls
-func PatchIstioConfigMap() bool {
-	var meshConfig map[string]interface{}
-
-	// Get the ConfigMap istio-system/istio
-	configMap, err := K8sH.clientSet.CoreV1().ConfigMaps("istio-system").Get(context.Background(), "istio", v1.GetOptions{})
+// getConfigMap Function
+func (k8s *KubernetesHandler) getConfigMap(namespace, name string) (string, error) {
+	cm, err := k8s.clientSet.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, v1.GetOptions{})
 	if err != nil {
 		log.Fatalf("[PatchIstioConfigMap] Unable to retrieve ConfigMap istio-system/istio :%v", err)
 		return false
@@ -326,68 +320,48 @@ func PatchIstioConfigMap() bool {
 	}
 
 	// Update extensionProviders
-	// if extensionProviders, exists := meshConfig["extensionProviders"]; exists {
-	// 	newExtensionProviders, ok := extensionProviders.([]interface{})
-	// 	if !ok {
-	// 		log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
-	// 	}
+	if extensionProviders, exists := meshConfig["extensionProviders"]; exists {
+		newExtensionProviders, ok := extensionProviders.([]interface{})
+		if !ok {
+			log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
+		}
 
-	// 	exists = false
-	// 	for _, entry := range newExtensionProviders {
-	// 		if entryMap, ok := entry.(map[interface{}]interface{}); !ok {
-	// 			log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
-	// 		} else if entryMap["name"] == "sentryflow" { // If "sentryflow" already exists
-	// 			log.Printf("[PatchIstioConfigMap] istio-system/istio ConfigMap has sentryflow under extensionProviders, ignoring... ")
-	// 			exists = true
-	// 			break
-	// 		}
-	// 	}
+		exists = false
+		for _, entry := range newExtensionProviders {
+			if entryMap, ok := entry.(map[interface{}]interface{}); !ok {
+				log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
+			} else if entryMap["name"] == "sentryflow" { // If "sentryflow" already exists
+				log.Printf("[PatchIstioConfigMap] istio-system/istio ConfigMap has sentryflow under extensionProviders, ignoring... ")
+				exists = true
+				break
+			}
+		}
 
-	// 	if !exists {
-	// 		meshConfig["extensionProviders"] = append(extensionProviders.([]map[interface{}]interface{}), extensionProvider)
-	// 	}
-	// } else { // If it does not exist
-	meshConfig["extensionProviders"] = []map[interface{}]interface{}{extensionProvider}
-	// }
+		if !exists {
+			meshConfig["extensionProviders"] = append(extensionProviders.([]map[interface{}]interface{}), extensionProvider)
+		}
+	} else { // If it does not exist
+		meshConfig["extensionProviders"] = []map[interface{}]interface{}{extensionProvider}
+	}
 
 	// Update the ConfigMap data with the modified meshConfig
 	updatedMeshConfig, err := yaml.Marshal(meshConfig)
 	if err != nil {
-		log.Fatalf("[PatchIstioConfigMap] Unable to marshal updated meshConfig to YAML: %v", err)
-		return false
+		log.Printf("Error getting ConfigMap: %v\n", err)
+		return err
 	}
 
-	// Convert the []byte to string
-	configMap.Data["mesh"] = string(updatedMeshConfig)
-
-	// Preview changes, for debugging
-	if config.GlobalConfig.Debug {
-		log.Printf("[PatchIstioConfigMap] Patching istio-system/istio ConfigMap as: \n%v", configMap)
+	if _, ok := cm.Data["mesh"]; !ok {
+		return errors.New("unable to find field \"mesh\" from Istio config")
 	}
 
-	// Patch the ConfigMap
-	if updatedConfigMap, err := K8sH.clientSet.CoreV1().ConfigMaps("istio-system").Update(context.Background(), configMap, v1.UpdateOptions{}); err != nil {
-		log.Fatalf("[PatchIstioConfigMap] Unable to update configmap istio-system/istio :%v", err)
-	} else {
-		log.Printf("[PatchIstioConfigMap] Updated istio-system/istio ConfigMap")
-
-		if config.GlobalConfig.Debug {
-			log.Printf("%v", updatedConfigMap)
-		}
+	cm.Data["mesh"] = data
+	if _, err := k8s.clientSet.CoreV1().ConfigMaps(namespace).Update(context.Background(), cm, v1.UpdateOptions{}); err != nil {
+		return err
 	}
 
-	log.Printf("[PatchIstioConfigMap] Patched Istio ConfigMap")
-
-	return true
+	return nil
 }
-
-// UnpatchIstioConfigMap Function
-func UnpatchIstioConfigMap() bool {
-	// @todo: Remove SentryFlow collector from Kubernetes
-	return true
-}
-
-// == //
 
 // PatchNamespaces Function that patches namespaces for adding 'istio-injection'
 func PatchNamespaces() bool {
