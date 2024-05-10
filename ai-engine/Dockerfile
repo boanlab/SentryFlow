@@ -17,8 +17,6 @@ WORKDIR /ai-engine/stringlifier
 RUN pip3 install .
 
 WORKDIR /ai-engine
-RUN python3 -m grpc_tools.protoc --python_out=. --pyi_out=. --grpc_python_out=. -I=. protobuf/sentryflow_metrics.proto
-
 RUN pip install -r requirements.txt
 
 CMD ["python3", "ai-engine.py"]
