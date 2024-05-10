@@ -15,12 +15,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-// AIH Local reference for AI handler server
+// AH Local reference for AI Handler
 var AH *AIHandler
 
 // AIHandler Structure
 type AIHandler struct {
-	error    chan error
 	stopChan chan struct{}
 
 	aggregatedLogs chan []*protobuf.APILog
@@ -36,7 +35,6 @@ type streamInform struct {
 
 // init Function
 func init() {
-	// Construct address and start listening
 	AH = NewAIHandler()
 }
 
@@ -48,10 +46,11 @@ func NewAIHandler() *AIHandler {
 		aggregatedLogs: make(chan []*protobuf.APILog),
 		APIs:           make(chan []string),
 	}
+
 	return ah
 }
 
-// initHandler Function
+// StartAPIClassifier Function
 func StartAPIClassifier(wg *sync.WaitGroup) bool {
 	AIEngineService := fmt.Sprintf("%s:%s", config.GlobalConfig.AIEngineService, config.GlobalConfig.AIEngineServicePort)
 
@@ -83,7 +82,7 @@ func StartAPIClassifier(wg *sync.WaitGroup) bool {
 	return true
 }
 
-// InsertAPILog function
+// InsertAPILogsAI function
 func InsertAPILogsAI(APIs []string) {
 	AH.APIs <- APIs
 }

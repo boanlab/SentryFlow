@@ -25,7 +25,6 @@ func init() {
 type ColHandler struct {
 	colService net.Listener
 	grpcServer *grpc.Server
-
 	collectors []collectorInterface
 }
 
@@ -34,7 +33,6 @@ func NewCollectorHandler() *ColHandler {
 	ch := &ColHandler{
 		collectors: make([]collectorInterface, 0),
 	}
-
 	return ch
 }
 

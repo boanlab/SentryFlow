@@ -10,7 +10,7 @@ import (
 
 // == //
 
-// APIA Local reference for API analyzer
+// APIA Local reference for API Analyzer
 var APIA *Analyzer
 
 // init function
@@ -20,20 +20,20 @@ func init() {
 
 // Analyzer Structure
 type Analyzer struct {
+	stopChan chan struct{}
+
 	apiLog  chan string
 	apiLogs []string
 
-	analyzerLock sync.Mutex
-
-	stopChan chan struct{}
+	apiLogsLock sync.Mutex
 }
 
 // NewAPIAnalyzer Function
 func NewAPIAnalyzer() *Analyzer {
 	ret := &Analyzer{
-		apiLog:       make(chan string),
-		apiLogs:      []string{},
-		analyzerLock: sync.Mutex{},
+		apiLog:      make(chan string),
+		apiLogs:     []string{},
+		apiLogsLock: sync.Mutex{},
 	}
 	return ret
 }
@@ -71,23 +71,21 @@ func analyzeAPIs(wg *sync.WaitGroup) {
 				continue
 			}
 
-			APIA.analyzerLock.Lock()
+			APIA.apiLogsLock.Lock()
 
 			APIA.apiLogs = append(APIA.apiLogs, api)
-		
+
 			if len(APIA.apiLogs) > config.GlobalConfig.AIEngineBatchSize {
 				InsertAPILogsAI(APIA.apiLogs)
 				APIA.apiLogs = []string{}
 			}
 
-			APIA.analyzerLock.Unlock()
+			APIA.apiLogsLock.Unlock()
 		case <-APIA.stopChan:
 			wg.Done()
 			return
 		}
 	}
 }
-
-// == //
 
 // == //

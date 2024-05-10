@@ -44,7 +44,7 @@ func generateAPILogsFromOtel(logText string) []*protobuf.APILog {
 	logText = strings.ReplaceAll(logText, `\"`, "")
 	logText = strings.ReplaceAll(logText, `}`, "")
 
-	// Split logs by log_records, this is single access log instance
+	// Split logs by log_records, this is a single access log instance
 	parts := strings.Split(logText, "log_records")
 	if len(parts) == 0 {
 		return nil

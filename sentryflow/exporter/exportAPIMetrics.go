@@ -78,8 +78,8 @@ func (exp *ExpHandler) SendAPIMetrics(apiMetrics *protobuf.APIMetrics) error {
 
 // UpdateStats Function
 func UpdateStats(namespace string, label string, api string) {
-	// == //
 	ExpH.statsPerLabelLock.RLock()
+	defer ExpH.statsPerLabelLock.RUnlock()
 
 	// Check if namespace+label exists
 	if _, ok := ExpH.statsPerLabel[namespace+label]; !ok {
@@ -100,16 +100,11 @@ func UpdateStats(namespace string, label string, api string) {
 		statsPerLabel.APIs[api] = init
 	} else {
 		stats := statsPerLabel.APIs[api]
-
 		stats.Count++
-
 		statsPerLabel.APIs[api] = stats
 	}
 
 	ExpH.statsPerLabel[namespace+label] = statsPerLabel
-
-	ExpH.statsPerLabelLock.RUnlock()
-	// == //
 }
 
 // AggregateAPIMetrics Function
@@ -132,7 +127,6 @@ func AggregateAPIMetrics() {
 
 			if len(APIMetrics) > 0 {
 				err := ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
-
 				if err != nil {
 					log.Printf("[Envoy] Something went on wrong when Send API Metrics: %v", err)
 					return

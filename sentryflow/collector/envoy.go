@@ -116,7 +116,7 @@ func (evyAccLogs *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAccLogs.Ac
 		if err == io.EOF {
 			return nil
 		} else if err != nil {
-			log.Printf("[EnvoyAPILogs] Something went on wrong when receiving event: %v", err)
+			log.Printf("[EnvoyAPILogs] Something went on wrong when receiving an event: %v", err)
 			return err
 		}
 

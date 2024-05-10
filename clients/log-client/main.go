@@ -28,9 +28,9 @@ func main() {
 	}
 
 	// Get arguments
-	logCfgPtr := flag.String("logCfg", "stdout", "Output location for logs, {stdout|file|none}")
-	metricCfgPtr := flag.String("metricCfg", "stdout", "Output location for envoy metrics and api metrics, {stdout|file|none}")
-	metricFilterPtr := flag.String("metricFilter", "envoy", "Filter for what kinds of envoy and api metric to receive, {api|policy|envoy}")
+	logCfgPtr := flag.String("logCfg", "stdout", "Output location for API logs, {stdout|file|none}")
+	metricCfgPtr := flag.String("metricCfg", "stdout", "Output location for API and Envoy metrics, {stdout|file|none}")
+	metricFilterPtr := flag.String("metricFilter", "envoy", "Filter to select specific API or Envoy metrics to receive, {api|envoy}")
 	flag.Parse()
 
 	if *logCfgPtr == "none" && *metricCfgPtr == "none" {
@@ -67,7 +67,7 @@ func main() {
 	defer conn.Close()
 
 	// Connected to the gRPC server
-	log.Printf("[gRPC] Started to collect Access Logs from %s", addr)
+	log.Printf("[gRPC] Started to collect Logs from %s", addr)
 
 	// Define clientInfo
 	clientInfo := &protobuf.ClientInfo{
@@ -81,18 +81,18 @@ func main() {
 	logClient := client.NewClient(sfClient, clientInfo, *logCfgPtr, *metricCfgPtr, *metricFilterPtr)
 
 	if *logCfgPtr != "none" {
-		go logClient.LogRoutine(*logCfgPtr)
+		go logClient.APILogRoutine(*logCfgPtr)
 		fmt.Printf("[APILog] Started to watch API logs\n")
 	}
 
 	if *metricCfgPtr != "none" {
 		if *metricFilterPtr == "all" || *metricFilterPtr == "api" {
-			go logClient.APIMetricRoutine(*metricCfgPtr)
+			go logClient.APIMetricsRoutine(*metricCfgPtr)
 			fmt.Printf("[Metric] Started to watch API Metrics\n")
 		}
 
 		if *metricFilterPtr == "all" || *metricFilterPtr == "envoy" {
-			go logClient.EnvoyMetricRoutine(*metricCfgPtr)
+			go logClient.EnvoyMetricsRoutine(*metricCfgPtr)
 			fmt.Printf("[Metric] Started to watch Envoy Metrics\n")
 		}
 	}

@@ -14,21 +14,22 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// MongoDBHandler Structure
-type MongoDBHandler struct {
+// DBHandler Structure
+type DBHandler struct {
 	client *mongo.Client
 	cancel context.CancelFunc
 
-	database   *mongo.Database
-	apiLogCol  *mongo.Collection
-	metricsCol *mongo.Collection
+	database      *mongo.Database
+	apiLogCol     *mongo.Collection
+	apiMetricsCol *mongo.Collection
+	evyMetricsCol *mongo.Collection
 }
 
-// dbHandler structure
-var dbHandler MongoDBHandler
+// dbHandler for Global Reference
+var dbHandler DBHandler
 
-// New creates a new mongoDB handler
-func NewMongoDBHandler(mongoDBAddr string) (*MongoDBHandler, error) {
+// NewMongoDBHandler Function
+func NewMongoDBHandler(mongoDBAddr string) (*DBHandler, error) {
 	var err error
 
 	// Create a MongoDB client
@@ -54,21 +55,22 @@ func NewMongoDBHandler(mongoDBAddr string) (*MongoDBHandler, error) {
 
 	// Create APILogs and Metrics collections
 	dbHandler.apiLogCol = dbHandler.database.Collection("APILogs")
-	dbHandler.metricsCol = dbHandler.database.Collection("Metrics")
+	dbHandler.apiMetricsCol = dbHandler.database.Collection("APIMetrics")
+	dbHandler.evyMetricsCol = dbHandler.database.Collection("EnvoyMetrics")
 
 	return &dbHandler, nil
 }
 
-// Disconnect function
-func (handler *MongoDBHandler) Disconnect() {
+// Disconnect Function
+func (handler *DBHandler) Disconnect() {
 	err := handler.client.Disconnect(context.Background())
 	if err != nil {
 		log.Printf("[MongoDB] Unable to properly disconnect: %v", err)
 	}
 }
 
-// InsertAl function
-func (handler *MongoDBHandler) InsertAPILog(data *protobuf.APILog) error {
+// InsertAPILog Function
+func (handler *DBHandler) InsertAPILog(data *protobuf.APILog) error {
 	_, err := handler.apiLogCol.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
@@ -77,9 +79,9 @@ func (handler *MongoDBHandler) InsertAPILog(data *protobuf.APILog) error {
 	return nil
 }
 
-// InsertMetrics function
-func (handler *MongoDBHandler) InsertAPIMetrics(data *protobuf.APIMetrics) error {
-	_, err := handler.metricsCol.InsertOne(context.Background(), data)
+// InsertAPIMetrics Function
+func (handler *DBHandler) InsertAPIMetrics(data *protobuf.APIMetrics) error {
+	_, err := handler.apiMetricsCol.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
 	}
@@ -87,9 +89,9 @@ func (handler *MongoDBHandler) InsertAPIMetrics(data *protobuf.APIMetrics) error
 	return nil
 }
 
-// InsertMetrics function
-func (handler *MongoDBHandler) InsertEnvoyMetrics(data *protobuf.EnvoyMetrics) error {
-	_, err := handler.metricsCol.InsertOne(context.Background(), data)
+// InsertEnvoyMetrics Function
+func (handler *DBHandler) InsertEnvoyMetrics(data *protobuf.EnvoyMetrics) error {
+	_, err := handler.evyMetricsCol.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
 	}

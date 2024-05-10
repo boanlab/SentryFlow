@@ -83,7 +83,7 @@ func InsertAPILog(data interface{}) {
 	LogH.apiLogChan <- data
 }
 
-// ProcessLogs Function
+// ProcessAPILogs Function
 func ProcessAPILogs(wg *sync.WaitGroup) {
 	wg.Add(1)
 

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
-# Dockerfile
 FROM ubuntu:22.04
 
 RUN apt-get update

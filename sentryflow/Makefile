@@ -5,7 +5,7 @@ IMAGE_NAME = 5gsec/$(PROG_NAME)
 TAG = v0.1
 
 .PHONY: build
-build:
+build: gofmt golint gosec
 	go mod tidy
 	go build -o $(PROG_NAME)
 

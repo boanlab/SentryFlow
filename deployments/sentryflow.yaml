@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   name: sentryflow
   labels:
-    istio-injection: disabled # avoid Istio sidecar injection
+    istio-injection: disabled # avoid Istio sidecar-injection
     pod-security.kubernetes.io/audit: privileged
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/warn: privileged
@@ -56,12 +56,12 @@ spec:
       - name: sentryflow
         image: 5gsec/sentryflow:v0.1
         ports:
-        - containerPort: 4317
+        - name: otel-grpc
           protocol: TCP
-          name: otel-grpc
-        - containerPort: 8080
+          containerPort: 4317
+        - name: sentryflow-grpc
           protocol: TCP
-          name: sentryflow-grpc
+          containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
@@ -72,11 +72,11 @@ spec:
   selector:
     app: sentryflow
   ports:
-    - protocol: TCP
-      port: 4317
-      targetPort: 4317
-      name: otel-grpc
-    - protocol: TCP
-      port: 8080
-      targetPort: 8080
-      name: sentryflow-grpc
+  - name: otel-grpc
+    protocol: TCP
+    port: 4317
+    targetPort: 4317
+  - name: sentryflow-grpc
+    protocol: TCP
+    port: 8080
+    targetPort: 8080

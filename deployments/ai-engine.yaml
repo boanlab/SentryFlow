@@ -17,9 +17,9 @@ spec:
       - name: sentryflow
         image: 5gsec/sentryflow-ai-engine:v0.1
         ports:
-        - containerPort: 5000
+        - name: ai-engine
           protocol: TCP
-          name: ai-engine
+          containerPort: 5000
 ---
 apiVersion: v1
 kind: Service
@@ -30,7 +30,7 @@ spec:
   selector:
     app: ai-engine
   ports:
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
-      name: sentryflow-ai-engine
+  - name: sentryflow-ai-engine
+    protocol: TCP
+    port: 5000
+    targetPort: 5000

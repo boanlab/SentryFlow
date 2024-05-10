@@ -5,10 +5,11 @@ package k8s
 import (
 	"context"
 	"errors"
-	"k8s.io/apimachinery/pkg/util/json"
 	"log"
 	"sync"
 	"time"
+
+	"k8s.io/apimachinery/pkg/util/json"
 
 	"github.com/5gsec/SentryFlow/types"
 
