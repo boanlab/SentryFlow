@@ -20,7 +20,7 @@ jobs:
           pip install -r requirements.txt
         working-directory: ai-engine
 
-  py-lint-ai-sentryflow:
+  py-ruff-ai-sentryflow:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -45,6 +45,27 @@ jobs:
         run: |
           pip install ruff
           ruff --output-format=github .
+        working-directory: ai-engine
+
+  py-lint-ai-sentryflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pylint
+        working-directory: ai-engine
+
+      - name: Lint with Pylint
+        run: |
+          pylint ai_engine.py
         working-directory: ai-engine
 
   py-pep8-ai-sentryflow:
