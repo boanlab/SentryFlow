@@ -132,7 +132,11 @@ func recvAPIRoutine() error {
 				APIMetrics[api] = count
 			}
 
-			exporter.ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
+			err = exporter.ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
+			if err != nil {
+				log.Printf("[Envoy] Something went on wrong when Send API Metrics: %v", err)
+				return err
+			}
 		case <-AH.stopChan:
 			return nil
 		}

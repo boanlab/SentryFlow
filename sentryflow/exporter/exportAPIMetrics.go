@@ -131,7 +131,12 @@ func AggregateAPIMetrics() {
 			}
 
 			if len(APIMetrics) > 0 {
-				ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
+				err := ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
+
+				if err != nil {
+					log.Printf("[Envoy] Something went on wrong when Send API Metrics: %v", err)
+					return
+				}
 			}
 
 			ExpH.statsPerLabelLock.RUnlock()
