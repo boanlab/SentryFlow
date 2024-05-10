@@ -16,7 +16,7 @@ if [ ! -x "$(command -v vboxmanage)" ]; then
 
     # install vbox
     sudo apt-get update
-    sudo apt-get install virtualbox-6.1
+    sudo apt-get install virtualbox
 
     echo "Please reboot the machine."
 else

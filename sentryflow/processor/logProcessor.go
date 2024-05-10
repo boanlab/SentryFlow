@@ -28,14 +28,6 @@ type LogHandler struct {
 	metricsChan chan interface{}
 }
 
-// aggregationLog Structure
-type aggregationLog struct {
-	Labels      map[string]string
-	Annotations map[string]string
-
-	Logs []*protobuf.APILog
-}
-
 // NewLogHandler Structure
 func NewLogHandler() *LogHandler {
 	lh := &LogHandler{
@@ -55,10 +47,10 @@ func StartLogProcessor(wg *sync.WaitGroup) bool {
 	// handle API logs
 	go ProcessAPILogs(wg)
 
-	// handle metrics
-	go ProcessMetrics(wg)
+	// handle Envoy metrics
+	go ProcessEnvoyMetrics(wg)
 
-	log.Print("[LogProcessor] Started Log Processor")
+	log.Print("[LogProcessor] Started Log Processors")
 
 	return true
 }
@@ -71,19 +63,14 @@ func StopLogProcessor() bool {
 	// One for ProcessMetrics
 	LogH.stopChan <- struct{}{}
 
-	log.Print("[LogProcessor] Stopped Log Processor")
+	log.Print("[LogProcessor] Stopped Log Processors")
 
 	return true
 }
 
 // == //
 
-// InsertAPILog Function
-func InsertAPILog(data interface{}) {
-	LogH.apiLogChan <- data
-}
-
-// ProcessLogs Function
+// ProcessAPILogs Function
 func ProcessAPILogs(wg *sync.WaitGroup) {
 	wg.Add(1)
 
@@ -91,16 +78,36 @@ func ProcessAPILogs(wg *sync.WaitGroup) {
 		select {
 		case logType, ok := <-LogH.apiLogChan:
 			if !ok {
-				log.Print("[LogProcessor] Unable to process an API log")
+				log.Print("[LogProcessor] Failed to process an API log")
 			}
 
-			switch logType.(type) {
-			case *protobuf.APILog:
-				go exporter.InsertAPILog(logType.(*protobuf.APILog))
+			go AnalyzeAPI(logType.(*protobuf.APILog).Path)
+			go exporter.InsertAPILog(logType.(*protobuf.APILog))
 
-				// Send API for Further Analysis
-				go AnalyzeAPI(logType.(*protobuf.APILog).Path)
+		case <-LogH.stopChan:
+			wg.Done()
+			return
+		}
+	}
+}
+
+// InsertAPILog Function
+func InsertAPILog(data interface{}) {
+	LogH.apiLogChan <- data
+}
+
+// ProcessEnvoyMetrics Function
+func ProcessEnvoyMetrics(wg *sync.WaitGroup) {
+	wg.Add(1)
+
+	for {
+		select {
+		case logType, ok := <-LogH.metricsChan:
+			if !ok {
+				log.Print("[LogProcessor] Failed to process Envoy metrics")
 			}
+
+			go exporter.InsertEnvoyMetrics(logType.(*protobuf.EnvoyMetrics))
 
 		case <-LogH.stopChan:
 			wg.Done()
@@ -112,29 +119,6 @@ func ProcessAPILogs(wg *sync.WaitGroup) {
 // InsertMetrics Function
 func InsertMetrics(data interface{}) {
 	LogH.metricsChan <- data
-}
-
-// ProcessMetrics Function
-func ProcessMetrics(wg *sync.WaitGroup) {
-	wg.Add(1)
-
-	for {
-		select {
-		case logType, ok := <-LogH.metricsChan:
-			if !ok {
-				log.Print("[LogProcessor] Unable to process metrics")
-			}
-
-			switch logType.(type) {
-			case *protobuf.EnvoyMetrics:
-				go exporter.InsertEnvoyMetrics(logType.(*protobuf.EnvoyMetrics))
-			}
-
-		case <-LogH.stopChan:
-			wg.Done()
-			return
-		}
-	}
 }
 
 // == //

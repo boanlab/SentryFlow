@@ -24,7 +24,7 @@ type envoyMetricsStreamInform struct {
 
 // GetEnvoyMetrics Function (for gRPC)
 func (exs *ExpService) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetEnvoyMetricsServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected (GetEnvoyMetrics)", info.HostName, info.IPAddress)
+	log.Printf("[Exporter] Client %s (%s) connected (GetEnvoyMetrics)", info.HostName, info.IPAddress)
 
 	currExporter := &envoyMetricsStreamInform{
 		Hostname:      info.HostName,
@@ -46,13 +46,13 @@ func (exp *ExpHandler) SendEnvoyMetrics(evyMetrics *protobuf.EnvoyMetrics) error
 
 	for _, exporter := range exp.envoyMetricsExporters {
 		if err := exporter.metricsStream.Send(evyMetrics); err != nil {
-			log.Printf("[Exporter] Unable to send Envoy Metrics to %s(%s): %v", exporter.Hostname, exporter.IPAddress, err)
+			log.Printf("[Exporter] Failed to export Envoy metrics to %s(%s): %v", exporter.Hostname, exporter.IPAddress, err)
 			failed++
 		}
 	}
 
 	if failed != 0 {
-		msg := fmt.Sprintf("[Exporter] Unable to send Envoy Metrics properly %d/%d failed", failed, total)
+		msg := fmt.Sprintf("[Exporter] Failed to export Envoy metrics properly (%d/%d failed)", failed, total)
 		return errors.New(msg)
 	}
 

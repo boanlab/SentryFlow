@@ -4,14 +4,14 @@ package protobuf;
 
 option go_package = "SentryFlow/protobuf";
 
-message APIClassificationRequest {
+message APIClassifierRequest {
   repeated string API = 1;
 }
 
-message APIClassificationResponse {
+message APIClassifierResponse {
   map<string, uint64> APIs = 1;
 }
 
-service APIClassification {
-  rpc ClassifyAPIs(stream APIClassificationRequest) returns (stream APIClassificationResponse);
+service APIClassifier {
+  rpc ClassifyAPIs(stream APIClassifierRequest) returns (stream APIClassifierResponse);
 }

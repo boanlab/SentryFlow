@@ -3,6 +3,7 @@
 package processor
 
 import (
+	"log"
 	"sync"
 
 	"github.com/5gsec/SentryFlow/config"
@@ -10,7 +11,7 @@ import (
 
 // == //
 
-// APIA Local reference for API analyzer
+// APIA Local reference for API Analyzer
 var APIA *Analyzer
 
 // init function
@@ -20,20 +21,19 @@ func init() {
 
 // Analyzer Structure
 type Analyzer struct {
-	apiLog  chan string
-	apiLogs []string
-
-	analyzerLock sync.Mutex
-
 	stopChan chan struct{}
+
+	apiLog      chan string
+	apiLogs     []string
+	apiLogsLock sync.Mutex
 }
 
 // NewAPIAnalyzer Function
 func NewAPIAnalyzer() *Analyzer {
 	ret := &Analyzer{
-		apiLog:       make(chan string),
-		apiLogs:      []string{},
-		analyzerLock: sync.Mutex{},
+		apiLog:      make(chan string),
+		apiLogs:     []string{},
+		apiLogsLock: sync.Mutex{},
 	}
 	return ret
 }
@@ -42,6 +42,8 @@ func NewAPIAnalyzer() *Analyzer {
 func StartAPIAnalyzer(wg *sync.WaitGroup) bool {
 	// keep analyzing given APIs
 	go analyzeAPIs(wg)
+
+	log.Print("[APIAnalyzer] Started API Analyzer")
 
 	return true
 }
@@ -54,6 +56,8 @@ func AnalyzeAPI(api string) {
 // StopAPIAnalyzer Function
 func StopAPIAnalyzer() bool {
 	APIA.stopChan <- struct{}{}
+
+	log.Print("[APIAnalyzer] Stopped API Analyzer")
 
 	return true
 }
@@ -71,23 +75,21 @@ func analyzeAPIs(wg *sync.WaitGroup) {
 				continue
 			}
 
-			APIA.analyzerLock.Lock()
+			APIA.apiLogsLock.Lock()
 
 			APIA.apiLogs = append(APIA.apiLogs, api)
-		
+
 			if len(APIA.apiLogs) > config.GlobalConfig.AIEngineBatchSize {
-				InsertAPILogsAI(APIA.apiLogs)
+				ClassifyAPIs(APIA.apiLogs)
 				APIA.apiLogs = []string{}
 			}
 
-			APIA.analyzerLock.Unlock()
+			APIA.apiLogsLock.Unlock()
 		case <-APIA.stopChan:
 			wg.Done()
 			return
 		}
 	}
 }
-
-// == //
 
 // == //

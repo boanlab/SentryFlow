@@ -39,7 +39,7 @@ type apiMetricStreamInform struct {
 
 // GetAPIMetrics Function (for gRPC)
 func (exs *ExpService) GetAPIMetrics(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetAPIMetricsServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected (GetAPIMetrics)", info.HostName, info.IPAddress)
+	log.Printf("[Exporter] Client %s (%s) connected (GetAPIMetrics)", info.HostName, info.IPAddress)
 
 	currExporter := &apiMetricStreamInform{
 		Hostname:         info.HostName,
@@ -61,13 +61,13 @@ func (exp *ExpHandler) SendAPIMetrics(apiMetrics *protobuf.APIMetrics) error {
 
 	for _, exporter := range exp.apiMetricsExporters {
 		if err := exporter.apiMetricsStream.Send(apiMetrics); err != nil {
-			log.Printf("[Exporter] Unable to send API Metrics to %s(%s): %v", exporter.Hostname, exporter.IPAddress, err)
+			log.Printf("[Exporter] Failed to export API metrics to %s (%s): %v", exporter.Hostname, exporter.IPAddress, err)
 			failed++
 		}
 	}
 
 	if failed != 0 {
-		msg := fmt.Sprintf("unable to send API Metrics properly %d/%d failed", failed, total)
+		msg := fmt.Sprintf("[Exporter] Failed to export API metrics properly (%d/%d failed)", failed, total)
 		return errors.New(msg)
 	}
 
@@ -78,8 +78,8 @@ func (exp *ExpHandler) SendAPIMetrics(apiMetrics *protobuf.APIMetrics) error {
 
 // UpdateStats Function
 func UpdateStats(namespace string, label string, api string) {
-	// == //
 	ExpH.statsPerLabelLock.RLock()
+	defer ExpH.statsPerLabelLock.RUnlock()
 
 	// Check if namespace+label exists
 	if _, ok := ExpH.statsPerLabel[namespace+label]; !ok {
@@ -100,16 +100,11 @@ func UpdateStats(namespace string, label string, api string) {
 		statsPerLabel.APIs[api] = init
 	} else {
 		stats := statsPerLabel.APIs[api]
-
 		stats.Count++
-
 		statsPerLabel.APIs[api] = stats
 	}
 
 	ExpH.statsPerLabel[namespace+label] = statsPerLabel
-
-	ExpH.statsPerLabelLock.RUnlock()
-	// == //
 }
 
 // AggregateAPIMetrics Function
@@ -132,9 +127,8 @@ func AggregateAPIMetrics() {
 
 			if len(APIMetrics) > 0 {
 				err := ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
-
 				if err != nil {
-					log.Printf("[Envoy] Something went on wrong when Send API Metrics: %v", err)
+					log.Printf("[Envoy] Failed to export API metrics: %v", err)
 					return
 				}
 			}
@@ -175,5 +169,9 @@ func CleanUpOutdatedStats() {
 		}
 	}
 }
+
+// == //
+
+// Exporting API metrics is handled by API Classifier
 
 // == //

@@ -116,7 +116,7 @@ func (evyAccLogs *EnvoyAccessLogsServer) StreamAccessLogs(stream envoyAccLogs.Ac
 		if err == io.EOF {
 			return nil
 		} else if err != nil {
-			log.Printf("[EnvoyAPILogs] Something went on wrong when receiving event: %v", err)
+			log.Printf("[EnvoyAPILogs] Failed to receive an event: %v", err)
 			return err
 		}
 
@@ -215,7 +215,6 @@ func (evyMetrics *EnvoyMetricsServer) StreamMetrics(stream envoyMetrics.MetricsS
 
 	identifier := event.GetIdentifier()
 	if identifier != nil {
-		log.Printf("[EnvoyMetrics] Received EnvoyMetrics (%s, %s)", identifier.GetNode().GetId(), identifier.GetNode().GetCluster())
 		metaData := identifier.GetNode().GetMetadata().AsMap()
 		envoyMetrics := generateMetricsFromEnvoy(event, metaData)
 		processor.InsertMetrics(envoyMetrics)

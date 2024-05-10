@@ -88,12 +88,12 @@ func StartExporter(wg *sync.WaitGroup) bool {
 	// Start listening gRPC port
 	expService, err := net.Listen("tcp", exporterService)
 	if err != nil {
-		log.Fatalf("[Exporter] Unable to listen at %s: %v", exporterService, err)
+		log.Printf("[Exporter] Failed to listen at %s: %v", exporterService, err)
 		return false
 	}
-
 	ExpH.exporterService = expService
-	log.Printf("[Exporter] Listening Exporter gRPC (%s)", exporterService)
+
+	log.Printf("[Exporter] Listening Exporter gRPC services (%s)", exporterService)
 
 	// Create gRPC server
 	gRPCServer := grpc.NewServer()
@@ -101,27 +101,27 @@ func StartExporter(wg *sync.WaitGroup) bool {
 
 	protobuf.RegisterSentryFlowServer(gRPCServer, ExpH.grpcService)
 
-	log.Printf("[Exporter] Initialized Exporter gRPC")
+	log.Printf("[Exporter] Initialized Exporter gRPC services")
 
 	// Serve gRPC Service
 	go ExpH.grpcServer.Serve(ExpH.exporterService)
 
-	log.Printf("[Exporter] Serving Exporter gRPC (%s)", exporterService)
+	log.Printf("[Exporter] Serving Exporter gRPC services (%s)", exporterService)
 
 	// Export APILogs
 	go ExpH.exportAPILogs(wg)
 
-	log.Printf("[Exporter] Exporting API Logs through gRPC")
+	log.Printf("[Exporter] Exporting API logs through gRPC services")
 
 	// Export APIMetrics
 	go ExpH.exportAPIMetrics(wg)
 
-	log.Printf("[Exporter] Exporting API Metrics through gRPC")
+	log.Printf("[Exporter] Exporting API metrics through gRPC services")
 
 	// Export EnvoyMetrics
 	go ExpH.exportEnvoyMetrics(wg)
 
-	log.Printf("[Exporter] Exporting Envoy Metrics through gRPC")
+	log.Printf("[Exporter] Exporting Envoy metrics through gRPC services")
 
 	// Start Export Time Ticker Routine
 	go AggregateAPIMetrics()
@@ -144,7 +144,7 @@ func StopExporter() bool {
 	// Stop gRPC server
 	ExpH.grpcServer.GracefulStop()
 
-	log.Printf("[Exporter] Gracefully stopped Exporter gRPC")
+	log.Printf("[Exporter] Gracefully stopped Exporter gRPC services")
 
 	return true
 }
@@ -159,13 +159,13 @@ func (exp *ExpHandler) exportAPILogs(wg *sync.WaitGroup) {
 		select {
 		case apiLog, ok := <-exp.exporterAPILogs:
 			if !ok {
-				log.Printf("[Exporter] Log exporter channel closed")
+				log.Printf("[Exporter] Failed to fetch APIs from APIs channel")
 				wg.Done()
 				return
 			}
 
 			if err := exp.SendAPILogs(apiLog); err != nil {
-				log.Printf("[Exporter] APILog exporting failed %v:", err)
+				log.Printf("[Exporter] Failed to export API Logs: %v", err)
 			}
 
 		case <-exp.stopChan:
@@ -183,12 +183,12 @@ func (exp *ExpHandler) exportAPIMetrics(wg *sync.WaitGroup) {
 		select {
 		case apiMetrics, ok := <-exp.exporterAPIMetrics:
 			if !ok {
-				log.Printf("[Exporter] APIMetric exporter channel closed")
+				log.Printf("[Exporter] Failed to fetch metrics from API Metrics channel")
 				wg.Done()
 				return
 			}
 			if err := exp.SendAPIMetrics(apiMetrics); err != nil {
-				log.Printf("[Exporter] APIMetric exporting failed %v:", err)
+				log.Printf("[Exporter] Failed to export API metrics: %v", err)
 			}
 
 		case <-exp.stopChan:
@@ -206,13 +206,13 @@ func (exp *ExpHandler) exportEnvoyMetrics(wg *sync.WaitGroup) {
 		select {
 		case evyMetrics, ok := <-exp.exporterMetrics:
 			if !ok {
-				log.Printf("[Exporter] EnvoyMetric exporter channel closed")
+				log.Printf("[Exporter] Failed to fetch metrics from Envoy Metrics channel")
 				wg.Done()
 				return
 			}
 
 			if err := exp.SendEnvoyMetrics(evyMetrics); err != nil {
-				log.Printf("[Exporter] EnvoyMetric exporting failed %v:", err)
+				log.Printf("[Exporter] Failed to export Envoy metrics: %v", err)
 			}
 
 		case <-exp.stopChan:

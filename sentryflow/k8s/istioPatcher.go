@@ -4,10 +4,10 @@ package k8s
 
 import (
 	"errors"
-	"fmt"
+	"log"
+
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/util/json"
-	"log"
 )
 
 // meshConfig structure
@@ -21,24 +21,28 @@ type meshConfig struct {
 			Address string `yaml:"address"`
 		} `yaml:"envoyMetricsService"`
 	} `yaml:"defaultConfig"`
+
 	DefaultProviders struct {
 		AccessLogs []string `yaml:"accessLogs"`
 		Metrics    []string `yaml:"metrics"`
 	} `yaml:"defaultProviders"`
+
 	EnableEnvoyAccessLogService bool `yaml:"enableEnvoyAccessLogService"`
-	ExtensionProviders          []struct {
+
+	ExtensionProviders []struct {
 		EnvoyOtelAls struct {
 			Port    string `yaml:"port"`
 			Service string `yaml:"service"`
 		} `yaml:"envoyOtelAls"`
 		Name string `yaml:"name"`
 	} `yaml:"extensionProviders"`
+
 	ExtraFields map[string]interface{} `yaml:",inline"` // all extra fields that SentryFlow will not touch
 }
 
 // PatchIstioConfigMap Function
 func PatchIstioConfigMap() bool {
-	log.Printf("[PatchIstioConfigMap] Patching Istio ConfigMap")
+	log.Print("[PatchIstioConfigMap] Patching Istio ConfigMap")
 
 	meshCfg, err := parseIstioConfigMap()
 	if err != nil {
@@ -47,7 +51,7 @@ func PatchIstioConfigMap() bool {
 	}
 
 	if isIstioAlreadyPatched(meshCfg) {
-		log.Printf("[PatchIstioConfigMap] Istio ConfigMap was already patched before, skipping...")
+		log.Print("[PatchIstioConfigMap] Istio ConfigMap was already patched before, skipping...")
 		return true
 	}
 
@@ -73,7 +77,6 @@ func PatchIstioConfigMap() bool {
 			},
 			Name: "sentryflow",
 		}
-
 		meshCfg.ExtensionProviders = append(meshCfg.ExtensionProviders, sfOtelAl)
 	}
 
@@ -90,20 +93,21 @@ func PatchIstioConfigMap() bool {
 		return false
 	}
 
-	strMeshCfg := fmt.Sprintf("%s", yamlMeshCfg)
+	strMeshCfg := string(yamlMeshCfg[:])
 	err = K8sH.updateConfigMap("istio-system", "istio", strMeshCfg)
 	if err != nil {
 		log.Printf("[PatchIstioConfigMap] Unable to update Istio ConfigMap: %v", err)
 		return false
 	}
 
-	log.Printf("[PatchIstioConfigMap] Successfully patched Istio ConfigMap")
+	log.Print("[PatchIstioConfigMap] Successfully patched Istio ConfigMap")
+
 	return true
 }
 
 // UnpatchIstioConfigMap Function
 func UnpatchIstioConfigMap() bool {
-	log.Printf("[PatchIstioConfigMap] Unpatching Istio ConfigMap")
+	log.Print("[PatchIstioConfigMap] Unpatching Istio ConfigMap")
 
 	meshCfg, err := parseIstioConfigMap()
 	if err != nil {
@@ -140,7 +144,6 @@ func UnpatchIstioConfigMap() bool {
 				tmp = append(tmp, provider)
 			}
 		}
-
 		meshCfg.DefaultProviders.AccessLogs = tmp
 	}
 
@@ -154,14 +157,15 @@ func UnpatchIstioConfigMap() bool {
 		return false
 	}
 
-	strMeshCfg := fmt.Sprintf("%s", yamlMeshCfg)
+	strMeshCfg := string(yamlMeshCfg[:])
 	err = K8sH.updateConfigMap("istio-system", "istio", strMeshCfg)
 	if err != nil {
 		log.Printf("[PatchIstioConfigMap] Unable to update Istio ConfigMap: %v", err)
 		return false
 	}
 
-	log.Printf("[PatchIstioConfigMap] Successfully unpatched Istio ConfigMap")
+	log.Print("[PatchIstioConfigMap] Successfully unpatched Istio ConfigMap")
+
 	return true
 }
 
@@ -184,7 +188,7 @@ func parseIstioConfigMap() (meshConfig, error) {
 	// extract mesh field from configmap
 	meshData, ok := rawIstioCfg["mesh"].(string)
 	if !ok {
-		return meshCfg, errors.New("unable to find field \"mesh\" from Istio config")
+		return meshCfg, errors.New("[PatchIstioConfigMap] Unable to find field \"mesh\" from Istio config")
 	}
 
 	// unmarshall YAML format of Istio config
@@ -234,7 +238,7 @@ func isIstioAlreadyPatched(meshCfg meshConfig) bool {
 		return false
 	}
 
-	if meshCfg.EnableEnvoyAccessLogService != true {
+	if !meshCfg.EnableEnvoyAccessLogService {
 		return false
 	}
 

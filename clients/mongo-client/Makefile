@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 CLIENT_NAME = sentryflow-mongo-client
-IMAGE_NAME = 5gsec/$(CLIENT_NAME)
+IMAGE_NAME = boanlab/$(CLIENT_NAME)
 TAG = v0.1
 
 .PHONY: build

@@ -10,25 +10,19 @@ sudo apt-get install -y build-essential
 
 # == Containerd == #
 
-# update repo
-sudo apt-get update
-
-# install curl
-sudo apt-get install -y curl
-
 # add GPG key
-sudo apt-get install -y ca-certificates gnupg
+sudo apt-get install -y curl ca-certificates gnupg
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# add Docker repository
+# add docker repository
 echo \
   "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# update the Docker repo
+# update the docker repo
 sudo apt-get update
 
 # install containerd
@@ -40,48 +34,31 @@ sudo containerd config default | sudo tee /etc/containerd/config.toml
 sudo sed -i "s/SystemdCgroup = false/SystemdCgroup = true/g" /etc/containerd/config.toml
 sudo systemctl restart containerd
 
-# == Kubernetes == #
+# # == Kubernetes == #
 
-# update repo
-sudo apt-get update
+# install k3s
+curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="--disable=traefik" sh -
 
-# install curl and apt-transport-https
-sudo apt-get install -y curl apt-transport-https ca-certificates gpg
+echo "wait for initialization"
+sleep 15
 
-# add the key for kubernetes repo
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+runtime="15 minute"
+endtime=$(date -ud "$runtime" +%s)
 
-# add sources.list.d
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-
-# update repo
-sudo apt-get update
-
-# install the latest version
-sudo apt-get install -y kubeadm kubelet kubectl
-sudo apt-mark hold kubelet kubeadm kubectl
-
-# disable Swap
-sudo swapoff -a
-sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
-
-# initialize Kubernetes
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16 | tee -a /home/vagrant/k8s_init.log
-
-# disable master isolation
-kubectl taint nodes --all node-role.kubernetes.io/master-
-kubectl taint nodes --all node-role.kubernetes.io/control-plane-
-
-# wait for a while
-sleep 5
-
-# install Calico
-kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.4/manifests/calico.yaml
+while [[ $(date -u +%s) -le $endtime ]]
+do
+    status=$(kubectl get pods -A -o jsonpath={.items[*].status.phase})
+    [[ $(echo $status | grep -v Running | wc -l) -eq 0 ]] && break
+    echo "wait for initialization"
+    sleep 1
+done
 
 # make kubectl accessable for vagrant user
-sudo mkdir -p /home/vagrant/.kube
-sudo cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
-sudo chown $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
+mkdir -p /home/vagrant/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
+sudo chown -R vagrant:vagrant /home/vagrant/.kube
+echo "export KUBECONFIG=/home/vagrant/.kube/config" | tee -a /home/vagrant/.bashrc
+PATH=$PATH:/bin:/usr/bin:/usr/local/bin
 
 # == Istio == #
 
@@ -92,30 +69,15 @@ cd /home/vagrant
 curl -L https://istio.io/downloadIstio | sh -
 
 # copy istioctl to /usr/local/bin
-sudo cp $HOME/istio-*/bin/istioctl /usr/local/bin
+sudo cp /home/vagrant/istio-*/bin/istioctl /usr/local/bin
+
+# change permissions
+sudo chown -R vagrant:vagrant /home/vagrant/istio-*
 
 # install istio
-istioctl install --set profile=default -y
+su - vagrant -c "istioctl install --set profile=default -y"
 
 # == Docker == #
-
-# update repo
-sudo apt-get update
-
-# add GPG key
-sudo apt-get install -y curl ca-certificates gnupg
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# add Docker repository
-echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# update the Docker repo
-sudo apt-get update
 
 # install Docker
 sudo apt-get install -y docker-ce && sleep 5
@@ -137,7 +99,7 @@ EOF
 sudo systemctl restart docker && sleep 5
 
 # add user to docker
-sudo usermod -aG docker $USER
+sudo usermod -aG docker vagrant
 
 # bypass to run docker command
 sudo chmod 666 /var/run/docker.sock

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: log-client
-        image: 5gsec/sentryflow-log-client:v0.1
+        image: boanlab/sentryflow-log-client:v0.1
         env:
         - name: SERVER_ADDR
           value: "sentryflow.sentryflow.svc.cluster.local"

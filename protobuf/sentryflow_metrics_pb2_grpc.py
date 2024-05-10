@@ -30,7 +30,7 @@ if _version_not_supported:
     )
 
 
-class APIClassificationStub(object):
+class APIClassifierStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -40,13 +40,13 @@ class APIClassificationStub(object):
             channel: A grpc.Channel.
         """
         self.ClassifyAPIs = channel.stream_stream(
-                '/protobuf.APIClassification/ClassifyAPIs',
-                request_serializer=sentryflow__metrics__pb2.APIClassificationRequest.SerializeToString,
-                response_deserializer=sentryflow__metrics__pb2.APIClassificationResponse.FromString,
+                '/protobuf.APIClassifier/ClassifyAPIs',
+                request_serializer=sentryflow__metrics__pb2.APIClassifierRequest.SerializeToString,
+                response_deserializer=sentryflow__metrics__pb2.APIClassifierResponse.FromString,
                 _registered_method=True)
 
 
-class APIClassificationServicer(object):
+class APIClassifierServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def ClassifyAPIs(self, request_iterator, context):
@@ -56,21 +56,21 @@ class APIClassificationServicer(object):
         raise NotImplementedError('Method not implemented!')
 
 
-def add_APIClassificationServicer_to_server(servicer, server):
+def add_APIClassifierServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ClassifyAPIs': grpc.stream_stream_rpc_method_handler(
                     servicer.ClassifyAPIs,
-                    request_deserializer=sentryflow__metrics__pb2.APIClassificationRequest.FromString,
-                    response_serializer=sentryflow__metrics__pb2.APIClassificationResponse.SerializeToString,
+                    request_deserializer=sentryflow__metrics__pb2.APIClassifierRequest.FromString,
+                    response_serializer=sentryflow__metrics__pb2.APIClassifierResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'protobuf.APIClassification', rpc_method_handlers)
+            'protobuf.APIClassifier', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class APIClassification(object):
+class APIClassifier(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
@@ -87,9 +87,9 @@ class APIClassification(object):
         return grpc.experimental.stream_stream(
             request_iterator,
             target,
-            '/protobuf.APIClassification/ClassifyAPIs',
-            sentryflow__metrics__pb2.APIClassificationRequest.SerializeToString,
-            sentryflow__metrics__pb2.APIClassificationResponse.FromString,
+            '/protobuf.APIClassifier/ClassifyAPIs',
+            sentryflow__metrics__pb2.APIClassifierRequest.SerializeToString,
+            sentryflow__metrics__pb2.APIClassifierResponse.FromString,
             options,
             channel_credentials,
             insecure,

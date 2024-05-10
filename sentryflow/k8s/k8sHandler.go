@@ -5,10 +5,11 @@ package k8s
 import (
 	"context"
 	"errors"
-	"k8s.io/apimachinery/pkg/util/json"
 	"log"
 	"sync"
 	"time"
+
+	"k8s.io/apimachinery/pkg/util/json"
 
 	"github.com/5gsec/SentryFlow/types"
 
@@ -64,14 +65,14 @@ func InitK8sClient() bool {
 	// Initialize in cluster config
 	K8sH.config, err = rest.InClusterConfig()
 	if err != nil {
-		log.Fatal("[InitK8sClient] Failed to initialize Kubernetes client")
+		log.Print("[InitK8sClient] Failed to initialize Kubernetes client")
 		return false
 	}
 
 	// Initialize Kubernetes clientSet
 	K8sH.clientSet, err = kubernetes.NewForConfig(K8sH.config)
 	if err != nil {
-		log.Fatal("[InitK8sClient] Failed to initialize Kubernetes client")
+		log.Print("[InitK8sClient] Failed to initialize Kubernetes client")
 		return false
 	}
 
@@ -94,7 +95,7 @@ func InitK8sClient() bool {
 	// Initialize informers
 	K8sH.initInformers()
 
-	log.Printf("[InitK8sClient] Initialized Kubernetes client")
+	log.Print("[InitK8sClient] Initialized Kubernetes client")
 
 	return true
 }
@@ -106,7 +107,7 @@ func (k8s *KubernetesHandler) initExistingResources() {
 	// List existing Pods
 	podList, err := k8s.clientSet.CoreV1().Pods(corev1.NamespaceAll).List(context.TODO(), v1.ListOptions{})
 	if err != nil {
-		log.Print("[K8s] Error listing Pods:", err.Error())
+		log.Printf("[K8s] Failed to get Pods: %v", err.Error())
 	}
 
 	// Add existing Pods to the podMap
@@ -119,7 +120,7 @@ func (k8s *KubernetesHandler) initExistingResources() {
 	// List existing Services
 	serviceList, err := k8s.clientSet.CoreV1().Services(corev1.NamespaceAll).List(context.TODO(), v1.ListOptions{})
 	if err != nil {
-		log.Print("[K8s] Error listing Services:", err.Error())
+		log.Printf("[K8s] Failed to get Services: %v", err.Error())
 	}
 
 	// Add existing Services to the serviceMap
@@ -253,21 +254,21 @@ func RunInformers(stopChan chan struct{}, wg *sync.WaitGroup) {
 		}()
 	}
 
-	log.Printf("[RunInformers] Started all Kubernetes informers")
+	log.Print("[RunInformers] Started all Kubernetes informers")
 }
 
 // getConfigMap Function
 func (k8s *KubernetesHandler) getConfigMap(namespace, name string) (string, error) {
 	cm, err := k8s.clientSet.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, v1.GetOptions{})
 	if err != nil {
-		log.Printf("Error getting ConfigMap: %v\n", err)
+		log.Printf("[K8s] Failed to get ConfigMaps: %v", err)
 		return "", err
 	}
 
 	// convert data to string
 	data, err := json.Marshal(cm.Data)
 	if err != nil {
-		log.Printf("Error marshaling ConfigMap data: %v\n", err)
+		log.Printf("[K8s] Failed to marshal ConfigMap: %v", err)
 		return "", err
 	}
 
@@ -278,12 +279,12 @@ func (k8s *KubernetesHandler) getConfigMap(namespace, name string) (string, erro
 func (k8s *KubernetesHandler) updateConfigMap(namespace, name, data string) error {
 	cm, err := k8s.clientSet.CoreV1().ConfigMaps(namespace).Get(context.TODO(), name, v1.GetOptions{})
 	if err != nil {
-		log.Printf("Error getting ConfigMap: %v\n", err)
+		log.Printf("[K8s] Failed to get ConfigMap: %v", err)
 		return err
 	}
 
 	if _, ok := cm.Data["mesh"]; !ok {
-		return errors.New("unable to find field \"mesh\" from Istio config")
+		return errors.New("[K8s] Unable to find field \"mesh\" from Istio config")
 	}
 
 	cm.Data["mesh"] = data
@@ -298,7 +299,7 @@ func (k8s *KubernetesHandler) updateConfigMap(namespace, name, data string) erro
 func PatchNamespaces() bool {
 	namespaces, err := K8sH.clientSet.CoreV1().Namespaces().List(context.Background(), v1.ListOptions{})
 	if err != nil {
-		log.Fatalf("[PatchNamespaces] Unable to list namespaces: %v", err)
+		log.Printf("[PatchNamespaces] Failed to get Namespaces: %v", err)
 		return false
 	}
 
@@ -314,14 +315,14 @@ func PatchNamespaces() bool {
 
 		// Patch the namespace
 		if _, err := K8sH.clientSet.CoreV1().Namespaces().Update(context.TODO(), namespace, v1.UpdateOptions{FieldManager: "patcher"}); err != nil {
-			log.Printf("[PatchNamespaces] Unable to update namespace %s: %v", namespace.Name, err)
+			log.Printf("[PatchNamespaces] Failed to update Namespace %s: %v", namespace.Name, err)
 			return false
 		}
 
-		log.Printf("[PatchNamespaces] Updated Namespace: %s\n", namespace.Name)
+		log.Printf("[PatchNamespaces] Updated Namespace %s", namespace.Name)
 	}
 
-	log.Printf("[PatchNamespaces] Updated all namespaces")
+	log.Print("[PatchNamespaces] Updated all Namespaces")
 
 	return true
 }
@@ -353,7 +354,7 @@ func (k8s *KubernetesHandler) restartDeployment(namespace string, deploymentName
 func RestartDeployments() bool {
 	deployments, err := K8sH.clientSet.AppsV1().Deployments("").List(context.Background(), v1.ListOptions{})
 	if err != nil {
-		log.Fatalf("[PatchDeployments] Unable to list deployments: %v", err)
+		log.Printf("[PatchDeployments] Failed to get Deployments: %v", err)
 		return false
 	}
 
@@ -365,7 +366,7 @@ func RestartDeployments() bool {
 
 		// Restart the deployment
 		if err := K8sH.restartDeployment(deployment.Namespace, deployment.Name); err != nil {
-			log.Fatalf("[PatchDeployments] Unable to restart deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
+			log.Printf("[PatchDeployments] Failed to restart Deployment %s/%s: %v", deployment.Namespace, deployment.Name, err)
 			return false
 		}
 

@@ -65,7 +65,7 @@ jobs:
 
       - name: Lint with Pylint
         run: |
-          pylint ai_engine.py
+          pylint classifier.py
         working-directory: ai-engine
 
   py-pep8-ai-sentryflow:

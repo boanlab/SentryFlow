@@ -5,13 +5,13 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class APIClassificationRequest(_message.Message):
+class APIClassifierRequest(_message.Message):
     __slots__ = ("API",)
     API_FIELD_NUMBER: _ClassVar[int]
     API: _containers.RepeatedScalarFieldContainer[str]
     def __init__(self, API: _Optional[_Iterable[str]] = ...) -> None: ...
 
-class APIClassificationResponse(_message.Message):
+class APIClassifierResponse(_message.Message):
     __slots__ = ("APIs",)
     class APIsEntry(_message.Message):
         __slots__ = ("key", "value")

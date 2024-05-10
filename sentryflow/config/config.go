@@ -22,12 +22,12 @@ type SentryFlowConfig struct {
 	PatchingNamespaces           bool // Enable/Disable patching namespaces with 'istio-injection'
 	RestartingPatchedDeployments bool // Enable/Disable restarting deployments after patching
 
-	AIEngineService     string
-	AIEngineServicePort string
-	AIEngineBatchSize   int
-
 	AggregationPeriod int // Period for aggregating metrics
 	CleanUpPeriod     int // Period for cleaning up outdated metrics
+
+	AIEngineService     string // Address for AI Engine
+	AIEngineServicePort string // Port for AI Engine
+	AIEngineBatchSize   int    // Batch Size to send APIs to AI Engine
 
 	Debug bool // Enable/Disable SentryFlow debug mode
 }
@@ -51,12 +51,12 @@ const (
 	PatchingNamespaces           string = "patchingNamespaces"
 	RestartingPatchedDeployments string = "restartingPatchedDeployments"
 
+	AggregationPeriod string = "aggregationPeriod"
+	CleanUpPeriod     string = "cleanUpPeriod"
+
 	AIEngineService     string = "aiEngineService"
 	AIEngineServicePort string = "aiEngineServicePort"
 	AIEngineBatchSize   string = "aiEngineBatchSize"
-
-	AggregationPeriod string = "aggregationPeriod"
-	CleanUpPeriod     string = "cleanUpPeriod"
 
 	Debug string = "debug"
 )
@@ -71,12 +71,12 @@ func readCmdLineParams() {
 	patchingNamespacesB := flag.Bool(PatchingNamespaces, false, "Enable patching 'istio-injection' to all namespaces")
 	restartingPatchedDeploymentsB := flag.Bool(RestartingPatchedDeployments, false, "Enable restarting the deployments in all patched namespaces")
 
-	aiEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Service address for SentryFlow AI Engine")
-	aiEngineServicePortStr := flag.String(AIEngineServicePort, "5000", "Service Port for SentryFlow AI Engine")
-	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size for SentryFlow AI Engine")
-
 	aggregationPeriodInt := flag.Int(AggregationPeriod, 1, "Period for aggregating metrics")
 	cleanUpPeriodInt := flag.Int(CleanUpPeriod, 5, "Period for cleanning up outdated metrics")
+
+	aiEngineServiceStr := flag.String(AIEngineService, "ai-engine.sentryflow.svc.cluster.local", "Address for SentryFlow AI Engine")
+	aiEngineServicePortStr := flag.String(AIEngineServicePort, "5000", "Port for SentryFlow AI Engine")
+	aiEngineBatchSizeInt := flag.Int(AIEngineBatchSize, 5, "Batch size to send APIs to SentryFlow AI Engine")
 
 	configDebugB := flag.Bool(Debug, false, "Enable debugging mode")
 
@@ -98,12 +98,12 @@ func readCmdLineParams() {
 	viper.SetDefault(PatchingNamespaces, *patchingNamespacesB)
 	viper.SetDefault(RestartingPatchedDeployments, *restartingPatchedDeploymentsB)
 
+	viper.SetDefault(AggregationPeriod, *aggregationPeriodInt)
+	viper.SetDefault(CleanUpPeriod, *cleanUpPeriodInt)
+
 	viper.SetDefault(AIEngineService, *aiEngineServiceStr)
 	viper.SetDefault(AIEngineServicePort, *aiEngineServicePortStr)
 	viper.SetDefault(AIEngineBatchSize, *aiEngineBatchSizeInt)
-
-	viper.SetDefault(AggregationPeriod, *aggregationPeriodInt)
-	viper.SetDefault(CleanUpPeriod, *cleanUpPeriodInt)
 
 	viper.SetDefault(Debug, *configDebugB)
 }
@@ -125,12 +125,12 @@ func LoadConfig() error {
 	GlobalConfig.PatchingNamespaces = viper.GetBool(PatchingNamespaces)
 	GlobalConfig.RestartingPatchedDeployments = viper.GetBool(RestartingPatchedDeployments)
 
+	GlobalConfig.AggregationPeriod = viper.GetInt(AggregationPeriod)
+	GlobalConfig.CleanUpPeriod = viper.GetInt(CleanUpPeriod)
+
 	GlobalConfig.AIEngineService = viper.GetString(AIEngineService)
 	GlobalConfig.AIEngineServicePort = viper.GetString(AIEngineServicePort)
 	GlobalConfig.AIEngineBatchSize = viper.GetInt(AIEngineBatchSize)
-
-	GlobalConfig.AggregationPeriod = viper.GetInt(AggregationPeriod)
-	GlobalConfig.CleanUpPeriod = viper.GetInt(CleanUpPeriod)
 
 	GlobalConfig.Debug = viper.GetBool(Debug)
 

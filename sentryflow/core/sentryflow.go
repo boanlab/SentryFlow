@@ -45,29 +45,47 @@ func (sf *SentryFlowService) DestroySentryFlow() {
 	// Remove SentryFlow collector config from Kubernetes
 	if k8s.UnpatchIstioConfigMap() {
 		log.Print("[SentryFlow] Unpatched Istio ConfigMap")
+	} else {
+		log.Print("[SentryFlow] Failed to unpatch Istio ConfigMap")
 	}
 
 	// Stop collector
 	if collector.StopCollector() {
 		log.Print("[SentryFlow] Stopped Collectors")
+	} else {
+		log.Print("[SentryFlow] Failed to stop Collectors")
 	}
 
 	// Stop Log Processor
 	if processor.StopLogProcessor() {
 		log.Print("[SentryFlow] Stopped Log Processors")
+	} else {
+		log.Print("[SentryFlow] Failed to stop Log Processors")
 	}
 
 	// Stop API Aanalyzer
 	if processor.StopAPIAnalyzer() {
 		log.Print("[SentryFlow] Stopped API Analyzer")
+	} else {
+		log.Print("[SentryFlow] Failed to stop API Analyzer")
+	}
+
+	// Stop API classifier
+	if processor.StopAPIClassifier() {
+		log.Print("[SentryFlow] Stopped API Classifier")
+	} else {
+		log.Print("[SentryFlow] Failed to stop API Classifier")
 	}
 
 	// Stop exporter
 	if exporter.StopExporter() {
 		log.Print("[SentryFlow] Stopped Exporters")
+	} else {
+		log.Print("[SentryFlow] Failed to stop Exporters")
 	}
 
 	log.Print("[SentryFlow] Waiting for routine terminations")
+
 	sf.waitGroup.Wait()
 
 	log.Print("[SentryFlow] Terminated SentryFlow")
@@ -162,7 +180,7 @@ func SentryFlow() {
 		return
 	}
 
-	log.Print("[SentryFlow] Initialization process is completed")
+	log.Print("[SentryFlow] Initialization is completed")
 
 	// == //
 

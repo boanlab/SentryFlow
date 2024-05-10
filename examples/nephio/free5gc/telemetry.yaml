@@ -1,9 +1,0 @@
-apiVersion: telemetry.istio.io/v1alpha1
-kind: Telemetry
-metadata:
-  name: free5gc-logging
-  namespace: istio-system
-spec:
-  accessLogging:
-    - providers:
-      - name: sentryflow

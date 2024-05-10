@@ -25,7 +25,6 @@ func init() {
 type ColHandler struct {
 	colService net.Listener
 	grpcServer *grpc.Server
-
 	collectors []collectorInterface
 }
 
@@ -34,7 +33,6 @@ func NewCollectorHandler() *ColHandler {
 	ch := &ColHandler{
 		collectors: make([]collectorInterface, 0),
 	}
-
 	return ch
 }
 
@@ -48,12 +46,12 @@ func StartCollector() bool {
 	// Start listening gRPC port
 	colService, err := net.Listen("tcp", collectorService)
 	if err != nil {
-		log.Fatalf("[Collector] Unable to listen at %s: %v", collectorService, err)
+		log.Printf("[Collector] Failed to listen at %s: %v", collectorService, err)
 		return false
 	}
-
 	ColH.colService = colService
-	log.Printf("[Collector] Listening Collector gRPC (%s)", collectorService)
+
+	log.Printf("[Collector] Listening Collector gRPC services (%s)", collectorService)
 
 	// Create gRPC Service
 	gRPCServer := grpc.NewServer()
@@ -71,12 +69,12 @@ func StartCollector() bool {
 		col.registerService(ColH.grpcServer)
 	}
 
-	log.Printf("[Collector] Initialized Collector gRPC")
+	log.Print("[Collector] Initialized Collector gRPC services")
 
 	// Serve gRPC Service
 	go ColH.grpcServer.Serve(ColH.colService)
 
-	log.Printf("[Collector] Serving Collector gRPC")
+	log.Print("[Collector] Serving Collector gRPC services")
 
 	return true
 }
@@ -85,7 +83,7 @@ func StartCollector() bool {
 func StopCollector() bool {
 	ColH.grpcServer.GracefulStop()
 
-	log.Printf("[Collector] Gracefully stopped Collector gRPC")
+	log.Print("[Collector] Gracefully stopped Collector gRPC services")
 
 	return true
 }

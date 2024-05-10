@@ -1,24 +1,23 @@
 # SPDX-License-Identifier: Apache-2.0
 
-# Dockerfile
-FROM ubuntu:22.04
-
-RUN apt-get update
-RUN apt-get -y install git wget python3 python3-pip
-RUN pip3 install grpcio grpcio-tools
+FROM python:3.10-bookworm
 
 RUN mkdir -p /ai-engine/protobuf
+
+RUN pip3 --no-cache-dir install grpcio grpcio-tools
+
 WORKDIR /ai-engine
 
 COPY /ai-engine .
 COPY /protobuf ./protobuf
 
 WORKDIR /ai-engine/stringlifier
-RUN pip3 install .
+
+RUN pip3 --no-cache-dir install .
 
 WORKDIR /ai-engine
+
+RUN pip3 --no-cache-dir install -r requirements.txt
 RUN python3 -m grpc_tools.protoc --python_out=. --pyi_out=. --grpc_python_out=. -I=. protobuf/sentryflow_metrics.proto
 
-RUN pip install -r requirements.txt
-
-CMD ["python3", "./ai_engine.py"]
+CMD ["python3", "/ai-engine/classifier.py"]

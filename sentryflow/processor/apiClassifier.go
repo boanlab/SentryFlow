@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/5gsec/SentryFlow/config"
 	"github.com/5gsec/SentryFlow/exporter"
@@ -15,117 +16,186 @@ import (
 	"google.golang.org/grpc"
 )
 
-// AIH Local reference for AI handler server
-var AH *AIHandler
+// APIC Local reference for AI-driven API Classifier
+var APIC *APIClassifier
 
-// AIHandler Structure
-type AIHandler struct {
-	error    chan error
+// APIClassifier Structure
+type APIClassifier struct {
 	stopChan chan struct{}
 
-	aggregatedLogs chan []*protobuf.APILog
-	APIs           chan []string
+	APIs chan []string
+
+	connected   bool
+	reConnTrial time.Duration
 
 	AIStream *streamInform
 }
 
 // streamInform Structure
 type streamInform struct {
-	AIStream protobuf.APIClassification_ClassifyAPIsClient
+	AIStream protobuf.APIClassifier_ClassifyAPIsClient
 }
 
 // init Function
 func init() {
-	// Construct address and start listening
-	AH = NewAIHandler()
+	APIC = NewAPIClassifier()
 }
 
-// NewAIHandler Function
-func NewAIHandler() *AIHandler {
-	ah := &AIHandler{
+// NewAPIClassifier Function
+func NewAPIClassifier() *APIClassifier {
+	ah := &APIClassifier{
 		stopChan: make(chan struct{}),
 
-		aggregatedLogs: make(chan []*protobuf.APILog),
-		APIs:           make(chan []string),
+		APIs: make(chan []string),
+
+		connected:   false,
+		reConnTrial: (1 * time.Minute),
 	}
+
 	return ah
 }
 
-// initHandler Function
-func StartAPIClassifier(wg *sync.WaitGroup) bool {
+// initAPIClassifier Function
+func initAPIClassifier() bool {
 	AIEngineService := fmt.Sprintf("%s:%s", config.GlobalConfig.AIEngineService, config.GlobalConfig.AIEngineServicePort)
 
-	// Set up a connection to the server.
+	// Set up a connection to the server
 	conn, err := grpc.Dial(AIEngineService, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("[AI] Could not connect: %v", err)
+		log.Printf("[APIClassifier] Failed to connect to %s: %v", AIEngineService, err)
 		return false
 	}
+
+	log.Printf("[APIClassifier] Connecting to %s", AIEngineService)
+
+	client := protobuf.NewAPIClassifierClient(conn)
 
 	// Start serving gRPC server
-	log.Printf("[AI] Successfully connected to %s for APIMetrics", AIEngineService)
-
-	client := protobuf.NewAPIClassificationClient(conn)
-
-	aiStream, err := client.ClassifyAPIs(context.Background())
+	stream, err := client.ClassifyAPIs(context.Background())
 	if err != nil {
-		log.Fatalf("[AI] Could not make stream: %v", err)
+		log.Printf("[APIClassifier] Failed to make a stream: %v", err)
 		return false
 	}
 
-	AH.AIStream = &streamInform{
-		AIStream: aiStream,
+	log.Printf("[APIClassifier] Successfully connected to %s", AIEngineService)
+
+	APIC.AIStream = &streamInform{
+		AIStream: stream,
 	}
 
-	go sendAPIRoutine()
-	go recvAPIRoutine()
+	log.Print("[APIClassifier] Started API Classifier")
 
 	return true
 }
 
-// InsertAPILog function
-func InsertAPILogsAI(APIs []string) {
-	AH.APIs <- APIs
+// StartAPIClassifier Function
+func StartAPIClassifier(wg *sync.WaitGroup) bool {
+	go connRoutine(wg)
+	go sendAPIRoutine(wg)
+	go recvAPIRoutine(wg)
+
+	return true
+}
+
+// ClassifyAPIs function
+func ClassifyAPIs(APIs []string) {
+	if APIC.connected {
+		APIC.APIs <- APIs
+	}
+}
+
+// StopAPIClassifier Function
+func StopAPIClassifier() bool {
+	// one for connRoutine
+	APIC.stopChan <- struct{}{}
+
+	// one for sendAPIRoutine
+	APIC.stopChan <- struct{}{}
+
+	// one for recvAPIRoutine
+	APIC.stopChan <- struct{}{}
+
+	log.Print("[APIClassifier] Stopped API Classifier")
+
+	return true
+}
+
+// connRoutine Function
+func connRoutine(wg *sync.WaitGroup) {
+	wg.Add(1)
+
+	for {
+		select {
+		case <-APIC.stopChan:
+			wg.Done()
+			return
+		default:
+			if !APIC.connected {
+				if initAPIClassifier() {
+					APIC.connected = true
+				} else {
+					time.Sleep(APIC.reConnTrial)
+				}
+			}
+		}
+	}
 }
 
 // sendAPIRoutine Function
-func sendAPIRoutine() {
+func sendAPIRoutine(wg *sync.WaitGroup) {
+	wg.Add(1)
+
 	for {
+		if !APIC.connected {
+			time.Sleep(APIC.reConnTrial)
+			continue
+		}
+
 		select {
-		case aal, ok := <-AH.APIs:
+		case api, ok := <-APIC.APIs:
 			if !ok {
-				log.Printf("[Exporter] EnvoyMetric exporter channel closed")
-				return
+				log.Print("[APIClassifier] Failed to fetch APIs from APIs channel")
+				continue
 			}
 
-			curAPIRequest := &protobuf.APIClassificationRequest{
-				API: aal,
+			curAPIRequest := &protobuf.APIClassifierRequest{
+				API: api,
 			}
 
-			err := AH.AIStream.AIStream.Send(curAPIRequest)
+			err := APIC.AIStream.AIStream.Send(curAPIRequest)
 			if err != nil {
-				log.Printf("[Exporter] AI Engine APIs exporting failed %v:", err)
+				log.Printf("[APIClassifier] Failed to send an API to AI Engine: %v", err)
+				APIC.connected = false
+				continue
 			}
-		case <-AH.stopChan:
+		case <-APIC.stopChan:
+			wg.Done()
 			return
 		}
 	}
 }
 
 // recvAPIRoutine Function
-func recvAPIRoutine() error {
+func recvAPIRoutine(wg *sync.WaitGroup) {
+	wg.Add(1)
+
 	for {
+		if !APIC.connected {
+			time.Sleep(APIC.reConnTrial)
+			continue
+		}
+
 		select {
 		default:
-			event, err := AH.AIStream.AIStream.Recv()
 			APIMetrics := make(map[string]uint64)
-			if err == io.EOF {
-				return nil
-			}
 
-			if err != nil {
-				log.Printf("[Envoy] Something went on wrong when receiving event: %v", err)
-				return err
+			event, err := APIC.AIStream.AIStream.Recv()
+			if err == io.EOF {
+				continue
+			} else if err != nil {
+				log.Printf("[APIClassifier] Failed to receive an event from AI Engine: %v", err)
+				APIC.connected = false
+				continue
 			}
 
 			for api, count := range event.APIs {
@@ -134,11 +204,12 @@ func recvAPIRoutine() error {
 
 			err = exporter.ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
 			if err != nil {
-				log.Printf("[Envoy] Something went on wrong when Send API Metrics: %v", err)
-				return err
+				log.Printf("[APIClassifier] Failed to export API metrics: %v", err)
+				continue
 			}
-		case <-AH.stopChan:
-			return nil
+		case <-APIC.stopChan:
+			wg.Done()
+			return
 		}
 	}
 }

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""SentryFlow AI API Classification Engine"""
+"""SentryFlow AI Engine for API Classification"""
 
 from concurrent import futures
 from collections import Counter
@@ -8,8 +8,9 @@ from collections import Counter
 import os
 import grpc
 
-from protobuf import sentryflow_metrics_pb2_grpc
 from protobuf import sentryflow_metrics_pb2
+from protobuf import sentryflow_metrics_pb2_grpc
+
 from stringlifier.api import Stringlifier
 
 
@@ -18,13 +19,13 @@ class HandlerServer:
     Class for gRPC Servers
     """
     def __init__(self):
-        try:
-            self.listen_addr = os.environ["AI_ENGINE_ADDRESS"]
-        except KeyError:
-            self.listen_addr = "0.0.0.0:5000"
-
         self.server = None
         self.grpc_servers = []
+
+        try:
+            self.listen_addr = os.environ["AI_ENGINE"]
+        except KeyError:
+            self.listen_addr = "0.0.0.0:5000"
 
     def init_grpc_servers(self):
         """
@@ -32,7 +33,7 @@ class HandlerServer:
         :return: None
         """
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-        self.grpc_servers.append(APIClassificationServer())  # @todo: make this configurable
+        self.grpc_servers.append(APIClassifierServer())
 
         grpc_server: GRPCServer
         for grpc_server in self.grpc_servers:
@@ -40,12 +41,13 @@ class HandlerServer:
 
     def serve(self):
         """
-        serve method that starts serving gRPC servers, this is blocking function.
+        serve method that starts serving the gRPC servers (blocking function)
         :return: None
         """
         self.server.add_insecure_port(self.listen_addr)
 
         print(f"[INFO] Starting to serve on {self.listen_addr}")
+
         self.server.start()
         self.server.wait_for_termination()
 
@@ -69,35 +71,32 @@ class GRPCServer:
         """
 
 
-class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServicer, GRPCServer):
+class APIClassifierServer(sentryflow_metrics_pb2_grpc.APIClassifierServicer, GRPCServer):
     """
     Class for API Classification Server using Stringlifier
     """
-
     def __init__(self):
         self.stringlifier = Stringlifier()
         print("[Init] Successfully initialized APIClassificationServer")
 
     def register(self, server):
-        sentryflow_metrics_pb2_grpc.add_APIClassificationServicer_to_server(self, server)
+        sentryflow_metrics_pb2_grpc.add_APIClassifierServicer_to_server(self, server)
 
     def ClassifyAPIs(self, request_iterator, _):  # pylint: disable=C0103
         """
-        GetAPIClassification method that runs multiple API ML Classification at once
+        ClassifyAPIs method that runs multiple MLs for API Classification at once
         :param request_iterator: The requests
         :param context: The context
         :return: The results
         """
-
         for req in request_iterator:
             all_paths = req.API
-            # for paths in all_paths:
             ml_results = self.stringlifier(all_paths)
 
             ml_counts = Counter(ml_results)
             print(f"{all_paths} -> {ml_counts}")
 
-            yield sentryflow_metrics_pb2.APIClassificationResponse(APIs=ml_counts)
+            yield sentryflow_metrics_pb2.APIClassifierResponse(APIs=ml_counts)
 
 
 if __name__ == '__main__':

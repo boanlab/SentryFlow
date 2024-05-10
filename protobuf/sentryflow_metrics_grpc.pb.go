@@ -19,118 +19,118 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	APIClassification_ClassifyAPIs_FullMethodName = "/protobuf.APIClassification/ClassifyAPIs"
+	APIClassifier_ClassifyAPIs_FullMethodName = "/protobuf.APIClassifier/ClassifyAPIs"
 )
 
-// APIClassificationClient is the client API for APIClassification service.
+// APIClassifierClient is the client API for APIClassifier service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type APIClassificationClient interface {
-	ClassifyAPIs(ctx context.Context, opts ...grpc.CallOption) (APIClassification_ClassifyAPIsClient, error)
+type APIClassifierClient interface {
+	ClassifyAPIs(ctx context.Context, opts ...grpc.CallOption) (APIClassifier_ClassifyAPIsClient, error)
 }
 
-type aPIClassificationClient struct {
+type aPIClassifierClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewAPIClassificationClient(cc grpc.ClientConnInterface) APIClassificationClient {
-	return &aPIClassificationClient{cc}
+func NewAPIClassifierClient(cc grpc.ClientConnInterface) APIClassifierClient {
+	return &aPIClassifierClient{cc}
 }
 
-func (c *aPIClassificationClient) ClassifyAPIs(ctx context.Context, opts ...grpc.CallOption) (APIClassification_ClassifyAPIsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &APIClassification_ServiceDesc.Streams[0], APIClassification_ClassifyAPIs_FullMethodName, opts...)
+func (c *aPIClassifierClient) ClassifyAPIs(ctx context.Context, opts ...grpc.CallOption) (APIClassifier_ClassifyAPIsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &APIClassifier_ServiceDesc.Streams[0], APIClassifier_ClassifyAPIs_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &aPIClassificationClassifyAPIsClient{stream}
+	x := &aPIClassifierClassifyAPIsClient{stream}
 	return x, nil
 }
 
-type APIClassification_ClassifyAPIsClient interface {
-	Send(*APIClassificationRequest) error
-	Recv() (*APIClassificationResponse, error)
+type APIClassifier_ClassifyAPIsClient interface {
+	Send(*APIClassifierRequest) error
+	Recv() (*APIClassifierResponse, error)
 	grpc.ClientStream
 }
 
-type aPIClassificationClassifyAPIsClient struct {
+type aPIClassifierClassifyAPIsClient struct {
 	grpc.ClientStream
 }
 
-func (x *aPIClassificationClassifyAPIsClient) Send(m *APIClassificationRequest) error {
+func (x *aPIClassifierClassifyAPIsClient) Send(m *APIClassifierRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *aPIClassificationClassifyAPIsClient) Recv() (*APIClassificationResponse, error) {
-	m := new(APIClassificationResponse)
+func (x *aPIClassifierClassifyAPIsClient) Recv() (*APIClassifierResponse, error) {
+	m := new(APIClassifierResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-// APIClassificationServer is the server API for APIClassification service.
-// All implementations should embed UnimplementedAPIClassificationServer
+// APIClassifierServer is the server API for APIClassifier service.
+// All implementations should embed UnimplementedAPIClassifierServer
 // for forward compatibility
-type APIClassificationServer interface {
-	ClassifyAPIs(APIClassification_ClassifyAPIsServer) error
+type APIClassifierServer interface {
+	ClassifyAPIs(APIClassifier_ClassifyAPIsServer) error
 }
 
-// UnimplementedAPIClassificationServer should be embedded to have forward compatible implementations.
-type UnimplementedAPIClassificationServer struct {
+// UnimplementedAPIClassifierServer should be embedded to have forward compatible implementations.
+type UnimplementedAPIClassifierServer struct {
 }
 
-func (UnimplementedAPIClassificationServer) ClassifyAPIs(APIClassification_ClassifyAPIsServer) error {
+func (UnimplementedAPIClassifierServer) ClassifyAPIs(APIClassifier_ClassifyAPIsServer) error {
 	return status.Errorf(codes.Unimplemented, "method ClassifyAPIs not implemented")
 }
 
-// UnsafeAPIClassificationServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to APIClassificationServer will
+// UnsafeAPIClassifierServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to APIClassifierServer will
 // result in compilation errors.
-type UnsafeAPIClassificationServer interface {
-	mustEmbedUnimplementedAPIClassificationServer()
+type UnsafeAPIClassifierServer interface {
+	mustEmbedUnimplementedAPIClassifierServer()
 }
 
-func RegisterAPIClassificationServer(s grpc.ServiceRegistrar, srv APIClassificationServer) {
-	s.RegisterService(&APIClassification_ServiceDesc, srv)
+func RegisterAPIClassifierServer(s grpc.ServiceRegistrar, srv APIClassifierServer) {
+	s.RegisterService(&APIClassifier_ServiceDesc, srv)
 }
 
-func _APIClassification_ClassifyAPIs_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(APIClassificationServer).ClassifyAPIs(&aPIClassificationClassifyAPIsServer{stream})
+func _APIClassifier_ClassifyAPIs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(APIClassifierServer).ClassifyAPIs(&aPIClassifierClassifyAPIsServer{stream})
 }
 
-type APIClassification_ClassifyAPIsServer interface {
-	Send(*APIClassificationResponse) error
-	Recv() (*APIClassificationRequest, error)
+type APIClassifier_ClassifyAPIsServer interface {
+	Send(*APIClassifierResponse) error
+	Recv() (*APIClassifierRequest, error)
 	grpc.ServerStream
 }
 
-type aPIClassificationClassifyAPIsServer struct {
+type aPIClassifierClassifyAPIsServer struct {
 	grpc.ServerStream
 }
 
-func (x *aPIClassificationClassifyAPIsServer) Send(m *APIClassificationResponse) error {
+func (x *aPIClassifierClassifyAPIsServer) Send(m *APIClassifierResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *aPIClassificationClassifyAPIsServer) Recv() (*APIClassificationRequest, error) {
-	m := new(APIClassificationRequest)
+func (x *aPIClassifierClassifyAPIsServer) Recv() (*APIClassifierRequest, error) {
+	m := new(APIClassifierRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-// APIClassification_ServiceDesc is the grpc.ServiceDesc for APIClassification service.
+// APIClassifier_ServiceDesc is the grpc.ServiceDesc for APIClassifier service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var APIClassification_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "protobuf.APIClassification",
-	HandlerType: (*APIClassificationServer)(nil),
+var APIClassifier_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "protobuf.APIClassifier",
+	HandlerType: (*APIClassifierServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ClassifyAPIs",
-			Handler:       _APIClassification_ClassifyAPIs_Handler,
+			Handler:       _APIClassifier_ClassifyAPIs_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},

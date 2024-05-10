@@ -26,7 +26,7 @@ type apiLogStreamInform struct {
 
 // GetAPILog Function (for gRPC)
 func (exs *ExpService) GetAPILog(info *protobuf.ClientInfo, stream protobuf.SentryFlow_GetAPILogServer) error {
-	log.Printf("[Exporter] Client %s(%s) connected (GetAPILog)", info.HostName, info.IPAddress)
+	log.Printf("[Exporter] Client %s (%s) connected (GetAPILog)", info.HostName, info.IPAddress)
 
 	currExporter := &apiLogStreamInform{
 		Hostname:  info.HostName,
@@ -48,12 +48,13 @@ func (exp *ExpHandler) SendAPILogs(apiLog *protobuf.APILog) error {
 
 	for _, exporter := range exp.apiLogExporters {
 		if err := exporter.stream.Send(apiLog); err != nil {
-			log.Printf("[Exporter] Unable to send a API log to %s(%s): %v", exporter.Hostname, exporter.IPAddress, err)
+			log.Printf("[Exporter] Failed to export an API log to %s (%s): %v", exporter.Hostname, exporter.IPAddress, err)
+			failed++
 		}
 	}
 
 	if failed != 0 {
-		msg := fmt.Sprintf("[Exporter] Unable to send API logs properly %d/%d failed", failed, total)
+		msg := fmt.Sprintf("[Exporter] Failed to export API logs properly (%d/%d failed)", failed, total)
 		return errors.New(msg)
 	}
 
