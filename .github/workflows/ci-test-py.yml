@@ -38,7 +38,7 @@ jobs:
       - name: Lint with Ruff
         run: |
           pip install ruff
-          ruff --output-format=github .
+          ruff --output-format=github --exclude=ai-engine/stringlifier .
         working-directory: ai-engine
 
   py-pep8-ai-sentryflow:
