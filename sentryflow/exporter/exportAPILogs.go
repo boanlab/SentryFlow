@@ -43,26 +43,12 @@ func (exs *ExpService) GetAPILog(info *protobuf.ClientInfo, stream protobuf.Sent
 
 // SendAPILogs Function
 func (exp *ExpHandler) SendAPILogs(apiLog *protobuf.APILog) error {
-	var err error
-
 	failed := 0
 	total := len(exp.apiLogExporters)
 
 	for _, exporter := range exp.apiLogExporters {
-		currRetry := 0
-		maxRetry := 3
-
-		for currRetry < maxRetry {
-			if err = exporter.stream.Send(apiLog); err != nil {
-				log.Printf("[Exporter] Unable to send a API log to %s(%s) retry=%d/%d: %v", exporter.Hostname, exporter.IPAddress, currRetry, maxRetry, err)
-				currRetry++
-			} else {
-				break
-			}
-		}
-
-		if err != nil {
-			failed++
+		if err := exporter.stream.Send(apiLog); err != nil {
+			log.Printf("[Exporter] Unable to send a API log to %s(%s): %v", exporter.Hostname, exporter.IPAddress, err)
 		}
 	}
 
@@ -91,4 +77,4 @@ func InsertAPILog(apiLog *protobuf.APILog) {
 	UpdateStats(apiLog.SrcNamespace, strings.Join(labelString, ","), apiLog.GetPath())
 }
 
-// // == //
+// == //

@@ -51,7 +51,7 @@ spec:
       labels:
         app: sentryflow
     spec:
-      serviceAccountName: sa-sentryflow
+      serviceAccountName: sentryflow-sa
       containers:
       - name: sentryflow
         image: 5gsec/sentryflow:v0.1

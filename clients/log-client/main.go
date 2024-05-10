@@ -88,12 +88,12 @@ func main() {
 	if *metricCfgPtr != "none" {
 		if *metricFilterPtr == "all" || *metricFilterPtr == "api" {
 			go logClient.APIMetricRoutine(*metricCfgPtr)
-			fmt.Printf("[Metric] Started to watch api metrics\n")
+			fmt.Printf("[Metric] Started to watch API Metrics\n")
 		}
 
 		if *metricFilterPtr == "all" || *metricFilterPtr == "envoy" {
 			go logClient.EnvoyMetricRoutine(*metricCfgPtr)
-			fmt.Printf("[Metric] Started to watch envoy metrics\n")
+			fmt.Printf("[Metric] Started to watch Envoy Metrics\n")
 		}
 	}
 

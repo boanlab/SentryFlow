@@ -14,7 +14,7 @@ WORKDIR /protobuf
 COPY /protobuf .
 
 WORKDIR /client
-COPY /sentryflow-clients/mongo-client .
+COPY /clients/mongo-client .
 
 RUN go build -o mongo-client
 

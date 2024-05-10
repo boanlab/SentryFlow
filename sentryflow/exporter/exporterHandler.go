@@ -41,9 +41,6 @@ type ExpHandler struct {
 	exporterAPIMetrics chan *protobuf.APIMetrics
 	exporterMetrics    chan *protobuf.EnvoyMetrics
 
-	statsPerNamespace     map[string]StatsPerNamespace
-	statsPerNamespaceLock sync.RWMutex
-
 	statsPerLabel     map[string]StatsPerLabel
 	statsPerLabelLock sync.RWMutex
 
@@ -72,8 +69,8 @@ func NewExporterHandler() *ExpHandler {
 		exporterAPIMetrics: make(chan *protobuf.APIMetrics),
 		exporterMetrics:    make(chan *protobuf.EnvoyMetrics),
 
-		statsPerNamespace: make(map[string]StatsPerNamespace),
 		statsPerLabel:     make(map[string]StatsPerLabel),
+		statsPerLabelLock: sync.RWMutex{},
 
 		stopChan: make(chan struct{}),
 	}
@@ -126,6 +123,10 @@ func StartExporter(wg *sync.WaitGroup) bool {
 
 	log.Printf("[Exporter] Exporting Envoy Metrics through gRPC")
 
+	// Start Export Time Ticker Routine
+	go AggregateAPIMetrics()
+	go CleanUpOutdatedStats()
+
 	return true
 }
 
@@ -154,13 +155,13 @@ func StopExporter() bool {
 func (exp *ExpHandler) exportAPILogs(wg *sync.WaitGroup) {
 	wg.Add(1)
 
-routineLoop:
 	for {
 		select {
 		case apiLog, ok := <-exp.exporterAPILogs:
 			if !ok {
 				log.Printf("[Exporter] Log exporter channel closed")
-				break routineLoop
+				wg.Done()
+				return
 			}
 
 			if err := exp.SendAPILogs(apiLog); err != nil {
@@ -168,48 +169,46 @@ routineLoop:
 			}
 
 		case <-exp.stopChan:
-			break routineLoop
+			wg.Done()
+			return
 		}
 	}
-
-	defer wg.Done()
 }
 
 // exportAPIMetrics Function
 func (exp *ExpHandler) exportAPIMetrics(wg *sync.WaitGroup) {
 	wg.Add(1)
 
-routineLoop:
 	for {
 		select {
 		case apiMetrics, ok := <-exp.exporterAPIMetrics:
 			if !ok {
 				log.Printf("[Exporter] APIMetric exporter channel closed")
-				break routineLoop
+				wg.Done()
+				return
 			}
 			if err := exp.SendAPIMetrics(apiMetrics); err != nil {
 				log.Printf("[Exporter] APIMetric exporting failed %v:", err)
 			}
 
 		case <-exp.stopChan:
-			break routineLoop
+			wg.Done()
+			return
 		}
 	}
-
-	defer wg.Done()
 }
 
 // exportEnvoyMetrics Function
 func (exp *ExpHandler) exportEnvoyMetrics(wg *sync.WaitGroup) {
 	wg.Add(1)
 
-routineLoop:
 	for {
 		select {
 		case evyMetrics, ok := <-exp.exporterMetrics:
 			if !ok {
 				log.Printf("[Exporter] EnvoyMetric exporter channel closed")
-				break routineLoop
+				wg.Done()
+				return
 			}
 
 			if err := exp.SendEnvoyMetrics(evyMetrics); err != nil {
@@ -217,11 +216,10 @@ routineLoop:
 			}
 
 		case <-exp.stopChan:
-			break routineLoop
+			wg.Done()
+			return
 		}
 	}
-
-	defer wg.Done()
 }
 
 // == //

@@ -41,25 +41,12 @@ func (exs *ExpService) GetEnvoyMetrics(info *protobuf.ClientInfo, stream protobu
 
 // SendEnvoyMetrics Function
 func (exp *ExpHandler) SendEnvoyMetrics(evyMetrics *protobuf.EnvoyMetrics) error {
-	var err error
-
 	failed := 0
 	total := len(exp.envoyMetricsExporters)
 
 	for _, exporter := range exp.envoyMetricsExporters {
-		currRetry := 0
-		maxRetry := 3
-
-		for currRetry < maxRetry {
-			if err = exporter.metricsStream.Send(evyMetrics); err != nil {
-				log.Printf("[Exporter] Unable to send Envoy Metrics to %s(%s) retry=%d/%d: %v", exporter.Hostname, exporter.IPAddress, currRetry, maxRetry, err)
-				currRetry++
-			} else {
-				break
-			}
-		}
-
-		if err != nil {
+		if err := exporter.metricsStream.Send(evyMetrics); err != nil {
+			log.Printf("[Exporter] Unable to send Envoy Metrics to %s(%s): %v", exporter.Hostname, exporter.IPAddress, err)
 			failed++
 		}
 	}

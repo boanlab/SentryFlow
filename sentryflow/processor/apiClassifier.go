@@ -1,176 +1,144 @@
-// SPDX-License-Identifier: Apache-2.0
+// // SPDX-License-Identifier: Apache-2.0
 
 package processor
 
-// import (
-// 	"context"
-// 	"fmt"
-// 	"io"
-// 	"log"
+import (
+	"context"
+	"fmt"
+	"io"
+	"log"
+	"sync"
 
-// 	"github.com/5gsec/SentryFlow/config"
-// 	"github.com/5gsec/SentryFlow/protobuf"
-// 	"github.com/5gsec/SentryFlow/types"
-// 	"google.golang.org/grpc"
-// )
+	"github.com/5gsec/SentryFlow/config"
+	"github.com/5gsec/SentryFlow/exporter"
+	"github.com/5gsec/SentryFlow/protobuf"
+	"google.golang.org/grpc"
+)
 
-// // AIH Local reference for AI handler server
-// var AIH *AIHandler
+// AIH Local reference for AI handler server
+var AH *AIHandler
 
-// // AIHandler Structure
-// type AIHandler struct {
-// 	AIEngineAddr string
-// 	AIEnginePort string
+// AIHandler Structure
+type AIHandler struct {
+	error    chan error
+	stopChan chan struct{}
 
-// 	error    chan error
-// 	stopChan chan struct{}
+	aggregatedLogs chan []*protobuf.APILog
+	APIs           chan []string
 
-// 	aggregatedLogs chan []*protobuf.APILog
-// 	APIs           chan []string
+	AIStream *streamInform
+}
 
-// 	AIStream *streamInform
-// }
+// streamInform Structure
+type streamInform struct {
+	AIStream protobuf.APIClassification_ClassifyAPIsClient
+}
 
-// // streamInform Structure
-// type streamInform struct {
-// 	AIStream protobuf.SentryFlowMetrics_GetAPIClassificationClient
-// }
+// init Function
+func init() {
+	// Construct address and start listening
+	AH = NewAIHandler()
+}
 
-// // init Function
-// func init() {
-// 	// Construct address and start listening
-// 	ai = NewAIHandler(cfg.AIEngineAddr, cfg.AIEnginePort)
-// }
+// NewAIHandler Function
+func NewAIHandler() *AIHandler {
+	ah := &AIHandler{
+		stopChan: make(chan struct{}),
 
-// // NewAIHandler Function
-// func NewAIHandler(addr string, port string) *AIHandler {
-// 	ah := &AIHandler{
-// 		AIEngineAddr: addr,
-// 		AIEnginePort: port,
+		aggregatedLogs: make(chan []*protobuf.APILog),
+		APIs:           make(chan []string),
+	}
+	return ah
+}
 
-// 		stopChan: make(chan struct{}),
+// initHandler Function
+func StartAPIClassifier(wg *sync.WaitGroup) bool {
+	AIEngineService := fmt.Sprintf("%s:%s", config.GlobalConfig.AIEngineService, config.GlobalConfig.AIEngineServicePort)
 
-// 		aggregatedLogs: make(chan []*protobuf.APILog),
-// 		APIs:           make(chan []string),
-// 	}
-// 	return ah
-// }
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(AIEngineService, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("[AI] Could not connect: %v", err)
+		return false
+	}
 
-// // initHandler Function
-// func (ai *AIHandler) InitAIHandler() bool {
-// 	AIEngineService := fmt.Sprintf("%s:%s", cfg.GlobalCfg.AIEngineAddr, cfg.GlobalCfg.AIEnginePort)
+	// Start serving gRPC server
+	log.Printf("[AI] Successfully connected to %s for APIMetrics", AIEngineService)
 
-// 	// Set up a connection to the server.
-// 	conn, err := grpc.Dial(AIEngineService, grpc.WithInsecure())
-// 	if err != nil {
-// 		log.Fatalf("[AI] Could not connect: %v", err)
-// 		return false
-// 	}
+	client := protobuf.NewAPIClassificationClient(conn)
 
-// 	// Start serving gRPC server
-// 	log.Printf("[AI] Successfully connected to %s for APIMetrics", AIEngineService)
+	aiStream, err := client.ClassifyAPIs(context.Background())
+	if err != nil {
+		log.Fatalf("[AI] Could not make stream: %v", err)
+		return false
+	}
 
-// 	client := protobuf.NewSentryFlowMetricsClient(conn)
-// 	aiStream, err := client.GetAPIClassification(context.Background())
+	AH.AIStream = &streamInform{
+		AIStream: aiStream,
+	}
 
-// 	ai.AIStream = &streamInform{
-// 		AIStream: aiStream,
-// 	}
+	go sendAPIRoutine()
+	go recvAPIRoutine()
 
-// 	done := make(chan struct{})
+	return true
+}
 
-// 	go sendAPIRoutine()
-// 	go recvAPIRoutine(done)
+// InsertAPILog function
+func InsertAPILogsAI(APIs []string) {
+	AH.APIs <- APIs
+}
 
-// 	return true
-// }
+// sendAPIRoutine Function
+func sendAPIRoutine() {
+	for {
+		select {
+		case aal, ok := <-AH.APIs:
+			if !ok {
+				log.Printf("[Exporter] EnvoyMetric exporter channel closed")
+				return
+			}
 
-// // InsertAPILog function
-// func InsertAPILog(APIs []string) {
-// 	ai.APIs <- APIs
-// }
+			curAPIRequest := &protobuf.APIClassificationRequest{
+				API: aal,
+			}
 
-// // callAI Function
-// func (ah *aiHandler) callAI(api string) error {
-// 	// @todo: add gRPC send request
-// 	return nil
-// }
+			err := AH.AIStream.AIStream.Send(curAPIRequest)
+			if err != nil {
+				log.Printf("[Exporter] AI Engine APIs exporting failed %v:", err)
+			}
+		case <-AH.stopChan:
+			return
+		}
+	}
+}
 
-// // processBatch Function
-// func processBatch(batch []string, update bool) error {
-// 	for range batch {
+// recvAPIRoutine Function
+func recvAPIRoutine() error {
+	for {
+		select {
+		default:
+			event, err := AH.AIStream.AIStream.Recv()
+			APIMetrics := make(map[string]uint64)
+			if err == io.EOF {
+				return nil
+			}
 
-// 	}
+			if err != nil {
+				log.Printf("[Envoy] Something went on wrong when receiving event: %v", err)
+				return err
+			}
 
-// 	return nil
-// }
+			for api, count := range event.APIs {
+				APIMetrics[api] = count
+			}
 
-// // performHealthCheck Function
-// func (ah *aiHandler) performHealthCheck() error {
-// 	return nil
-// }
-
-// // disconnect Function
-// func (ah *aiHandler) disconnect() {
-// 	return
-// }
-
-// // sendAPIRoutine Function
-// func sendAPIRoutine() {
-// routineLoop:
-// 	for {
-// 		select {
-// 		case aal, ok := <-AH.apis:
-// 			if !ok {
-// 				log.Printf("[Exporter] EnvoyMetric exporter channel closed")
-// 				break routineLoop
-// 			}
-
-// 			curAPIRequest := &protobuf.APIClassificationRequest{
-// 				Path: aal,
-// 			}
-
-// 			// err := AH.aiStream.Send(curAPIRequest)
-// 			err := AH.aiStream.aiStream.Send(curAPIRequest)
-// 			if err != nil {
-// 				log.Printf("[Exporter] AI Engine APIs exporting failed %v:", err)
-// 			}
-// 		case <-AH.stopChan:
-// 			break routineLoop
-// 		}
-// 	}
-
-// 	return
-// }
-
-// // recvAPIRoutine Function
-// func recvAPIRoutine(done chan struct{}) error {
-// 	for {
-// 		select {
-// 		default:
-// 			event, err := AH.aiStream.aiStream.Recv()
-// 			if err == io.EOF {
-// 				return nil
-// 			}
-
-// 			if err != nil {
-// 				log.Printf("[Envoy] Something went on wrong when receiving event: %v", err)
-// 				return err
-// 			}
-
-// 			for key, value := range event.Fields {
-// 				APICount := &types.PerAPICount{
-// 					API:   key,
-// 					Count: value,
-// 				}
-// 				err := MDB.PerAPICountInsert(APICount)
-// 				if err != nil {
-// 					log.Printf("unable to insert Classified API")
-// 					return err
-// 				}
-// 			}
-// 		case <-done:
-// 			return nil
-// 		}
-// 	}
-// }
+			err = exporter.ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
+			if err != nil {
+				log.Printf("[Envoy] Something went on wrong when Send API Metrics: %v", err)
+				return err
+			}
+		case <-AH.stopChan:
+			return nil
+		}
+	}
+}

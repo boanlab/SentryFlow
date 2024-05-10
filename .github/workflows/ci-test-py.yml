@@ -34,7 +34,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
         working-directory: ai-engine
-  
+
+      - name: Create pyproject.toml
+        run: |
+          echo "[tool.ruff.lint.per-file-ignores]" > pyproject.toml
+          echo '"stringlifier/*" = ["E402", "F811", "F401"]' >> pyproject.toml
+        working-directory: ai-engine
+
       - name: Lint with Ruff
         run: |
           pip install ruff
@@ -48,4 +54,4 @@ jobs:
       - name: 'Run PEP8'
         uses: quentinguidee/pep8-action@v1
         with:
-          arguments: '--max-line-length=120'
+          arguments: '--max-line-length=120 --exclude=./ai-engine/stringlifier/*'

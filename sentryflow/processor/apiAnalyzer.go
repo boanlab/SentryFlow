@@ -4,6 +4,8 @@ package processor
 
 import (
 	"sync"
+
+	"github.com/5gsec/SentryFlow/config"
 )
 
 // == //
@@ -18,14 +20,21 @@ func init() {
 
 // Analyzer Structure
 type Analyzer struct {
-	apiLog chan string
+	apiLog  chan string
+	apiLogs []string
+
+	analyzerLock sync.Mutex
 
 	stopChan chan struct{}
 }
 
 // NewAPIAnalyzer Function
 func NewAPIAnalyzer() *Analyzer {
-	ret := &Analyzer{}
+	ret := &Analyzer{
+		apiLog:       make(chan string),
+		apiLogs:      []string{},
+		analyzerLock: sync.Mutex{},
+	}
 	return ret
 }
 
@@ -62,20 +71,23 @@ func analyzeAPIs(wg *sync.WaitGroup) {
 				continue
 			}
 
-			ClassifyAPI(api)
+			APIA.analyzerLock.Lock()
 
+			APIA.apiLogs = append(APIA.apiLogs, api)
+		
+			if len(APIA.apiLogs) > config.GlobalConfig.AIEngineBatchSize {
+				InsertAPILogsAI(APIA.apiLogs)
+				APIA.apiLogs = []string{}
+			}
+
+			APIA.analyzerLock.Unlock()
 		case <-APIA.stopChan:
 			wg.Done()
-			break
+			return
 		}
 	}
 }
 
 // == //
-
-// ClassifyAPI Function
-func ClassifyAPI(api string) {
-	//
-}
 
 // == //

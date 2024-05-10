@@ -78,7 +78,7 @@ func (handler *MongoDBHandler) InsertAPILog(data *protobuf.APILog) error {
 }
 
 // InsertMetrics function
-func (handler *MongoDBHandler) InsertAPIMetrics(data *protobuf.APIMetric) error {
+func (handler *MongoDBHandler) InsertAPIMetrics(data *protobuf.APIMetrics) error {
 	_, err := handler.metricsCol.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (handler *MongoDBHandler) InsertAPIMetrics(data *protobuf.APIMetric) error 
 }
 
 // InsertMetrics function
-func (handler *MongoDBHandler) InsertEnvoyMetrics(data *protobuf.EnvoyMetric) error {
+func (handler *MongoDBHandler) InsertEnvoyMetrics(data *protobuf.EnvoyMetrics) error {
 	_, err := handler.metricsCol.InsertOne(context.Background(), data)
 	if err != nil {
 		return err
