@@ -8,9 +8,9 @@ from collections import Counter
 import os
 import grpc
 
-from stringlifier.api import Stringlifier
 from protobuf import sentryflow_metrics_pb2_grpc
 from protobuf import sentryflow_metrics_pb2
+from stringlifier.api import Stringlifier
 
 
 class HandlerServer:
@@ -81,7 +81,7 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServi
     def register(self, server):
         sentryflow_metrics_pb2_grpc.add_APIClassificationServicer_to_server(self, server)
 
-    def ClassifyAPIs(self, request_iterator, context):  # pylint: disable=C0103
+    def ClassifyAPIs(self, request_iterator, _):  # pylint: disable=C0103
         """
         GetAPIClassification method that runs multiple API ML Classification at once
         :param request_iterator: The requests
