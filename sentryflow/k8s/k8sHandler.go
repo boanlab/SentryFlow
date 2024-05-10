@@ -302,7 +302,9 @@ func PatchNamespaces() bool {
 		return false
 	}
 
-	for _, namespace := range namespaces.Items {
+	for _, ns := range namespaces.Items {
+		namespace := ns.DeepCopy()
+
 		// Skip the following namespaces
 		if namespace.Name == "sentryflow" {
 			continue
@@ -311,7 +313,7 @@ func PatchNamespaces() bool {
 		namespace.Labels["istio-injection"] = "enabled"
 
 		// Patch the namespace
-		if _, err := K8sH.clientSet.CoreV1().Namespaces().Update(context.TODO(), &namespace, v1.UpdateOptions{FieldManager: "patcher"}); err != nil {
+		if _, err := K8sH.clientSet.CoreV1().Namespaces().Update(context.TODO(), namespace, v1.UpdateOptions{FieldManager: "patcher"}); err != nil {
 			log.Printf("[PatchNamespaces] Unable to update namespace %s: %v", namespace.Name, err)
 			return false
 		}
