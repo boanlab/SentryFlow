@@ -67,7 +67,7 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServi
     def __init__(self):
         self.stringlifier = Stringlifier()
         print("[Init] Successfully initialized APIClassificationServer")
-        
+ 
     def register(self, server):
         sentryflow_metrics_pb2_grpc.add_APIClassificationServicer_to_server(self, server)
 
@@ -78,7 +78,7 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServi
         :param context: The context
         :return: The results
         """
-       
+
         for req in request_iterator:
             all_paths = req.API
             # for paths in all_paths:
