@@ -150,6 +150,12 @@ func SentryFlow() {
 		return
 	}
 
+	// Start API classifier
+	if !processor.StartAPIClassifier(sf.waitGroup) {
+		sf.DestroySentryFlow()
+		return
+	}
+
 	// Start exporter
 	if !exporter.StartExporter(sf.waitGroup) {
 		sf.DestroySentryFlow()

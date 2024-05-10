@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/5gsec/SentryFlow/config"
 	"github.com/5gsec/SentryFlow/exporter"
@@ -51,8 +52,10 @@ func NewAIHandler() *AIHandler {
 }
 
 // initHandler Function
-func (ai *AIHandler) InitAIHandler() bool {
-	AIEngineService := fmt.Sprintf("%s:%s", config.GlobalConfig.AIEngineService, config.GlobalConfig.AIEngineServicePort)
+func StartAPIClassifier(wg *sync.WaitGroup) bool {
+	// AIEngineService := fmt.Sprintf("%s:%s", config.GlobalConfig.AIEngineService, config.GlobalConfig.AIEngineServicePort)
+
+	AIEngineService := fmt.Sprintf("%s:%s", "10.10.0.167", config.GlobalConfig.AIEngineServicePort)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(AIEngineService, grpc.WithInsecure())
@@ -65,13 +68,14 @@ func (ai *AIHandler) InitAIHandler() bool {
 	log.Printf("[AI] Successfully connected to %s for APIMetrics", AIEngineService)
 
 	client := protobuf.NewAPIClassificationClient(conn)
-	aiStream, err := client.ClassifyAPIs(context.Background())
 
+	aiStream, err := client.ClassifyAPIs(context.Background())
 	if err != nil {
 		log.Fatalf("[AI] Could not make stream: %v", err)
+		return false
 	}
 
-	ai.AIStream = &streamInform{
+	AH.AIStream = &streamInform{
 		AIStream: aiStream,
 	}
 

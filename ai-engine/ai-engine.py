@@ -67,28 +67,27 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServi
     def __init__(self):
         self.stringlifier = Stringlifier()
         print("[Init] Successfully initialized APIClassificationServer")
-
+        
     def register(self, server):
         sentryflow_metrics_pb2_grpc.add_APIClassificationServicer_to_server(self, server)
 
-    def GetAPIClassification(self, request_iterator, context):
+    def ClassifyAPIs(self, request_iterator, context):
         """
         GetAPIClassification method that runs multiple API ML Classification at once
         :param request_iterator: The requests
         :param context: The context
         :return: The results
         """
-
+       
         for req in request_iterator:
-            all_paths = req.path
+            all_paths = req.API
             # for paths in all_paths:
             ml_results = self.stringlifier(all_paths)
 
             ml_counts = Counter(ml_results)
-
             print("{} -> {}".format(all_paths, ml_counts))
 
-            yield sentryflow_metrics_pb2.APIClassificationResponse(fields=ml_counts)
+            yield sentryflow_metrics_pb2.APIClassificationResponse(APIs=ml_counts)
 
 
 if __name__ == '__main__':

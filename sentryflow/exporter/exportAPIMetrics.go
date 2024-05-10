@@ -130,6 +130,10 @@ func AggregateAPIMetrics() {
 				}
 			}
 
+			if len(APIMetrics) > 0 {
+				APIMetrics["No API Stats"] = 0
+			}
+
 			ExpH.SendAPIMetrics(&protobuf.APIMetrics{PerAPICounts: APIMetrics})
 
 			ExpH.statsPerLabelLock.RUnlock()

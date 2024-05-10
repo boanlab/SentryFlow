@@ -31,6 +31,7 @@ type Analyzer struct {
 // NewAPIAnalyzer Function
 func NewAPIAnalyzer() *Analyzer {
 	ret := &Analyzer{
+		apiLog:       make(chan string),
 		apiLogs:      []string{},
 		analyzerLock: sync.Mutex{},
 	}

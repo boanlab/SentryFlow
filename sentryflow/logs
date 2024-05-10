@@ -1,0 +1,150 @@
+2024/05/10 03:04:21 Arguments [aggregationPeriod:1 aiEngineBatchSize:5 aiEngineService:ai-engine.sentryflow.svc.cluster.local aiEngineServicePort:5000 cleanUpPeriod:5 collectorAddr:0.0.0.0 collectorPort:4317 debug:false exporterAddr:0.0.0.0 exporterPort:8080 patchingNamespaces:false restartingPatchedDeployments:false]
+2024/05/10 03:04:21 Configuration [{CollectorAddr:0.0.0.0 CollectorPort:4317 ExporterAddr:0.0.0.0 ExporterPort:8080 PatchingNamespaces:false RestartingPatchedDeployments:false AIEngineService:ai-engine.sentryflow.svc.cluster.local AIEngineServicePort:5000 AIEngineBatchSize:5 AggregationPeriod:1 CleanUpPeriod:5 Debug:false}]
+2024/05/10 03:04:21 [SentryFlow] Initializing SentryFlow
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.91: default/httpbin-5bfb744d9-pnl99
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.92: default/sleep-5dfbfbb9fc-x9xft
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.79: istio-system/istio-egressgateway-fd7cc5dd5-p85ql
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.78: istio-system/istio-ingressgateway-558b96cc69-nwdvm
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.77: istio-system/istiod-cd67b8ddd-vkchg
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.76: kube-system/calico-kube-controllers-7c968b5878-kpxm5
+2024/05/10 03:04:21 [K8s] Add existing pod 10.10.0.167: kube-system/calico-node-djxw9
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.73: kube-system/coredns-76f75df574-7259b
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.72: kube-system/coredns-76f75df574-8zhkp
+2024/05/10 03:04:21 [K8s] Add existing pod 10.10.0.167: kube-system/etcd-master
+2024/05/10 03:04:21 [K8s] Add existing pod 10.10.0.167: kube-system/kube-apiserver-master
+2024/05/10 03:04:21 [K8s] Add existing pod 10.10.0.167: kube-system/kube-controller-manager-master
+2024/05/10 03:04:21 [K8s] Add existing pod 10.10.0.167: kube-system/kube-proxy-4q4nj
+2024/05/10 03:04:21 [K8s] Add existing pod 10.10.0.167: kube-system/kube-scheduler-master
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.96: sentryflow/log-client-7d4d49d9f9-d87gg
+2024/05/10 03:04:21 [K8s] Add existing pod 10.244.219.103: sentryflow/sentryflow-76f8cd87df-9n7rd
+2024/05/10 03:04:21 [K8s] Add existing pod : sentryflow/sentryflow-76f8cd87df-n6qls
+2024/05/10 03:04:21 [InitK8sClient] Initialized Kubernetes client
+2024/05/10 03:04:21 [RunInformers] Started all Kubernetes informers
+2024/05/10 03:04:21 [RunInformers] Starting an informer for pods
+2024/05/10 03:04:21 [RunInformers] Starting an informer for services
+2024/05/10 03:04:21 [PatchIstioConfigMap] Overwrite the contents of "enableEnvoyAccessLogService"
+2024/05/10 03:04:21 [PatchIstioConfigMap] Overwrite the contents of "defaultConfig.envoyAccessLogService"
+2024/05/10 03:04:21 [PatchIstioConfigMap] Overwrite the contents of "defaultConfig.envoyMetricsService"
+2024/05/10 03:04:21 [PatchIstioConfigMap] istio-system/istio ConfigMap has SentryFlow under defaultProviders.accessLogs, ignoring...
+2024/05/10 03:04:21 [PatchIstioConfigMap] Updated istio-system/istio ConfigMap
+2024/05/10 03:04:21 [PatchIstioConfigMap] Patched Istio ConfigMap
+2024/05/10 03:04:21 [Collector] Listening Collector gRPC (0.0.0.0:4317)
+2024/05/10 03:04:21 [Collector] Initialized Collector gRPC
+2024/05/10 03:04:21 [Collector] Serving Collector gRPC
+2024/05/10 03:04:21 [LogProcessor] Started Log Processor
+2024/05/10 03:04:21 ################### hi go check check check check check
+2024/05/10 03:04:21 [AI] Successfully connected to 10.10.0.167:5000 for APIMetrics
+2024/05/10 03:04:21 [Exporter] Listening Exporter gRPC (0.0.0.0:8080)
+2024/05/10 03:04:21 [Exporter] Initialized Exporter gRPC
+2024/05/10 03:04:21 [Exporter] Serving Exporter gRPC (0.0.0.0:8080)
+2024/05/10 03:04:21 [Exporter] Exporting API Logs through gRPC
+2024/05/10 03:04:21 [Exporter] Exporting API Metrics through gRPC
+2024/05/10 03:04:21 [Exporter] Exporting Envoy Metrics through gRPC
+2024/05/10 03:04:21 [SentryFlow] Initialization process is completed
+2024/05/10 03:04:21 [Envoy] Something went on wrong when receiving event: rpc error: code = Unimplemented desc = Method not implemented!
+2024/05/10 03:04:23 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:24 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:04:28 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:29 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:04:33 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:34 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:04:38 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:39 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:04:43 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:44 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:04:48 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:49 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:04:53 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:54 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:04:58 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:04:59 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:03 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:04 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:08 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:09 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:13 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:13 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:13 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:13 ################### /status/418
+2024/05/10 03:05:13 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:13 timeStamp:"1715310313" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"37918" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:14 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:14 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:14 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:14 ################### /status/418
+2024/05/10 03:05:14 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:14 timeStamp:"1715310313" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"57384" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:18 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:19 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:20 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:20 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:20 ################### /status/418
+2024/05/10 03:05:20 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:20 timeStamp:"1715310320" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"57384" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:20 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:20 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:20 ################### /status/418
+2024/05/10 03:05:20 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:20 timeStamp:"1715310320" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"37930" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:20 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:20 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:20 ################### /status/418
+2024/05/10 03:05:20 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:20 timeStamp:"1715310320" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"37924" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:21 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:21 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:21 ################### /status/418
+2024/05/10 03:05:21 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:21 !@#!@#!@#!@#!@ [/status/418 /status/418 /status/418 /status/418 /status/418 /status/418]
+2024/05/10 03:05:21 [Exporter] AI Engine APIs exporting failed EOF:
+2024/05/10 03:05:21 timeStamp:"1715310320" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"57376" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:21 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:21 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:21 ################### /status/418
+2024/05/10 03:05:21 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:21 timeStamp:"1715310321" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"57384" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:21 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:21 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:21 ################### /status/418
+2024/05/10 03:05:21 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:21 timeStamp:"1715310321" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"37954" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:21 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:21 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:21 ################### /status/418
+2024/05/10 03:05:21 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:21 timeStamp:"1715310321" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"37940" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:22 !@#!@#!DFADFA /status/418
+2024/05/10 03:05:22 @@@@@@@@@@@@@@@@@@@@@@@ hihihihihii
+2024/05/10 03:05:22 ################### /status/418
+2024/05/10 03:05:22 sisisisisisisisisisisisisisisi /status/418
+2024/05/10 03:05:22 timeStamp:"1715310321" srcNamespace:"default" srcName:"sleep-5dfbfbb9fc-x9xft" srcLabel:{key:"app" value:"sleep"} srcLabel:{key:"pod-template-hash" value:"5dfbfbb9fc"} srcLabel:{key:"security.istio.io/tlsMode" value:"istio"} srcLabel:{key:"service.istio.io/canonical-name" value:"sleep"} srcLabel:{key:"service.istio.io/canonical-revision" value:"latest"} srcType:"Pod" srcIP:"10.244.219.92" srcPort:"57376" dstNamespace:"default" dstName:"httpbin-5bfb744d9-pnl99" dstLabel:{key:"app" value:"httpbin"} dstLabel:{key:"pod-template-hash" value:"5bfb744d9"} dstLabel:{key:"security.istio.io/tlsMode" value:"istio"} dstLabel:{key:"service.istio.io/canonical-name" value:"httpbin"} dstLabel:{key:"service.istio.io/canonical-revision" value:"latest"} dstType:"Pod" dstIP:"10.244.219.91" dstPort:"80" protocol:"HTTP11" method:"GET" path:"/status/418" responseCode:418 log is coming!!
+2024/05/10 03:05:23 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:24 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:28 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:29 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:33 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:34 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:38 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:39 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:43 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:44 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:48 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:49 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:53 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:54 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:05:58 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:05:59 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:06:03 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:06:04 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:06:08 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:06:09 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:06:13 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:06:14 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:06:18 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:06:19 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:06:23 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:06:24 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:06:28 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:06:29 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)
+2024/05/10 03:06:33 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.92~sleep-5dfbfbb9fc-x9xft.default~default.svc.cluster.local, sleep.default)
+2024/05/10 03:06:34 [EnvoyMetrics] Received EnvoyMetrics (sidecar~10.244.219.91~httpbin-5bfb744d9-pnl99.default~default.svc.cluster.local, httpbin.default)

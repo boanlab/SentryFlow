@@ -326,29 +326,29 @@ func PatchIstioConfigMap() bool {
 	}
 
 	// Update extensionProviders
-	if extensionProviders, exists := meshConfig["extensionProviders"]; exists {
-		newExtensionProviders, ok := extensionProviders.([]interface{})
-		if !ok {
-			log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
-		}
+	// if extensionProviders, exists := meshConfig["extensionProviders"]; exists {
+	// 	newExtensionProviders, ok := extensionProviders.([]interface{})
+	// 	if !ok {
+	// 		log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
+	// 	}
 
-		exists = false
-		for _, entry := range newExtensionProviders {
-			if entryMap, ok := entry.(map[interface{}]interface{}); !ok {
-				log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
-			} else if entryMap["name"] == "sentryflow" { // If "sentryflow" already exists
-				log.Printf("[PatchIstioConfigMap] istio-system/istio ConfigMap has sentryflow under extensionProviders, ignoring... ")
-				exists = true
-				break
-			}
-		}
+	// 	exists = false
+	// 	for _, entry := range newExtensionProviders {
+	// 		if entryMap, ok := entry.(map[interface{}]interface{}); !ok {
+	// 			log.Printf("[PatchIstioConfigMap] 'extensionProviders' in istio-system/istio ConfigMap has an unexpected type")
+	// 		} else if entryMap["name"] == "sentryflow" { // If "sentryflow" already exists
+	// 			log.Printf("[PatchIstioConfigMap] istio-system/istio ConfigMap has sentryflow under extensionProviders, ignoring... ")
+	// 			exists = true
+	// 			break
+	// 		}
+	// 	}
 
-		if !exists {
-			meshConfig["extensionProviders"] = append(extensionProviders.([]map[interface{}]interface{}), extensionProvider)
-		}
-	} else { // If it does not exist
-		meshConfig["extensionProviders"] = []map[interface{}]interface{}{extensionProvider}
-	}
+	// 	if !exists {
+	// 		meshConfig["extensionProviders"] = append(extensionProviders.([]map[interface{}]interface{}), extensionProvider)
+	// 	}
+	// } else { // If it does not exist
+	meshConfig["extensionProviders"] = []map[interface{}]interface{}{extensionProvider}
+	// }
 
 	// Update the ConfigMap data with the modified meshConfig
 	updatedMeshConfig, err := yaml.Marshal(meshConfig)
