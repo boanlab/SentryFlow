@@ -38,7 +38,9 @@ jobs:
       - name: Create pyproject.toml
         run: |
           echo "[tool.ruff.lint.per-file-ignores]" > pyproject.toml
-          echo '"stringlifier/*" = ["*"]' >> pyproject.toml
+          echo '"stringlifier/*" = ["E402"]' >> pyproject.toml
+          echo '"stringlifier/*" = ["F811"]' >> pyproject.toml
+          echo '"stringlifier/*" = ["F401"]' >> pyproject.toml
         working-directory: ai-engine
 
       - name: Lint with Ruff
@@ -54,4 +56,4 @@ jobs:
       - name: 'Run PEP8'
         uses: quentinguidee/pep8-action@v1
         with:
-          arguments: '--max-line-length=120 --ignore=ai-engine/stringlifier/*'
+          arguments: '--max-line-length=120 --ignore=./ai-engine/stringlifier/*'
