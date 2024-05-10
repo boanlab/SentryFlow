@@ -75,4 +75,4 @@ jobs:
       - name: 'Run PEP8'
         uses: quentinguidee/pep8-action@v1
         with:
-          arguments: '--max-line-length=120 --exclude="./stringlifier/*,./protobuf/*"'
+          arguments: '--max-line-length=120 --exclude=./ai-engine/stringlifier/*'
