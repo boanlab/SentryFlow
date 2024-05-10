@@ -1,10 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""SentryFlow AI API Classification Engine"""
+
+from concurrent import futures
+from collections import Counter
+
 import os
 import grpc
 
 from stringlifier.api import Stringlifier
-from concurrent import futures
-from collections import Counter
-
 from protobuf import sentryflow_metrics_pb2_grpc
 from protobuf import sentryflow_metrics_pb2
 
@@ -20,7 +24,7 @@ class HandlerServer:
             self.listen_addr = "0.0.0.0:5000"
 
         self.server = None
-        self.grpc_servers = list()
+        self.grpc_servers = []
 
     def init_grpc_servers(self):
         """
@@ -41,7 +45,7 @@ class HandlerServer:
         """
         self.server.add_insecure_port(self.listen_addr)
 
-        print("[INFO] Starting to serve on {}".format(self.listen_addr))
+        print(f"[INFO] Starting to serve on {self.listen_addr}")
         self.server.start()
         self.server.wait_for_termination()
 
@@ -56,7 +60,13 @@ class GRPCServer:
         :param server: The server
         :return: None
         """
-        pass
+
+    def unregister(self, server):
+        """
+        unregister method that unregisters gRPC service from target server
+        :param server: The server
+        :return: None
+        """
 
 
 class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServicer, GRPCServer):
@@ -85,7 +95,7 @@ class APIClassificationServer(sentryflow_metrics_pb2_grpc.APIClassificationServi
             ml_results = self.stringlifier(all_paths)
 
             ml_counts = Counter(ml_results)
-            print("{} -> {}".format(all_paths, ml_counts))
+            print(f"{all_paths} -> {ml_counts}")
 
             yield sentryflow_metrics_pb2.APIClassificationResponse(APIs=ml_counts)
 
