@@ -74,7 +74,7 @@ func analyzeAPIs(wg *sync.WaitGroup) {
 			APIA.analyzerLock.Lock()
 
 			APIA.apiLogs = append(APIA.apiLogs, api)
-
+		
 			if len(APIA.apiLogs) > config.GlobalConfig.AIEngineBatchSize {
 				InsertAPILogsAI(APIA.apiLogs)
 				APIA.apiLogs = []string{}

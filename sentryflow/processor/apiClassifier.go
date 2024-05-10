@@ -53,9 +53,7 @@ func NewAIHandler() *AIHandler {
 
 // initHandler Function
 func StartAPIClassifier(wg *sync.WaitGroup) bool {
-	// AIEngineService := fmt.Sprintf("%s:%s", config.GlobalConfig.AIEngineService, config.GlobalConfig.AIEngineServicePort)
-
-	AIEngineService := fmt.Sprintf("%s:%s", "10.10.0.167", config.GlobalConfig.AIEngineServicePort)
+	AIEngineService := fmt.Sprintf("%s:%s", config.GlobalConfig.AIEngineService, config.GlobalConfig.AIEngineServicePort)
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(AIEngineService, grpc.WithInsecure())
