@@ -26,11 +26,11 @@ spec:
         - name: SERVER_PORT
           value: "8080"
         - name: NEO4J_URI
-          value: "neo4j+s://a606ae9a.databases.neo4j.io"
+          value: ""
         - name: NEO4J_USERNAME
-          value: "neo4j"
+          value: ""
         - name: NEO4J_PASSWORD
-          value: "uBx3dMs79tPivJgh4g4Y2liS6U4ZdK4kFj37RX_5TIk"
+          value: ""
         - name: NODE_LEVEL
           value: "simple"
         - name: EDGE_LEVEL
