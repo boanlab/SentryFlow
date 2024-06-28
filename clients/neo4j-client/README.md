@@ -49,14 +49,11 @@ env:
 ```
 
 ## Example with robot-shop
-### Example 1
-NODE_LEVEL: simple, EDGE_LEVEL: simple
+### Example 1 (NODE_LEVEL: simple, EDGE_LEVEL: simple)
 ![Neo4j example1](/docs/neo4j_01.png)
 
-### Example 2
-NODE_LEVEL: simple, EDGE_LEVEL: detail
+### Example 2 (NODE_LEVEL: simple, EDGE_LEVEL: detail)
 ![Neo4j example2](/docs/neo4j_02.png)
 
-### Example 3
-NODE_LEVEL: detail, EDGE_LEVEL: detail
+### Example 3 (NODE_LEVEL: detail, EDGE_LEVEL: detail)
 ![Neo4j example3](/docs/neo4j_03.png)
