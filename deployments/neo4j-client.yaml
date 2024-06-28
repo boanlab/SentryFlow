@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neo4j-client
+  namespace: sentryflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: neo4j-client
+  template:
+    metadata:
+      labels:
+        app: neo4j-client
+    spec:
+      containers:
+      - name: neo4j-client
+        image: 5gsec/sentryflow-neo4j-client:v0.1
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+          name: grpc
+        env:
+        - name: SERVER_ADDR
+          value: "sentryflow.sentryflow.svc.cluster.local"
+        - name: SERVER_PORT
+          value: "8080"
+        - name: NEO4J_URI
+          value: "neo4j+s://a606ae9a.databases.neo4j.io"
+        - name: NEO4J_USERNAME
+          value: "neo4j"
+        - name: NEO4J_PASSWORD
+          value: "uBx3dMs79tPivJgh4g4Y2liS6U4ZdK4kFj37RX_5TIk"
+        - name: NODE_LEVEL
+          value: "simple"
+        - name: EDGE_LEVEL
+          value: "simple"
